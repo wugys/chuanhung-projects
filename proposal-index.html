@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銓宏國際 - 提案系統入口</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 {
+            color: #1a365d;
+            margin-bottom: 0.5rem;
+        }
+        p {
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+        .btn {
+            display: block;
+            padding: 1rem 2rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: #ed8936;
+            color: white;
+        }
+        .btn-secondary {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎁 銓宏提案系統</h1>
+        <p>選擇要查看的頁面</p>
+        
+        <a href="./proposal/A0015/" class="btn btn-primary">
+            📋 易集一番賞提案
+        </a>
+        
+        <a href="./proposal/admin.html" class="btn btn-secondary">
+            ⚙️ 管理後台
+        </a>
+        
+        <a href="./index.html" class="btn btn-secondary" style="margin-top: 1rem; font-size: 0.875rem;">
+            ← 返回專案管理系統
+        </a>
+    </div>
+</body>
+</html>
