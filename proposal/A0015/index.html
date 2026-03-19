@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銓宏提案系統 - 易集A0015</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2c5282;
+            --secondary: #ed8936;
+            --accent: #38a169;
+            --gold: #d69e2e;
+            --bg-light: #f7fafc;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+        .hero {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #3182ce 100%);
+            color: white;
+            padding: 4rem 0 3rem;
+            text-align: center;
+        }
+        .hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
+        .hero p { font-size: 1.25rem; opacity: 0.9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+        .section { padding: 3rem 0; }
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .product-card:hover { transform: translateY(-8px); }
+        .product-header {
+            padding: 1.25rem;
+            color: white;
+        }
+        .product-header.a-rank { background: linear-gradient(135deg, #d69e2e, #ecc94b); }
+        .product-header.b-rank { background: linear-gradient(135deg, #a0aec0, #cbd5e0); color: #2d3748; }
+        .product-header.c-rank { background: linear-gradient(135deg, #b7791f, #d69e2e); }
+        .product-header.d-rank { background: linear-gradient(135deg, #4a5568, #718096); }
+        .product-header.e-rank { background: linear-gradient(135deg, #2d3748, #4a5568); }
+        .rank-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(255,255,255,0.3);
+            border-radius: 20px;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .product-name { font-size: 1.25rem; font-weight: 700; }
+        .product-body { padding: 1.5rem; }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .info-value.price { color: var(--secondary); font-weight: 700; }
+        .interest-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .interest-btn:hover { background: #dd6b20; }
+        .audience-tag {
+            display: inline-block;
+            background: #ebf8ff;
+            color: #2b6cb0;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin: 0.25rem;
+        }
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary { background: var(--secondary); color: white; }
+        .btn-secondary { background: #f7fafc; color: var(--text-dark); border: 1px solid #e2e8f0; }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.75rem; }
+            .products-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="hero">
+        <div class="container">
+            <h1>🎁 一番賞商品提案</h1>
+            <p>易集 × 銓宏國際 | 專案編號：A0015-260320</p>
+            <p style="margin-top: 0.5rem; opacity: 0.8;">專為動漫族群與年輕女性設計的全彩印刷商品系列</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section class="section">
+                <h2 class="section-title"><i class="fas fa-gift"></i> 產品提案品項</h2>
+                <div class="products-grid" id="productsContainer"></div>
+            </section>
+        </div>
+    </main>
+
+    <div class="action-bar">
+        <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-file-pdf"></i> 下載 PDF</button>
+        <button class="btn btn-primary" onclick="showInterested()"><i class="fas fa-heart"></i> 查看已標記 (<span id="interestCount">0</span>)</button>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://roszrhmuvmnutvgaer.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_TG3ozuhpbHZRA1MSn4v9Aw_CJ0Iu1gy';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let products = [];
+        let interestedProducts = [];
+
+        async function loadData() {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('project_id', 'A0015-260320')
+                    .order('rank', { ascending: true });
+                
+                if (error) throw error;
+                
+                products = (data || []).map(p => ({
+                    id: p.id,
+                    rank: p.rank,
+                    rankName: p.rank_name || p.rank + '賞',
+                    type: p.type,
+                    name: p.name,
+                    price: p.cost_range,
+                    specs: p.specs,
+                    features: p.features,
+                    reason: p.reason,
+                    supplier: p.supplier,
+                    audience: p.audience || []
+                }));
+                
+                renderProducts();
+            } catch (error) {
+                console.error('Error:', error);
+                // Fallback data
+                products = [
+                    { id: 1, rank: 'A', rankName: 'A賞', type: '保溫袋', name: '全彩印刷鋁箔保溫便當袋', price: 'RMB 3.2-3.8', specs: '21×15×22cm', features: '360°全彩印刷，鋁箔內襯保溫3-4小時', reason: '符合大印刷面積需求，可完整呈現IP角色', supplier: '本道紙塑-陳先生', audience: ['動漫族群', '年輕女性'] },
+                    { id: 2, rank: 'B', rankName: 'B賞', type: '帆布袋', name: '全彩印花厚磅帆布托特包', price: 'RMB 3.5-4.2', specs: '35×12×28cm', features: '正面大面積全彩印刷28×20cm', reason: '最大印刷面積，最適合呈現IP角色完整形象', supplier: '本道紙塑-陳先生', audience: ['動漫族群'] },
+                    { id: 3, rank: 'C', rankName: 'C賞', type: '束口袋', name: '全彩束口袋組合-大+小', price: 'RMB 3.0-3.5', specs: '大20×25cm+小12×15cm', features: '雙袋全彩印刷，組合價值感高', reason: '一組兩個高CP值', supplier: '本道紙塑-陳先生', audience: ['年輕女性', '動漫族群'] },
+                    { id: 4, rank: 'D', rankName: 'D賞', type: '保冷袋', name: '全彩保冷飲料提袋', price: 'RMB 2.5-3.0', specs: '底10×10cm，高18cm', features: '全彩印刷保冷2-3小時', reason: '高頻使用高曝光', supplier: '1688溫州工廠', audience: ['年輕女性'] },
+                    { id: 5, rank: 'E', rankName: 'E賞', type: '收納包', name: '全彩餐具收納包', price: 'RMB 2.8-3.3', specs: '25×8cm展開', features: '捲軸式設計，大面積印刷', reason: 'ESG環保話題', supplier: '本道紙塑-陳先生', audience: ['年輕女性'] }
+                ];
+                renderProducts();
+            }
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = products.map(p => `
+                <div class="product-card" data-id="${p.id}">
+                    <div class="product-header ${p.rank.toLowerCase()}-rank">
+                        <div class="rank-badge">${p.rank}賞</div>
+                        <div class="product-name">${p.name}</div>
+                    </div>
+                    <div class="product-body">
+                        <div class="info-row"><span>參考成本</span><span class="info-value price">${p.price}</span></div>
+                        <div class="info-row"><span>產品規格</span><span>${p.specs}</span></div>
+                        <div style="margin: 1rem 0;">
+                            <strong>特色：</strong>${p.features}<br>
+                            <strong>理由：</strong>${p.reason}
+                        </div>
+                        <div>
+                            ${p.audience.map(a => `<span class="audience-tag">${a}</span>`).join('')}
+                        </div>
+                        <div style="margin-top: 1rem; color: #718096; font-size: 0.875rem;">
+                            <i class="fas fa-building"></i> ${p.supplier}
+                        </div>
+                    </div>
+                    <button class="interest-btn" onclick="toggleInterest(${p.id})">
+                        <i class="far fa-heart"></i> 標記感興趣
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function toggleInterest(productId) {
+            const index = interestedProducts.indexOf(productId);
+            const btn = document.querySelector(`[data-id="${productId}"] .interest-btn`);
+            
+            if (index > -1) {
+                interestedProducts.splice(index, 1);
+                btn.innerHTML = '<i class="far fa-heart"></i> 標記感興趣';
+                btn.style.background = 'var(--secondary)';
+            } else {
+                interestedProducts.push(productId);
+                btn.innerHTML = '<i class="fas fa-heart"></i> 已標記感興趣';
+                btn.style.background = 'var(--accent)';
+            }
+            
+            document.getElementById('interestCount').textContent = interestedProducts.length;
+        }
+
+        async function showInterested() {
+            if (interestedProducts.length === 0) {
+                alert('尚未標記任何品項');
+                return;
+            }
+            
+            // Save to Supabase
+            try {
+                await supabase.from('client_feedback').insert([{
+                    project_id: 'A0015-260320',
+                    interested_product_ids: interestedProducts,
+                    feedback_text: '客戶透過網頁標記感興趣的品項'
+                }]);
+            } catch (e) { console.error('Save error:', e); }
+            
+            const names = interestedProducts.map(id => products.find(p => p.id === id)?.name).filter(Boolean);
+            alert(`您感興趣的品項（${interestedProducts.length}個）：\n\n${names.join('\n')}\n\n銓宏業務將盡快與您聯絡！`);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
