@@ -6,6 +6,7 @@
     <title>銓宏提案管理後台</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #1a365d;
@@ -496,19 +497,119 @@
                 avatar: 'R',
                 products: ['編織袋覆膜手提袋'],
                 time: '1天前'
-            },
-            {
-                name: '名城',
-                company: '台灣銘板',
-                avatar: '名',
-                products: ['五十嵐紙卡+冷錢包'],
-                time: '2天前'
-            }
-        ];
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://roszrhmuvmnutvgaer.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvc3pyaHJtdXZtbnV0dmd4YWVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4ODIzMzgsImV4cCI6MjA4OTQ1ODMzOH0.jWmEeNdsdEuX05P9FOHgrIpz9g_Qlz9dNFvPehQr-1c';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Load Dashboard Data
-        function loadDashboard() {
-            // Load proposals
+        // Load Dashboard Data from Supabase
+        async function loadDashboard() {
+            try {
+                // Load projects
+                const { data: projects, error: projectError } = await supabase
+                    .from('projects')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+                
+                if (projectError) throw projectError;
+
+                // Load feedback
+                const { data: feedback, error: feedbackError } = await supabase
+                    .from('client_feedback')
+                    .select('*')
+                    .order('submitted_at', { ascending: false })
+                    .limit(5);
+                
+                if (feedbackError) throw feedbackError;
+
+                // Load products for feedback display
+                const { data: products, error: productError } = await supabase
+                    .from('products')
+                    .select('id, name');
+                
+                if (productError) throw productError;
+
+                // Render proposals
+                if (projects && projects.length > 0) {
+                    const proposalsHtml = projects.map(p => `
+                        <tr>
+                            <td>
+                                <div class="proposal-title">${p.customer_name} - ${p.project_code}</div>
+                                <div class="proposal-meta">${p.business_model || '一般提案'}</div>
+                            </td>
+                            <td>${p.customer_name}</td>
+                            <td>${p.business_model || '禮贈品'}</td>
+                            <td>
+                                <span class="status-badge status-${p.status || 'active'}">
+                                    ${p.status === 'active' ? '🟢 進行中' : p.status === 'pending' ? '🟡 待回饋' : '🔵 已完成'}
+                                </span>
+                            </td>
+                            <td>${new Date(p.updated_at || p.created_at).toLocaleDateString('zh-TW')}</td>
+                        </tr>
+                    `).join('');
+                    document.getElementById('recentProposals').innerHTML = proposalsHtml;
+                }
+
+                // Render feedback
+                if (feedback && feedback.length > 0) {
+                    const feedbackHtml = feedback.map(f => {
+                        const productNames = f.interested_product_ids?.map(id => {
+                            const product = products?.find(p => p.id === id);
+                            return product?.name || '未知產品';
+                        }) || [];
+                        
+                        return `
+                            <div class="feedback-item">
+                                <div class="feedback-avatar">客</div>
+                                <div class="feedback-content">
+                                    <div class="feedback-header">
+                                        <span class="feedback-name">${f.customer_name || '訪客'} · ${f.project_id}</span>
+                                        <span class="feedback-time">${new Date(f.submitted_at).toLocaleString('zh-TW')}</span>
+                                    </div>
+                                    <div class="feedback-products">
+                                        ${productNames.map(p => `<span class="product-chip"><i class="fas fa-heart"></i> ${p}</span>`).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    document.getElementById('recentFeedback').innerHTML = feedbackHtml;
+                }
+
+                // Update stats
+                updateStats(projects?.length || 0, feedback?.length || 0);
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                // Fallback to mock data
+                loadFallbackData();
+            }
+        }
+
+        function updateStats(proposalCount, feedbackCount) {
+            // Update proposal count in sidebar
+            const proposalBadge = document.querySelector('.nav-item:nth-child(2) .nav-badge');
+            if (proposalBadge) proposalBadge.textContent = proposalCount;
+            
+            // Update feedback count in sidebar
+            const feedbackBadge = document.querySelector('.nav-item:nth-child(3) .nav-badge');
+            if (feedbackBadge) feedbackBadge.textContent = feedbackCount;
+        }
+
+        function loadFallbackData() {
+            // Mock data fallback
+            const mockProposals = [
+                { code: 'A0015-260320', name: '易集一番賞商品提案', customer: '易集 - Rebecca', type: '一番賞', status: 'active', updated: '2小時前' },
+                { code: 'A0014-260319', name: '寶宸手提袋提案', customer: '寶宸 - RAY', type: '企業禮贈', status: 'pending', updated: '1天前' },
+                { code: 'A0013-260317', name: '寶宸織帶提案', customer: '寶宸 - RAY', type: '企業禮贈', status: 'completed', updated: '3天前' }
+            ];
+            
+            const mockFeedback = [
+                { name: 'Rebecca', company: '易集', avatar: 'R', products: ['全彩保溫便當袋 (A賞)', '全彩帆布托特包 (B賞)'], time: '2小時前' },
+                { name: 'RAY', company: '寶宸', avatar: 'R', products: ['編織袋覆膜手提袋'], time: '1天前' }
+            ];
+
             const proposalsHtml = mockProposals.map(p => `
                 <tr>
                     <td>
@@ -528,7 +629,6 @@
             
             document.getElementById('recentProposals').innerHTML = proposalsHtml;
 
-            // Load feedback
             const feedbackHtml = mockFeedback.map(f => `
                 <div class="feedback-item">
                     <div class="feedback-avatar">${f.avatar}</div>
