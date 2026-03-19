@@ -6,6 +6,7 @@
     <title>一番賞商品提案 | 易集 × 銓宏國際</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #1a365d;
@@ -730,8 +731,196 @@
     </div>
 
     <script>
-        // Product Data
-        const products = [
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://roszrhmuvmnutvgaer.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvc3pyaHJtdXZtbnV0dmd4YWVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4ODIzMzgsImV4cCI6MjA4OTQ1ODMzOH0.jWmEeNdsdEuX05P9FOHgrIpz9g_Qlz9dNFvPehQr-1c';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Data
+        let products = [];
+        let interestedProducts = [];
+
+        // Load Data from Supabase
+        async function loadData() {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('project_id', 'A0015-260320')
+                    .order('rank', { ascending: true });
+                
+                if (error) throw error;
+                
+                // Map database fields to UI fields
+                products = (data || []).map(p => ({
+                    id: p.id,
+                    rank: p.rank,
+                    rankName: p.rank_name || p.rank + '賞',
+                    type: p.type,
+                    name: p.name,
+                    price: p.cost_range,
+                    quote: p.quote_range || 'RMB ' + (parseFloat(p.cost_range.replace(/[^0-9.]/g, '')) * 1.5).toFixed(1),
+                    margin: p.margin || '30-35%',
+                    specs: p.specs,
+                    features: p.features,
+                    reason: p.reason,
+                    supplier: p.supplier,
+                    leadTime: p.lead_time,
+                    rating: '⭐'.repeat(p.rating || 4),
+                    audience: p.audience || []
+                }));
+                
+                loadProducts();
+                loadComparison();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showToast('資料載入失敗，使用預設資料');
+                loadFallbackData();
+            }
+        }
+
+        function loadFallbackData() {
+            // Static fallback
+            products = [
+                { id: 1, rank: 'A', rankName: 'A賞', type: '保溫袋/便當袋', name: '全彩印刷鋁箔保溫便當袋', price: 'RMB 3.2-3.8', quote: 'RMB 4.8-5.2', margin: '25-30%', specs: '21×15×22cm', features: '360°全彩印刷', reason: '符合大印刷面積需求', supplier: '本道紙塑-陳先生', leadTime: '25-30天', rating: '⭐⭐⭐⭐⭐', audience: ['動漫族群', '年輕女性'] },
+                { id: 2, rank: 'B', rankName: 'B賞', type: '帆布袋', name: '全彩印花厚磅帆布托特包', price: 'RMB 3.5-4.2', quote: 'RMB 5.5-6.5', margin: '30-35%', specs: '35×12×28cm', features: '正面大面積全彩印刷', reason: '最大印刷面積', supplier: '本道紙塑-陳先生', leadTime: '20-25天', rating: '⭐⭐⭐⭐⭐', audience: ['動漫族群'] },
+                { id: 3, rank: 'C', rankName: 'C賞', type: '束口袋', name: '全彩束口袋組合-大+小', price: 'RMB 3.0-3.5', quote: 'RMB 5.0-6.0', margin: '35-40%', specs: '大20×25cm+小12×15cm', features: '雙袋全彩印刷', reason: '一組兩個高CP值', supplier: '本道紙塑-陳先生', leadTime: '20-25天', rating: '⭐⭐⭐⭐⭐', audience: ['年輕女性', '動漫族群'] },
+                { id: 4, rank: 'D', rankName: 'D賞', type: '保冷袋', name: '全彩保冷飲料提袋', price: 'RMB 2.5-3.0', quote: 'RMB 4.0-4.8', margin: '35-40%', specs: '底10×10cm，高18cm', features: '全彩印刷保冷', reason: '高頻使用高曝光', supplier: '1688溫州工廠', leadTime: '20-25天', rating: '⭐⭐⭐⭐', audience: ['年輕女性'] },
+                { id: 5, rank: 'E', rankName: 'E賞', type: '收納包', name: '全彩餐具收納包', price: 'RMB 2.8-3.3', quote: 'RMB 4.5-5.0', margin: '35-40%', specs: '25×8cm展開', features: '捲軸式設計', reason: 'ESG環保話題', supplier: '本道紙塑-陳先生', leadTime: '20-25天', rating: '⭐⭐⭐⭐', audience: ['年輕女性'] }
+            ];
+            loadProducts();
+            loadComparison();
+        }
+
+        // Load Products
+        function loadProducts() {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = products.map(p => `
+                <div class="product-card" data-id="${p.id}">
+                    <div class="product-header ${p.rank.toLowerCase()}-rank">
+                        <div class="rank-badge">${p.rank}</div>
+                        <div class="product-type">${p.type} · ${p.rankName}</div>
+                        <div class="product-name">${p.name}</div>
+                    </div>
+                    <div class="product-body">
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-tag"></i> 參考成本</span>
+                            <span class="info-value price">${p.price}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-dollar-sign"></i> 建議報價</span>
+                            <span class="info-value">${p.quote}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-percentage"></i> 預估毛利</span>
+                            <span class="info-value" style="color: var(--accent);">${p.margin}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-ruler"></i> 產品規格</span>
+                        </div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted); padding: 0.5rem 0 1rem;">${p.specs}</div>
+                        <div class="product-features">
+                            <h4><i class="fas fa-star"></i> 產品特色</h4>
+                            <p>${p.features}</p>
+                        </div>
+                        <div class="product-features">
+                            <h4><i class="fas fa-check-circle"></i> 為何選這個</h4>
+                            <p>${p.reason}</p>
+                        </div>
+                        <div class="audience-tags">
+                            ${p.audience.map(a => `<span class="audience-tag"><i class="fas fa-user"></i> ${a}</span>`).join('')}
+                        </div>
+                        <div class="info-row" style="margin-top: 1rem;">
+                            <span class="info-label"><i class="fas fa-building"></i> 供應商</span>
+                            <span class="supplier-tag">${p.supplier.split('（')[0]}</span>
+                        </div>
+                    </div>
+                    <button class="interest-btn" onclick="toggleInterest(${p.id})">
+                        <i class="far fa-heart"></i> 標記感興趣
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Load Comparison Table
+        function loadComparison() {
+            const tbody = document.getElementById('comparisonBody');
+            tbody.innerHTML = products.map(p => `
+                <tr>
+                    <td><strong style="color: var(--primary);">${p.rankName}</strong></td>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.price}</td>
+                    <td>${p.quote}</td>
+                    <td style="color: var(--accent); font-weight: 600;">${p.margin}</td>
+                    <td>${p.leadTime}</td>
+                    <td class="rating">${p.rating}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Toggle Interest
+        async function toggleInterest(productId) {
+            const card = document.querySelector(`[data-id="${productId}"]`);
+            const btn = card.querySelector('.interest-btn');
+            const index = interestedProducts.indexOf(productId);
+            
+            if (index > -1) {
+                interestedProducts.splice(index, 1);
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="far fa-heart"></i> 標記感興趣';
+                showToast('已取消標記');
+            } else {
+                interestedProducts.push(productId);
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fas fa-heart"></i> 已標記感興趣';
+                showToast(`已標記：${products.find(p => p.id === productId)?.name}`);
+            }
+            
+            updateInterestCount();
+        }
+
+        function updateInterestCount() {
+            document.getElementById('interestCount').textContent = interestedProducts.length;
+        }
+
+        async function showInterested() {
+            if (interestedProducts.length === 0) {
+                showToast('尚未標記任何品項');
+                return;
+            }
+            
+            // Save to Supabase
+            try {
+                const { error } = await supabase
+                    .from('client_feedback')
+                    .insert([{
+                        project_id: 'A0015-260320',
+                        interested_product_ids: interestedProducts,
+                        feedback_text: '客戶透過網頁標記感興趣的品項',
+                        ip_address: 'web-client',
+                        user_agent: navigator.userAgent
+                    }]);
+                
+                if (error) throw error;
+                showToast('回饋已儲存，銓宏業務將盡快聯絡您');
+            } catch (e) {
+                console.error('Save error:', e);
+            }
+            
+            const names = interestedProducts.map(id => products.find(p => p.id === id)?.name).filter(Boolean);
+            alert(`您感興趣的品項（${interestedProducts.length}個）：\n\n${names.join('\n')}\n\n請截圖或記下品項名稱，銓宏業務將盡快與您聯絡。`);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
             {
                 id: 1,
                 rank: "A",
