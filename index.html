@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>一番賞商品提案 | 易集 × 銓宏國際</title>
+    <title>銓宏國際 - 提案系統</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -13,95 +13,26 @@
             --primary-light: #2c5282;
             --secondary: #ed8936;
             --accent: #38a169;
-            --gold: #d69e2e;
-            --silver: #a0aec0;
-            --bronze: #b7791f;
             --bg-light: #f7fafc;
             --text-dark: #2d3748;
-            --text-muted: #718096;
-            --border: #e2e8f0;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background: var(--bg-light);
             color: var(--text-dark);
             line-height: 1.6;
         }
-        
-        /* Hero Section */
         .hero {
             background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #3182ce 100%);
             color: white;
             padding: 4rem 0 3rem;
-            position: relative;
-            overflow: hidden;
+            text-align: center;
         }
-        
-        .hero::before {
-            content: '🎁';
-            position: absolute;
-            font-size: 300px;
-            opacity: 0.05;
-            right: -50px;
-            top: -50px;
-        }
-        
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(255,255,255,0.2);
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-size: 0.875rem;
-            margin-bottom: 1.5rem;
-            backdrop-filter: blur(10px);
-        }
-        
-        .hero h1 {
-            font-size: 2.5rem;
-            font-weight: 900;
-            margin-bottom: 1rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .hero-subtitle {
-            font-size: 1.25rem;
-            opacity: 0.9;
-            margin-bottom: 0.5rem;
-        }
-        
-        .hero-tags {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-top: 1.5rem;
-        }
-        
-        .hero-tag {
-            background: rgba(255,255,255,0.15);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.9375rem;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-        
-        /* Section Styles */
-        .section {
-            padding: 3rem 0;
-        }
-        
+        .hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
+        .hero p { font-size: 1.25rem; opacity: 0.9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+        .section { padding: 3rem 0; }
         .section-title {
             font-size: 1.75rem;
             font-weight: 700;
@@ -110,259 +41,63 @@
             align-items: center;
             gap: 0.75rem;
         }
-        
-        .section-title i {
-            color: var(--secondary);
-        }
-        
-        /* Audience Cards */
-        .audience-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .audience-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            border-left: 4px solid var(--secondary);
-        }
-        
-        .audience-card h3 {
-            font-size: 1.125rem;
-            color: var(--primary);
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .audience-card .age {
-            color: var(--secondary);
-            font-weight: 700;
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .audience-card ul {
-            list-style: none;
-            font-size: 0.9375rem;
-        }
-        
-        .audience-card li {
-            padding: 0.25rem 0;
-            padding-left: 1.25rem;
-            position: relative;
-        }
-        
-        .audience-card li::before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: var(--accent);
-            font-weight: bold;
-        }
-        
-        /* Ichiban Pyramid */
-        .ichiban-section {
-            background: linear-gradient(135deg, #fef5e7 0%, #fffbeb 100%);
-            padding: 3rem 0;
-            margin: 2rem 0;
-        }
-        
-        .pyramid {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.75rem;
-            margin: 2rem 0;
-        }
-        
-        .pyramid-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            color: white;
-            min-width: 200px;
-            box-shadow: var(--shadow);
-        }
-        
-        .pyramid-a { background: linear-gradient(135deg, #d69e2e, #ecc94b); font-size: 1.125rem; }
-        .pyramid-b { background: linear-gradient(135deg, #a0aec0, #cbd5e0); width: 280px; }
-        .pyramid-c { background: linear-gradient(135deg, #b7791f, #d69e2e); width: 360px; }
-        .pyramid-d { background: linear-gradient(135deg, #4a5568, #718096); width: 440px; }
-        .pyramid-e { background: linear-gradient(135deg, #2d3748, #4a5568); width: 520px; }
-        
-        .pyramid-label {
-            font-size: 1.25rem;
-            font-weight: 900;
-            margin-right: 1rem;
-        }
-        
-        .pyramid-product {
-            flex: 1;
-            text-align: center;
-        }
-        
-        .pyramid-percent {
-            font-size: 0.875rem;
-            opacity: 0.9;
-            margin-left: 1rem;
-        }
-        
-        /* Product Cards */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
-            margin-top: 2rem;
         }
-        
         .product-card {
             background: white;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
         }
-        
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
-        }
-        
+        .product-card:hover { transform: translateY(-8px); }
         .product-header {
             padding: 1.25rem;
             color: white;
-            position: relative;
         }
-        
         .product-header.a-rank { background: linear-gradient(135deg, #d69e2e, #ecc94b); }
         .product-header.b-rank { background: linear-gradient(135deg, #a0aec0, #cbd5e0); color: #2d3748; }
         .product-header.c-rank { background: linear-gradient(135deg, #b7791f, #d69e2e); }
         .product-header.d-rank { background: linear-gradient(135deg, #4a5568, #718096); }
         .product-header.e-rank { background: linear-gradient(135deg, #2d3748, #4a5568); }
-        
         .rank-badge {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 1.25rem;
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
             background: rgba(255,255,255,0.3);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.5);
-        }
-        
-        .product-type {
-            font-size: 0.75rem;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .product-name {
-            font-size: 1.25rem;
+            border-radius: 20px;
             font-weight: 700;
-            margin-top: 0.25rem;
+            margin-bottom: 0.5rem;
         }
-        
-        .product-body {
-            padding: 1.5rem;
-        }
-        
+        .product-name { font-size: 1.25rem; font-weight: 700; }
+        .product-body { padding: 1.5rem; }
         .info-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 0.625rem 0;
-            border-bottom: 1px dashed var(--border);
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #e2e8f0;
         }
-        
-        .info-row:last-child { border-bottom: none; }
-        
-        .info-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .info-value {
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        
-        .info-value.price {
-            color: var(--secondary);
-            font-size: 1.125rem;
-            font-weight: 700;
-        }
-        
+        .info-value.price { color: var(--secondary); font-weight: 700; }
         .product-features {
             background: var(--bg-light);
             padding: 1rem;
-            border-radius: 12px;
+            border-radius: 8px;
             margin: 1rem 0;
         }
-        
-        .product-features h4 {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .product-features p {
-            font-size: 0.9375rem;
-            color: var(--text-dark);
-            line-height: 1.6;
-        }
-        
         .audience-tags {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
-            margin-top: 0.75rem;
         }
-        
         .audience-tag {
             background: #ebf8ff;
             color: #2b6cb0;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.75rem;
-            font-weight: 500;
         }
-        
-        .supplier-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #f0fff4;
-            color: #276749;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
         .interest-btn {
             width: 100%;
             padding: 1rem;
@@ -372,52 +107,8 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
         }
-        
         .interest-btn:hover { background: #dd6b20; }
-        .interest-btn.active { background: var(--accent); }
-        
-        /* Comparison Table */
-        .comparison-section { margin-top: 3rem; }
-        
-        .comparison-table {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th {
-            background: var(--primary);
-            color: white;
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-        
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9375rem;
-        }
-        
-        tr:hover { background: var(--bg-light); }
-        
-        .rating { color: var(--secondary); font-size: 1.125rem; }
-        
-        /* Action Bar */
         .action-bar {
             position: fixed;
             bottom: 0;
@@ -425,322 +116,57 @@
             right: 0;
             background: white;
             padding: 1rem;
-            box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.1);
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.1);
             display: flex;
             justify-content: center;
             gap: 1rem;
-            z-index: 100;
         }
-        
         .btn {
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
-            font-size: 0.9375rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
             border: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
-        
-        .btn-primary {
-            background: var(--secondary);
-            color: white;
-        }
-        
-        .btn-primary:hover { background: #dd6b20; }
-        
-        .btn-secondary {
-            background: var(--bg-light);
-            color: var(--text-dark);
-            border: 1px solid var(--border);
-        }
-        
-        .btn-secondary:hover { background: var(--border); }
-        
-        /* Summary Cards */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        
-        .summary-card {
-            background: white;
-            padding: 1.25rem;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
-        
-        .summary-card .number {
-            font-size: 2rem;
-            font-weight: 900;
-            color: var(--secondary);
-        }
-        
-        .summary-card .label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-        }
-        
-        /* Footer */
-        .footer {
-            background: var(--primary);
-            color: white;
-            padding: 2rem 0 6rem;
-            margin-top: 3rem;
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        .footer-info h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .footer-info p {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-        
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 6rem;
-            right: 2rem;
-            background: var(--accent);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: var(--shadow-lg);
-            display: none;
-            align-items: center;
-            gap: 0.75rem;
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-        }
-        
-        .toast.show { display: flex; }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        /* Responsive */
+        .btn-primary { background: var(--secondary); color: white; }
+        .btn-secondary { background: #f7fafc; color: var(--text-dark); border: 1px solid #e2e8f0; }
         @media (max-width: 768px) {
             .hero h1 { font-size: 1.75rem; }
-            .hero-subtitle { font-size: 1rem; }
             .products-grid { grid-template-columns: 1fr; }
-            .pyramid-row { min-width: 150px; font-size: 0.875rem; }
-            .action-bar { flex-direction: column; }
-            .action-bar .btn { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <!-- Hero Section -->
     <header class="hero">
         <div class="container">
-            <div class="hero-badge">
-                <i class="fas fa-trophy"></i>
-                <span>一番賞專屬提案</span>
-            </div>
             <h1>🎁 一番賞商品提案</h1>
-            <p class="hero-subtitle">易集 × 銓宏國際 | 專案編號：A0015-260320</p>
-            <p style="opacity: 0.8; margin-top: 0.5rem;">專為動漫族群與年輕女性設計的全彩印刷商品系列</p>
-            
-            <div class="hero-tags">
-                <span class="hero-tag"><i class="fas fa-palette"></i> 全彩印刷</span>
-                <span class="hero-tag"><i class="fas fa-calendar-alt"></i> 全年多檔期</span>
-                <span class="hero-tag"><i class="fas fa-cogs"></i> 全定制生產</span>
-            </div>
+            <p>易集 × 銓宏國際 | 專案編號：A0015-260320</p>
+            <p style="margin-top: 0.5rem; opacity: 0.8;">專為動漫族群與年輕女性設計的全彩印刷商品系列</p>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="main">
         <div class="container">
-            <!-- Summary Cards -->
-            <div class="summary-grid">
-                <div class="summary-card">
-                    <div class="number">12-20K</div>
-                    <div class="label">數量/檔期</div>
-                </div>
-                <div class="summary-card">
-                    <div class="number">5</div>
-                    <div class="label">品項數</div>
-                </div>
-                <div class="summary-card">
-                    <div class="number">RMB 3-3.5</div>
-                    <div class="label">目標成本</div>
-                </div>
-                <div class="summary-card">
-                    <div class="number">25-40%</div>
-                    <div class="label">預估毛利</div>
-                </div>
-            </div>
-
-            <!-- Audience Section -->
             <section class="section">
-                <h2 class="section-title">
-                    <i class="fas fa-users"></i>
-                    目標受眾分析
-                </h2>
-                <div class="audience-grid">
-                    <div class="audience-card">
-                        <h3><i class="fas fa-dragon"></i> 動漫族群</h3>
-                        <div class="age">13-30歲</div>
-                        <ul>
-                            <li>喜好印刷面積大、可完整呈現IP角色</li>
-                            <li>重視可蒐藏性與系列完整性</li>
-                            <li>願意為喜愛的角色付費</li>
-                            <li>社群分享意願高</li>
-                        </ul>
-                    </div>
-                    <div class="audience-card">
-                        <h3><i class="fas fa-heart"></i> 年輕女性</h3>
-                        <div class="age">20-35歲</div>
-                        <ul>
-                            <li>喜歡IP肖像、可愛小物</li>
-                            <li>重視產品質感與實用性</li>
-                            <li>日常使用頻率高</li>
-                            <li>送禮自用兩相宜</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Ichiban Pyramid -->
-            <section class="ichiban-section">
-                <div class="container">
-                    <h2 class="section-title">
-                        <i class="fas fa-layer-group"></i>
-                        一番賞等級規劃
-                    </h2>
-                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">
-                        建議數量分配比例，A賞最稀有，E賞最親民
-                    </p>
-                    <div class="pyramid">
-                        <div class="pyramid-row pyramid-a">
-                            <span class="pyramid-label">A賞</span>
-                            <span class="pyramid-product">全彩保溫便當袋</span>
-                            <span class="pyramid-percent">10%</span>
-                        </div>
-                        <div class="pyramid-row pyramid-b">
-                            <span class="pyramid-label">B賞</span>
-                            <span class="pyramid-product">全彩帆布托特包</span>
-                            <span class="pyramid-percent">20%</span>
-                        </div>
-                        <div class="pyramid-row pyramid-c">
-                            <span class="pyramid-label">C賞</span>
-                            <span class="pyramid-product">全彩束口袋組合</span>
-                            <span class="pyramid-percent">30%</span>
-                        </div>
-                        <div class="pyramid-row pyramid-d">
-                            <span class="pyramid-label">D賞</span>
-                            <span class="pyramid-product">全彩保冷飲料袋</span>
-                            <span class="pyramid-percent">25%</span>
-                        </div>
-                        <div class="pyramid-row pyramid-e">
-                            <span class="pyramid-label">E賞</span>
-                            <span class="pyramid-product">全彩餐具收納包</span>
-                            <span class="pyramid-percent">15%</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Products Section -->
-            <section class="section">
-                <h2 class="section-title">
-                    <i class="fas fa-gift"></i>
-                    產品提案品項
-                </h2>
-                <div class="products-grid" id="productsContainer">
-                    <!-- Products loaded by JS -->
-                </div>
-            </section>
-
-            <!-- Comparison Table -->
-            <section class="comparison-section">
-                <h2 class="section-title">
-                    <i class="fas fa-table"></i>
-                    綜合比較表
-                </h2>
-                <div class="comparison-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>賞級</th>
-                                <th>品項</th>
-                                <th>成本</th>
-                                <th>報價</th>
-                                <th>毛利</th>
-                                <th>交期</th>
-                                <th>推薦</th>
-                            </tr>
-                        </thead>
-                        <tbody id="comparisonBody">
-                            <!-- Data loaded by JS -->
-                        </tbody>
-                    </table>
-                </div>
+                <h2 class="section-title"><i class="fas fa-gift"></i> 產品提案品項</h2>
+                <div class="products-grid" id="productsContainer"></div>
             </section>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <h3>銓宏國際有限公司</h3>
-                    <p>新北市三重區溪尾街41號B1 | TEL: 02-89881163</p>
-                    <p style="margin-top: 0.5rem; opacity: 0.7;">專業禮贈品定制 · 全彩印刷 · 一番賞商品</p>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Action Bar -->
     <div class="action-bar">
-        <button class="btn btn-secondary" onclick="window.print()">
-            <i class="fas fa-file-pdf"></i> 下載 PDF
-        </button>
-        <button class="btn btn-primary" onclick="showInterested()">
-            <i class="fas fa-heart"></i> 查看已標記 (<span id="interestCount">0</span>)
-        </button>
-    </div>
-
-    <!-- Toast -->
-    <div class="toast" id="toast">
-        <i class="fas fa-check-circle"></i>
-        <span id="toastMessage">已標記感興趣</span>
+        <button class="btn btn-secondary" onclick="window.print()"><i class="fas fa-file-pdf"></i> 下載 PDF</button>
+        <button class="btn btn-primary" onclick="showInterested()"><i class="fas fa-heart"></i> 查看已標記 (<span id="interestCount">0</span>)</button>
     </div>
 
     <script>
-        // Supabase Configuration
         const SUPABASE_URL = 'https://roszrhmuvmnutvgaer.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_TG3ozuhpbHZRA1MSn4v9Aw_CJ0Iu1gy';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Data
         let products = [];
         let interestedProducts = [];
 
-        // Load Data from Supabase
         async function loadData() {
             try {
                 const { data, error } = await supabase
@@ -751,7 +177,6 @@
                 
                 if (error) throw error;
                 
-                // Map database fields to UI fields
                 products = (data || []).map(p => ({
                     id: p.id,
                     rank: p.rank,
@@ -759,376 +184,81 @@
                     type: p.type,
                     name: p.name,
                     price: p.cost_range,
-                    quote: p.quote_range || 'RMB ' + (parseFloat(p.cost_range.replace(/[^0-9.]/g, '')) * 1.5).toFixed(1),
-                    margin: p.margin || '30-35%',
                     specs: p.specs,
                     features: p.features,
                     reason: p.reason,
                     supplier: p.supplier,
-                    leadTime: p.lead_time,
-                    rating: '⭐'.repeat(p.rating || 4),
                     audience: p.audience || []
                 }));
                 
-                loadProducts();
-                loadComparison();
+                renderProducts();
             } catch (error) {
-                console.error('Error loading data:', error);
-                showToast('資料載入失敗，使用預設資料');
-                loadFallbackData();
+                console.error('Error:', error);
+                // Fallback
+                products = [
+                    { id: 1, rank: 'A', rankName: 'A賞', type: '保溫袋', name: '全彩印刷鋁箔保溫便當袋', price: 'RMB 3.2-3.8', specs: '21×15×22cm', features: '360°全彩印刷', reason: '符合大印刷面積需求', supplier: '本道紙塑-陳先生', audience: ['動漫族群', '年輕女性'] },
+                    { id: 2, rank: 'B', rankName: 'B賞', type: '帆布袋', name: '全彩印花厚磅帆布托特包', price: 'RMB 3.5-4.2', specs: '35×12×28cm', features: '正面大面積全彩印刷', reason: '最大印刷面積', supplier: '本道紙塑-陳先生', audience: ['動漫族群'] },
+                    { id: 3, rank: 'C', rankName: 'C賞', type: '束口袋', name: '全彩束口袋組合-大+小', price: 'RMB 3.0-3.5', specs: '大20×25cm+小12×15cm', features: '雙袋全彩印刷', reason: '一組兩個高CP值', supplier: '本道紙塑-陳先生', audience: ['年輕女性', '動漫族群'] },
+                    { id: 4, rank: 'D', rankName: 'D賞', type: '保冷袋', name: '全彩保冷飲料提袋', price: 'RMB 2.5-3.0', specs: '底10×10cm，高18cm', features: '全彩印刷保冷', reason: '高頻使用', supplier: '1688溫州工廠', audience: ['年輕女性'] },
+                    { id: 5, rank: 'E', rankName: 'E賞', type: '收納包', name: '全彩餐具收納包', price: 'RMB 2.8-3.3', specs: '25×8cm展開', features: '捲軸式設計', reason: 'ESG環保', supplier: '本道紙塑-陳先生', audience: ['年輕女性'] }
+                ];
+                renderProducts();
             }
         }
 
-        function loadFallbackData() {
-            // Static fallback
-            products = [
-                { id: 1, rank: 'A', rankName: 'A賞', type: '保溫袋/便當袋', name: '全彩印刷鋁箔保溫便當袋', price: 'RMB 3.2-3.8', quote: 'RMB 4.8-5.2', margin: '25-30%', specs: '21×15×22cm', features: '360°全彩印刷', reason: '符合大印刷面積需求', supplier: '本道紙塑-陳先生', leadTime: '25-30天', rating: '⭐⭐⭐⭐⭐', audience: ['動漫族群', '年輕女性'] },
-                { id: 2, rank: 'B', rankName: 'B賞', type: '帆布袋', name: '全彩印花厚磅帆布托特包', price: 'RMB 3.5-4.2', quote: 'RMB 5.5-6.5', margin: '30-35%', specs: '35×12×28cm', features: '正面大面積全彩印刷', reason: '最大印刷面積', supplier: '本道紙塑-陳先生', leadTime: '20-25天', rating: '⭐⭐⭐⭐⭐', audience: ['動漫族群'] },
-                { id: 3, rank: 'C', rankName: 'C賞', type: '束口袋', name: '全彩束口袋組合-大+小', price: 'RMB 3.0-3.5', quote: 'RMB 5.0-6.0', margin: '35-40%', specs: '大20×25cm+小12×15cm', features: '雙袋全彩印刷', reason: '一組兩個高CP值', supplier: '本道紙塑-陳先生', leadTime: '20-25天', rating: '⭐⭐⭐⭐⭐', audience: ['年輕女性', '動漫族群'] },
-                { id: 4, rank: 'D', rankName: 'D賞', type: '保冷袋', name: '全彩保冷飲料提袋', price: 'RMB 2.5-3.0', quote: 'RMB 4.0-4.8', margin: '35-40%', specs: '底10×10cm，高18cm', features: '全彩印刷保冷', reason: '高頻使用高曝光', supplier: '1688溫州工廠', leadTime: '20-25天', rating: '⭐⭐⭐⭐', audience: ['年輕女性'] },
-                { id: 5, rank: 'E', rankName: 'E賞', type: '收納包', name: '全彩餐具收納包', price: 'RMB 2.8-3.3', quote: 'RMB 4.5-5.0', margin: '35-40%', specs: '25×8cm展開', features: '捲軸式設計', reason: 'ESG環保話題', supplier: '本道紙塑-陳先生', leadTime: '20-25天', rating: '⭐⭐⭐⭐', audience: ['年輕女性'] }
-            ];
-            loadProducts();
-            loadComparison();
-        }
-
-        // Load Products
-        function loadProducts() {
+        function renderProducts() {
             const container = document.getElementById('productsContainer');
             container.innerHTML = products.map(p => `
                 <div class="product-card" data-id="${p.id}">
                     <div class="product-header ${p.rank.toLowerCase()}-rank">
-                        <div class="rank-badge">${p.rank}</div>
-                        <div class="product-type">${p.type} · ${p.rankName}</div>
+                        <div class="rank-badge">${p.rank}賞</div>
                         <div class="product-name">${p.name}</div>
                     </div>
                     <div class="product-body">
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-tag"></i> 參考成本</span>
-                            <span class="info-value price">${p.price}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-dollar-sign"></i> 建議報價</span>
-                            <span class="info-value">${p.quote}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-percentage"></i> 預估毛利</span>
-                            <span class="info-value" style="color: var(--accent);">${p.margin}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-ruler"></i> 產品規格</span>
-                        </div>
-                        <div style="font-size: 0.875rem; color: var(--text-muted); padding: 0.5rem 0 1rem;">${p.specs}</div>
+                        <div class="info-row"><span>參考成本</span><span class="info-value price">${p.price}</span></div>
+                        <div class="info-row"><span>產品規格</span><span>${p.specs}</span></div>
                         <div class="product-features">
-                            <h4><i class="fas fa-star"></i> 產品特色</h4>
-                            <p>${p.features}</p>
-                        </div>
-                        <div class="product-features">
-                            <h4><i class="fas fa-check-circle"></i> 為何選這個</h4>
-                            <p>${p.reason}</p>
+                            <strong>特色：</strong>${p.features}<br><br>
+                            <strong>理由：</strong>${p.reason}
                         </div>
                         <div class="audience-tags">
                             ${p.audience.map(a => `<span class="audience-tag"><i class="fas fa-user"></i> ${a}</span>`).join('')}
                         </div>
-                        <div class="info-row" style="margin-top: 1rem;">
-                            <span class="info-label"><i class="fas fa-building"></i> 供應商</span>
-                            <span class="supplier-tag">${p.supplier.split('（')[0]}</span>
-                        </div>
+                        <div style="margin-top: 1rem; color: #718096;"><i class="fas fa-building"></i> ${p.supplier}</div>
                     </div>
-                    <button class="interest-btn" onclick="toggleInterest(${p.id})">
-                        <i class="far fa-heart"></i> 標記感興趣
-                    </button>
+                    <button class="interest-btn" onclick="toggleInterest(${p.id})"><i class="far fa-heart"></i> 標記感興趣</button>
                 </div>
             `).join('');
         }
 
-        // Load Comparison Table
-        function loadComparison() {
-            const tbody = document.getElementById('comparisonBody');
-            tbody.innerHTML = products.map(p => `
-                <tr>
-                    <td><strong style="color: var(--primary);">${p.rankName}</strong></td>
-                    <td><strong>${p.name}</strong></td>
-                    <td>${p.price}</td>
-                    <td>${p.quote}</td>
-                    <td style="color: var(--accent); font-weight: 600;">${p.margin}</td>
-                    <td>${p.leadTime}</td>
-                    <td class="rating">${p.rating}</td>
-                </tr>
-            `).join('');
-        }
-
-        // Toggle Interest
-        async function toggleInterest(productId) {
-            const card = document.querySelector(`[data-id="${productId}"]`);
-            const btn = card.querySelector('.interest-btn');
+        function toggleInterest(productId) {
             const index = interestedProducts.indexOf(productId);
-            
+            const btn = document.querySelector(`[data-id="${productId}"] .interest-btn`);
             if (index > -1) {
                 interestedProducts.splice(index, 1);
-                btn.classList.remove('active');
                 btn.innerHTML = '<i class="far fa-heart"></i> 標記感興趣';
-                showToast('已取消標記');
+                btn.style.background = 'var(--secondary)';
             } else {
                 interestedProducts.push(productId);
-                btn.classList.add('active');
                 btn.innerHTML = '<i class="fas fa-heart"></i> 已標記感興趣';
-                showToast(`已標記：${products.find(p => p.id === productId)?.name}`);
+                btn.style.background = 'var(--accent)';
             }
-            
-            updateInterestCount();
-        }
-
-        function updateInterestCount() {
             document.getElementById('interestCount').textContent = interestedProducts.length;
         }
 
         async function showInterested() {
-            if (interestedProducts.length === 0) {
-                showToast('尚未標記任何品項');
-                return;
-            }
-            
-            // Save to Supabase
+            if (interestedProducts.length === 0) { alert('尚未標記任何品項'); return; }
             try {
-                const { error } = await supabase
-                    .from('client_feedback')
-                    .insert([{
-                        project_id: 'A0015-260320',
-                        interested_product_ids: interestedProducts,
-                        feedback_text: '客戶透過網頁標記感興趣的品項',
-                        ip_address: 'web-client',
-                        user_agent: navigator.userAgent
-                    }]);
-                
-                if (error) throw error;
-                showToast('回饋已儲存，銓宏業務將盡快聯絡您');
-            } catch (e) {
-                console.error('Save error:', e);
-            }
-            
+                await supabase.from('client_feedback').insert([{
+                    project_id: 'A0015-260320',
+                    interested_product_ids: interestedProducts
+                }]);
+            } catch (e) {}
             const names = interestedProducts.map(id => products.find(p => p.id === id)?.name).filter(Boolean);
-            alert(`您感興趣的品項（${interestedProducts.length}個）：\n\n${names.join('\n')}\n\n請截圖或記下品項名稱，銓宏業務將盡快與您聯絡。`);
+            alert(`您感興趣的品項（${interestedProducts.length}個）：\n\n${names.join('\n')}`);
         }
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMessage').textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        // Initialize
         document.addEventListener('DOMContentLoaded', loadData);
-    </script>
-            {
-                id: 1,
-                rank: "A",
-                rankName: "A賞",
-                type: "保溫袋/便當袋",
-                name: "全彩印刷鋁箔保溫便當袋",
-                price: "RMB 3.2-3.8",
-                quote: "RMB 4.8-5.2",
-                margin: "25-30%",
-                specs: "21×15×22cm / 12安帆布+3mm鋁箔珍珠棉 / 雙面全彩印刷",
-                features: "360°全彩印刷外層，鋁箔內襯保溫保冷3-4小時，立體造型，大面積圖案呈現完整IP形象",
-                reason: "符合受眾對「大印刷面積」需求，可完整呈現IP角色；實用性強，年輕女性帶便當必備；一番賞常見A賞等級商品",
-                supplier: "本道紙塑-陳先生（帆布袋全定制）",
-                leadTime: "25-30天",
-                rating: "⭐⭐⭐⭐⭐",
-                audience: ["動漫族群", "年輕女性"]
-            },
-            {
-                id: 2,
-                rank: "B",
-                rankName: "B賞",
-                type: "帆布袋/托特包",
-                name: "全彩印花厚磅帆布托特包",
-                price: "RMB 3.5-4.2",
-                quote: "RMB 5.5-6.5",
-                margin: "30-35%",
-                specs: "35×12×28cm / 12安帆布 / 內袋+磁扣 / 正面全彩+背面單色",
-                features: "正面大面積全彩印刷（28×20cm印刷面），12安厚磅帆布質感佳，有底有側容量大，雙面可不同圖案",
-                reason: "最大印刷面積，最適合呈現IP角色完整形象；動漫族群必備（裝周邊/同人誌/逛展用）；一番賞經典B賞商品",
-                supplier: "本道紙塑-陳先生（主力）",
-                leadTime: "20-25天",
-                rating: "⭐⭐⭐⭐⭐",
-                audience: ["動漫族群"]
-            },
-            {
-                id: 3,
-                rank: "C",
-                rankName: "C賞",
-                type: "束口袋/收納袋",
-                name: "全彩束口袋組合-大+小",
-                price: "RMB 3.0-3.5",
-                quote: "RMB 5.0-6.0",
-                margin: "35-40%",
-                specs: "大袋20×25cm + 小袋12×15cm / 8安帆布 / 棉繩束口",
-                features: "雙袋皆可全彩印刷，大袋裝文具/化妝品，小袋裝耳機/充電線/徽章，束口設計方便，組合價值感高",
-                reason: "一組兩個=雙倍印刷面積呈現IP；可分開使用或組合收藏，滿足蒐藏欲；成本符合目標，適合C賞等級",
-                supplier: "本道紙塑-陳先生（主力）",
-                leadTime: "20-25天",
-                rating: "⭐⭐⭐⭐⭐",
-                audience: ["年輕女性", "動漫族群"]
-            },
-            {
-                id: 4,
-                rank: "D",
-                rankName: "D賞",
-                type: "保冷袋/飲料提袋",
-                name: "全彩保冷飲料提袋",
-                price: "RMB 2.5-3.0",
-                quote: "RMB 4.0-4.8",
-                margin: "35-40%",
-                specs: "底10×10cm，高18cm / 潛水布或帆布+鋁箔 / 提把設計",
-                features: "全彩印刷外層，鋁箔內襯保冷2-3小時，適合手搖飲/咖啡杯，輕便好攜帶",
-                reason: "台灣手搖飲文化=使用頻率極高=品牌曝光度極高；單價低，適合D賞等級（大量發送）；全定制可配合主題",
-                supplier: "1688溫州工廠（專業保冷袋）",
-                leadTime: "20-25天",
-                rating: "⭐⭐⭐⭐",
-                audience: ["年輕女性"]
-            },
-            {
-                id: 5,
-                rank: "E",
-                rankName: "E賞",
-                type: "收納包/餐具袋",
-                name: "全彩餐具收納包",
-                price: "RMB 2.8-3.3",
-                quote: "RMB 4.5-5.0",
-                margin: "35-40%",
-                specs: "25×8cm（展開）/ 8安帆布+內裡滌綸 / 綁帶固定",
-                features: "全彩印刷捲軸式設計，內含餐具固定格層，可搭配環保餐具，外層大面積印刷IP形象",
-                reason: "ESG趨勢+環保餐具風潮=話題性；捲軸展開=大面積印刷呈現；可與保溫便當袋組成「午餐套組」主題",
-                supplier: "本道紙塑-陳先生",
-                leadTime: "20-25天",
-                rating: "⭐⭐⭐⭐",
-                audience: ["年輕女性"]
-            }
-        ];
-
-        // Load Products
-        function loadProducts() {
-            const container = document.getElementById('productsContainer');
-            container.innerHTML = products.map(p => `
-                <div class="product-card" data-id="${p.id}">
-                    <div class="product-header ${p.rank.toLowerCase()}-rank">
-                        <div class="rank-badge">${p.rank}</div>
-                        <div class="product-type">${p.type} · ${p.rankName}</div>
-                        <div class="product-name">${p.name}</div>
-                    </div>
-                    <div class="product-body">
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-tag"></i> 參考成本</span>
-                            <span class="info-value price">${p.price}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-dollar-sign"></i> 建議報價</span>
-                            <span class="info-value">${p.quote}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-percentage"></i> 預估毛利</span>
-                            <span class="info-value" style="color: var(--accent);">${p.margin}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label"><i class="fas fa-ruler"></i> 產品規格</span>
-                        </div>
-                        <div style="font-size: 0.875rem; color: var(--text-muted); padding: 0.5rem 0 1rem;">
-                            ${p.specs}
-                        </div>
-                        
-                        <div class="product-features">
-                            <h4><i class="fas fa-star"></i> 產品特色</h4>
-                            <p>${p.features}</p>
-                        </div>
-                        
-                        <div class="product-features">
-                            <h4><i class="fas fa-check-circle"></i> 為何選這個</h4>
-                            <p>${p.reason}</p>
-                        </div>
-                        
-                        <div class="audience-tags">
-                            ${p.audience.map(a => `<span class="audience-tag"><i class="fas fa-user"></i> ${a}</span>`).join('')}
-                        </div>
-                        
-                        <div class="info-row" style="margin-top: 1rem;">
-                            <span class="info-label"><i class="fas fa-building"></i> 供應商</span>
-                            <span class="supplier-tag">${p.supplier.split('（')[0]}</span>
-                        </div>
-                    </div>
-                    <button class="interest-btn" onclick="toggleInterest(${p.id})">
-                        <i class="far fa-heart"></i> 標記感興趣
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        // Load Comparison Table
-        function loadComparison() {
-            const tbody = document.getElementById('comparisonBody');
-            tbody.innerHTML = products.map(p => `
-                <tr>
-                    <td><strong style="color: var(--primary);">${p.rankName}</strong></td>
-                    <td><strong>${p.name}</strong></td>
-                    <td>${p.price}</td>
-                    <td>${p.quote}</td>
-                    <td style="color: var(--accent); font-weight: 600;">${p.margin}</td>
-                    <td>${p.leadTime}</td>
-                    <td class="rating">${p.rating}</td>
-                </tr>
-            `).join('');
-        }
-
-        // Toggle Interest
-        let interestedProducts = [];
-        
-        function toggleInterest(productId) {
-            const card = document.querySelector(`[data-id="${productId}"]`);
-            const btn = card.querySelector('.interest-btn');
-            const index = interestedProducts.indexOf(productId);
-            
-            if (index > -1) {
-                interestedProducts.splice(index, 1);
-                btn.classList.remove('active');
-                btn.innerHTML = '<i class="far fa-heart"></i> 標記感興趣';
-                showToast('已取消標記');
-            } else {
-                interestedProducts.push(productId);
-                btn.classList.add('active');
-                btn.innerHTML = '<i class="fas fa-heart"></i> 已標記感興趣';
-                showToast(`已標記：${products.find(p => p.id === productId).name}`);
-            }
-            
-            updateInterestCount();
-        }
-
-        function updateInterestCount() {
-            document.getElementById('interestCount').textContent = interestedProducts.length;
-        }
-
-        function showInterested() {
-            if (interestedProducts.length === 0) {
-                showToast('尚未標記任何品項');
-                return;
-            }
-            
-            const names = interestedProducts.map(id => products.find(p => p.id === id)?.name).filter(Boolean);
-            alert(`您感興趣的品項（${interestedProducts.length}個）：\n\n${names.join('\n')}\n\n請截圖或記下品項名稱，聯絡銓宏業務洽談。`);
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMessage').textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProducts();
-            loadComparison();
-        });
     </script>
 </body>
 </html>
