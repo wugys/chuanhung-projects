@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銓宏提案管理後台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2c5282;
+            --secondary: #ed8936;
+            --accent: #38a169;
+            --danger: #e53e3e;
+            --bg-light: #f7fafc;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+        
+        /* Layout */
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--primary);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .sidebar-logo i {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav-menu {
+            padding: 1rem 0;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .nav-badge {
+            margin-left: auto;
+            background: var(--secondary);
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+        
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover { background: #dd6b20; }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--text-dark);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover { background: var(--bg-light); }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        
+        .stat-icon.blue { background: #ebf8ff; color: #3182ce; }
+        .stat-icon.green { background: #f0fff4; color: #38a169; }
+        .stat-icon.orange { background: #fffaf0; color: #ed8936; }
+        .stat-icon.red { background: #fff5f5; color: #e53e3e; }
+        
+        .stat-info h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        
+        .stat-info p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        /* Content Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 1.25rem;
+        }
+        
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            text-align: left;
+            padding: 0.875rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9375rem;
+        }
+        
+        .data-table tr:hover { background: var(--bg-light); }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-active { background: #f0fff4; color: #276749; }
+        .status-pending { background: #fffaf0; color: #c05621; }
+        .status-completed { background: #ebf8ff; color: #2b6cb0; }
+        
+        /* Proposal Row */
+        .proposal-title {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .proposal-meta {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        
+        /* Feedback Item */
+        .feedback-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .feedback-item:last-child { border-bottom: none; }
+        
+        .feedback-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .feedback-content { flex: 1; }
+        
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .feedback-name { font-weight: 600; }
+        
+        .feedback-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .feedback-products {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        
+        .product-chip {
+            background: var(--bg-light);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 1rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-cube"></i>
+                    <span>銓宏提案系統</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" onclick="showSection('dashboard')">
+                    <i class="fas fa-home"></i>
+                    <span>儀表板</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('proposals')">
+                    <i class="fas fa-file-alt"></i>
+                    <span>提案管理</span>
+                    <span class="nav-badge">15</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('feedback')">
+                    <i class="fas fa-comments"></i>
+                    <span>客戶回饋</span>
+                    <span class="nav-badge">3</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('products')">
+                    <i class="fas fa-box"></i>
+                    <span>產品庫</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('reports')">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>報表分析</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section">
+                <div class="page-header">
+                    <h1 class="page-title">儀表板</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="createProposal()">
+                            <i class="fas fa-plus"></i> 新增提案
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-file-alt"></i></div>
+                        <div class="stat-info">
+                            <h3>15</h3>
+                            <p>進行中提案</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">>i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <h3>8</h3>
+                            <p>本月成交</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange">>i class="fas fa-heart"></i></div>
+                        <div class="stat-info">
+                            <h3>12</h3>
+                            <p>客戶回饋</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red">>i class="fas fa-percentage"></i></div>
+                        <div class="stat-info">
+                            <h3>67%</h3>
+                            <p>成交率</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Proposals -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">最近提案</h2>
+                        <button class="btn btn-secondary">查看全部</button>
+                    </div>
+                    <div class="card-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>專案</th>
+                                    <th>客戶</th>
+                                    <th>類型</th>
+                                    <th>狀態</th>
+                                    <th>更新時間</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentProposals">
+                                <!-- Loaded by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recent Feedback -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">最新客戶回饋</h2>
+                        <button class="btn btn-secondary">查看全部</button>
+                    </div>
+                    <div class="card-body" id="recentFeedback">
+                        <!-- Loaded by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mock Data (will be replaced with Supabase data)
+        const mockProposals = [
+            {
+                code: 'A0015-260320',
+                name: '易集一番賞商品提案',
+                customer: '易集 - Rebecca',
+                type: '一番賞',
+                status: 'active',
+                updated: '2小時前'
+            },
+            {
+                code: 'A0014-260319',
+                name: '寶宸手提袋提案',
+                customer: '寶宸 - RAY',
+                type: '企業禮贈',
+                status: 'pending',
+                updated: '1天前'
+            },
+            {
+                code: 'A0013-260317',
+                name: '寶宸織帶提案',
+                customer: '寶宸 - RAY',
+                type: '企業禮贈',
+                status: 'completed',
+                updated: '3天前'
+            }
+        ];
+
+        const mockFeedback = [
+            {
+                name: 'Rebecca',
+                company: '易集',
+                avatar: 'R',
+                products: ['全彩保溫便當袋 (A賞)', '全彩帆布托特包 (B賞)', '全彩束口袋組合 (C賞)'],
+                time: '2小時前'
+            },
+            {
+                name: 'RAY',
+                company: '寶宸',
+                avatar: 'R',
+                products: ['編織袋覆膜手提袋'],
+                time: '1天前'
+            },
+            {
+                name: '名城',
+                company: '台灣銘板',
+                avatar: '名',
+                products: ['五十嵐紙卡+冷錢包'],
+                time: '2天前'
+            }
+        ];
+
+        // Load Dashboard Data
+        function loadDashboard() {
+            // Load proposals
+            const proposalsHtml = mockProposals.map(p => `
+                <tr>
+                    <td>
+                        <div class="proposal-title">${p.name}</div>
+                        <div class="proposal-meta">${p.code}</div>
+                    </td>
+                    <td>${p.customer}</td>
+                    <td>${p.type}</td>
+                    <td>
+                        <span class="status-badge status-${p.status}">
+                            ${p.status === 'active' ? '🟢 進行中' : p.status === 'pending' ? '🟡 待回饋' : '🔵 已完成'}
+                        </span>
+                    </td>
+                    <td>${p.updated}</td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('recentProposals').innerHTML = proposalsHtml;
+
+            // Load feedback
+            const feedbackHtml = mockFeedback.map(f => `
+                <div class="feedback-item">
+                    <div class="feedback-avatar">${f.avatar}</div>
+                    <div class="feedback-content">
+                        <div class="feedback-header">
+                            <span class="feedback-name">${f.name} · ${f.company}</span>
+                            <span class="feedback-time">${f.time}</span>
+                        </div>
+                        <div class="feedback-products">
+                            ${f.products.map(p => `<span class="product-chip"><i class="fas fa-heart"></i> ${p}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('recentFeedback').innerHTML = feedbackHtml;
+        }
+
+        // Navigation
+        function showSection(section) {
+            // Update active nav
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // TODO: Show different sections
+            alert('切換到: ' + section + ' (功能開發中)');
+        }
+
+        function createProposal() {
+            alert('新增提案功能 - 將開啟提案編輯器');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>
