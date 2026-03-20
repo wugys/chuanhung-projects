@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銓宏開發中心 | Dev-Engineer Control Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-light: #10B981;
+            --primary-dark: #047857;
+            --secondary: #34D399;
+            --accent: #8B5CF6;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            
+            --bg: #0B0F19;
+            --bg-light: #151A27;
+            --bg-card: #1E2330;
+            --bg-hover: #2A3040;
+            --bg-code: #0D1117;
+            
+            --text: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            
+            --border: #2D3548;
+            --border-light: #3D4558;
+            
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow: 0 4px 6px rgba(0,0,0,0.4);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
+            --shadow-glow: 0 0 30px rgba(5, 150, 105, 0.3);
+            
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-light);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .brand-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .brand-text span {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        /* Main Container */
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: calc(100vh - 73px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-light);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-card);
+        }
+
+        .nav-item.active {
+            background: rgba(5, 150, 105, 0.15);
+            color: var(--secondary);
+        }
+
+        .nav-item .icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* System Status */
+        .status-panel {
+            padding: 20px;
+            margin-top: auto;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-dot.warning { background: var(--warning); }
+        .status-dot.offline { background: var(--danger); }
+
+        /* Content Area */
+        .content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .content-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .card-icon {
+            font-size: 24px;
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* System List */
+        .system-list {
+            padding: 0 24px 24px;
+        }
+
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .system-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 16px;
+            transition: var(--transition);
+        }
+
+        .system-card:hover {
+            border-color: var(--primary-light);
+        }
+
+        .system-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-light);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .system-info {
+            flex: 1;
+        }
+
+        .system-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .system-path {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 8px;
+        }
+
+        .system-meta {
+            display: flex;
+            gap: 8px;
+        }
+
+        .system-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: var(--secondary); }
+
+        /* Quick Actions */
+        .actions-panel {
+            padding: 0 24px 24px;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .action-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-card:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary-light);
+        }
+
+        .action-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .action-name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Code Editor Panel */
+        .editor-panel {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .editor-panel.active {
+            display: flex;
+        }
+
+        .editor-toolbar {
+            padding: 12px 24px;
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-light);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .file-tree {
+            background: var(--bg-light);
+            border-right: 1px solid var(--border);
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-item:hover {
+            background: var(--bg-card);
+        }
+
+        .code-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .code-tabs {
+            display: flex;
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-tab {
+            padding: 10px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .code-tab.active {
+            border-bottom-color: var(--primary-light);
+            background: var(--bg-card);
+        }
+
+        .code-editor {
+            flex: 1;
+            padding: 16px;
+            background: var(--bg-code);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-y: auto;
+            white-space: pre;
+            tab-size: 4;
+        }
+
+        .code-output {
+            height: 150px;
+            background: var(--bg-light);
+            border-top: 1px solid var(--border);
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            overflow-y: auto;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 14px 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border-left: 4px solid var(--success);
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">🔧</div>
+            <div class="brand-text">
+                <h1>銓宏開發中心</h1>
+                <span>Dev-Engineer Control Panel</span>
+            </div>
+        </div>
+        <div class="header-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="systemCount">4</div>
+                <div class="stat-label">運作中系統</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="scriptCount">12</div>
+                <div class="stat-label">自動化腳本</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="apiCount">3</div>
+                <div class="stat-label">API 整合</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="nav-section">
+                <div class="nav-title">主要功能</div>
+                <div class="nav-menu">
+                    <div class="nav-item active" onclick="showPanel('dashboard')">
+                        <span class="icon">📊</span>
+                        <span>系統儀表板</span>
+                    </div>
+                    <div class="nav-item" onclick="showPanel('scripts')">
+                        <span class="icon">📝</span>
+                        <span>腳本管理</span>
+                    </div>
+                    <div class="nav-item" onclick="showPanel('apis')">
+                        <span class="icon">🔌</span>
+                        <span>API 整合</span>
+                    </div>
+                    <div class="nav-item" onclick="showPanel('database')">
+                        <span class="icon">🗄️</span>
+                        <span>資料庫</span>
+                    </div>
+                    <div class="nav-item" onclick="showPanel('editor')">
+                        <span class="icon">💻</span>
+                        <span>程式編輯器</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">開發工具</div>
+                <div class="nav-menu">
+                    <div class="nav-item" onclick="openTool('git')">
+                        <span class="icon">📦</span>
+                        <span>Git 版本控制</span>
+                    </div>
+                    <div class="nav-item" onclick="openTool('docker')">
+                        <span class="icon">🐳</span>
+                        <span>Docker 容器</span>
+                    </div>
+                    <div class="nav-item" onclick="openTool('logs')">
+                        <span class="icon">📋</span>
+                        <span>系統日誌</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-panel">
+                <div class="nav-title">系統狀態</div>
+                <div class="status-item">
+                    <span>OpenClaw Gateway</span>
+                    <span class="status-dot online"></span>
+                </div>
+                <div class="status-item">
+                    <span>Design Studio</span>
+                    <span class="status-dot online"></span>
+                </div>
+                <div class="status-item">
+                    <span>Supabase</span>
+                    <span class="status-dot warning"></span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content">
+            <!-- Dashboard Panel -->
+            <div class="panel" id="dashboardPanel">
+                <div class="content-header">
+                    <div>
+                        <div class="content-title">系統儀表板</div>
+                        <div class="content-subtitle">銓宏國際技術架構總覽</div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">運作中系統</span>
+                            <span class="card-icon">🖥️</span>
+                        </div>
+                        <div class="card-value" style="color: var(--success);">4</div>
+                        <div class="card-desc">設計工作室、報價系統、生圖工具、專案管理</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">自動化腳本</span>
+                            <span class="card-icon">⚙️</span>
+                        </div>
+                        <div class="card-value" style="color: var(--accent);">12</div>
+                        <div class="card-desc">報價生成、圖像生成、資料處理、備份腳本</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">API 整合</span>
+                            <span class="card-icon">🔌</span>
+                        </div>
+                        <div class="card-value" style="color: var(--warning);">3</div>
+                        <div class="card-desc">Gemini 2.0、Telegram、Kimi API</div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="actions-panel">
+                    <div class="nav-title">快速操作</div>
+                    <div class="actions-grid">
+                        <div class="action-card" onclick="createScript()">
+                            <div class="action-icon">📝</div>
+                            <div class="action-name">新增腳本</div>
+                        </div>
+                        <div class="action-card" onclick="createApi()">
+                            <div class="action-icon">🔌</div>
+                            <div class="action-name">API 整合</div>
+                        </div>
+                        <div class="action-card" onclick="backupSystem()">
+                            <div class="action-icon">💾</div>
+                            <div class="action-name">系統備份</div>
+                        </div>
+                        <div class="action-card" onclick="viewLogs()">
+                            <div class="action-icon">📋</div>
+                            <div class="action-name">查看日誌</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System List -->
+                <div class="system-list">
+                    <div class="nav-title">系統清單</div>
+                    <div class="system-grid">
+                        <div class="system-card">
+                            <div class="system-icon">🎨</div>
+                            <div class="system-info">
+                                <div class="system-name">設計工作室 v2.0</div>
+                                <div class="system-path">dashboard/design-studio-v2.html</div>
+                                <div class="system-meta">
+                                    <span class="system-badge badge-success">運作中</span>
+                                    <span class="system-badge badge-info">Gemini 2.0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="system-card">
+                            <div class="system-icon">💰</div>
+                            <div class="system-info">
+                                <div class="system-name">報價單生成器</div>
+                                <div class="system-path">scripts/quote-generator/</div>
+                                <div class="system-meta">
+                                    <span class="system-badge badge-success">運作中</span>
+                                    <span class="system-badge badge-info">Python</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="system-card">
+                            <div class="system-icon">🖼️</div>
+                            <div class="system-info">
+                                <div class="system-name">AI 圖像生成</div>
+                                <div class="system-path">scripts/image-generation/</div>
+                                <div class="system-meta">
+                                    <span class="system-badge badge-success">運作中</span>
+                                    <span class="system-badge badge-info">Gemini/Wanx</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="system-card">
+                            <div class="system-icon">📊</div>
+                            <div class="system-info">
+                                <div class="system-name">專案管理系統</div>
+                                <div class="system-path">projects/supabase/</div>
+                                <div class="system-meta">
+                                    <span class="system-badge badge-warning">待配置</span>
+                                    <span class="system-badge badge-info">Supabase</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Editor Panel -->
+            <div class="editor-panel" id="editorPanel">
+                <div class="editor-toolbar">
+                    <button class="btn">
+                        <span>📁</span> 開啟檔案
+                    </button>
+                    <button class="btn">
+                        <span>💾</span> 儲存
+                    </button>
+                    <button class="btn btn-primary">
+                        <span>▶️</span> 執行
+                    </button>
+                    <div style="flex: 1;"></div>
+                    <button class="btn" onclick="showPanel('dashboard')">
+                        <span>✕</span> 關閉
+                    </button>
+                </div>
+                <div class="editor-container">
+                    <div class="file-tree">
+                        <div class="nav-title">檔案總管</div>
+                        <div class="file-item">
+                            <span>📁</span> scripts/
+                        </div>
+                        <div class="file-item" style="padding-left: 24px;">
+                            <span>📄</span> generate-image.py
+                        </div>
+                        <div class="file-item" style="padding-left: 24px;">
+                            <span>📄</span> generate-quote.py
+                        </div>
+                        <div class="file-item">
+                            <span>📁</span> dashboard/
+                        </div>
+                        <div class="file-item" style="padding-left: 24px;">
+                            <span>📄</span> design-studio-v2.html
+                        </div>
+                        <div class="file-item">
+                            <span>📁</span> config/
+                        </div>
+                    </div>
+                    <div class="code-area">
+                        <div class="code-tabs">
+                            <div class="code-tab active">
+                                <span>🐍</span> example.py
+                            </div>
+                        </div>
+                        <div class="code-editor" contenteditable="true">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+銓宏國際 - 範例腳本
+由 Dev-Engineer-Agent 生成
+
+用途：說明這個腳本的功能
+"""
+
+def main():
+    """主程式"""
+    print("Hello, 銓宏國際!")
+
+if __name__ == "__main__":
+    main()
+                        </div>
+                        <div class="code-output">
+                            <div style="color: var(--text-muted); margin-bottom: 8px;">輸出：</div>
+                            <div>> 準備就緒...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Show panel
+        function showPanel(panelName) {
+            // Hide all panels
+            document.querySelectorAll('.panel, .editor-panel').forEach(p => {
+                p.style.display = 'none';
+                p.classList.remove('active');
+            });
+            
+            // Show selected panel
+            if (panelName === 'editor') {
+                document.getElementById('editorPanel').style.display = 'flex';
+                document.getElementById('editorPanel').classList.add('active');
+            } else {
+                const panel = document.getElementById(panelName + 'Panel');
+                if (panel) {
+                    panel.style.display = 'block';
+                }
+            }
+            
+            // Update nav active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item')?.classList.add('active');
+        }
+
+        // Quick actions
+        function createScript() {
+            showToast('請使用「程式編輯器」建立新腳本');
+            setTimeout(() => showPanel('editor'), 500);
+        }
+
+        function createApi() {
+            showToast('API 整合功能開發中...');
+        }
+
+        function backupSystem() {
+            showToast('系統備份已啟動');
+        }
+
+        function viewLogs() {
+            showToast('日誌檢視器開發中...');
+        }
+
+        function openTool(tool) {
+            showToast(`${tool} 工具開發中...`);
+        }
+
+        // Show toast
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            showToast('🔧 Dev-Engineer Control Panel 已就緒');
+        });
+    </script>
+</body>
+</html>

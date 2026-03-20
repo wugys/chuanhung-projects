@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales-Agent 業務控制中心 | 銓宏國際</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --secondary: #10B981;
+            --accent: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .quick-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .stat-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+        .stat-icon.red { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+
+        .stat-change {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .stat-change.positive { color: var(--secondary); }
+        .stat-change.negative { color: var(--danger); }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Main Content */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+        }
+
+        /* Tools Panel */
+        .tools-panel {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .tool-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 4px;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+
+        .tool-tab {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .tool-tab:hover {
+            color: var(--text);
+        }
+
+        .tool-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Quick Select */
+        .quick-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .quick-tag {
+            padding: 6px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-tag:hover, .quick-tag.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        /* Client List */
+        .client-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .client-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .client-item:hover {
+            background: #E2E8F0;
+        }
+
+        .client-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .client-info {
+            flex: 1;
+        }
+
+        .client-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .client-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .client-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .client-status.active { background: var(--secondary); }
+        .client-status.pending { background: var(--accent); }
+
+        /* Recent Activity */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-left: 3px solid var(--border);
+        }
+
+        .activity-item.quote { border-left-color: var(--primary); }
+        .activity-item.email { border-left-color: var(--secondary); }
+        .activity-item.call { border-left-color: var(--accent); }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            font-size: 14px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div>
+                    <h1><i class="fas fa-handshake"></i> Sales-Agent 業務控制中心</h1>
+                    <p>客戶溝通、報價準備、需求整理一站式平台</p>
+                </div>
+                <div class="quick-actions">
+                    <button class="quick-btn"><i class="fas fa-plus"></i> 新增客戶</button>
+                    <button class="quick-btn"><i class="fas fa-file-alt"></i> 報價記錄</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                    <span class="stat-change positive"><i class="fas fa-arrow-up"></i> +5</span>
+                </div>
+                <div class="stat-value">48</div>
+                <div class="stat-label">活躍客戶</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <span class="stat-change positive"><i class="fas fa-arrow-up"></i> +12%</span>
+                </div>
+                <div class="stat-value">156</div>
+                <div class="stat-label">本月報價</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+                    <span class="stat-change positive"><i class="fas fa-arrow-down"></i> -15分</span>
+                </div>
+                <div class="stat-value">1.5<span style="font-size:16px">h</span></div>
+                <div class="stat-label">平均回覆時間</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon red"><i class="fas fa-percentage"></i></div>
+                    <span class="stat-change positive"><i class="fas fa-arrow-up"></i> +8%</span>
+                </div>
+                <div class="stat-value">32%</div>
+                <div class="stat-label">報價成交率</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Tools Panel -->
+            <div class="tools-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">業務工具</h2>
+                </div>
+
+                <div class="tool-tabs">
+                    <button class="tool-tab active">報價單</button>
+                    <button class="tool-tab">客戶回覆</button>
+                    <button class="tool-tab">需求整理</button>
+                </div>
+
+                <!-- Quote Form -->
+                <div class="tab-content">
+                    <div class="form-group">
+                        <label class="form-label">客戶名稱</label>
+                        <select class="form-select">
+                            <option>選擇客戶...</option>
+                            <option>客主創意 - 枸杞</option>
+                            <option>客主創意 - KAKA</option>
+                            <option>台灣銘版 - 名城</option>
+                            <option>台灣銘版 - 黃大哥</option>
+                            <option>鴻祥 - 魏先生</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">產品名稱</label>
+                        <input type="text" class="form-input" placeholder="例如：壓克力立牌">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">規格描述</label>
+                        <input type="text" class="form-input" placeholder="例如：3mm透明壓克力，UV直噴">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">數量</label>
+                        <div style="display:flex;gap:8px">
+                            <input type="number" class="form-input" placeholder="5000" style="flex:1">
+                            <select class="form-select" style="width:100px">
+                                <option>個</option>
+                                <option>組</option>
+                                <option>件</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">參考單價</label>
+                        <div class="quick-select">
+                            <span class="quick-tag">$35-40</span>
+                            <span class="quick-tag">$40-45</span>
+                            <span class="quick-tag">$45-50</span>
+                            <span class="quick-tag">$50+</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">備註</label>
+                        <textarea class="form-textarea" placeholder="特殊要求、交期注意事項等..."></textarea>
+                    </div>
+
+                    <button class="generate-btn">
+                        <i class="fas fa-file-invoice"></i>
+                        生成報價單草稿
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Quick Clients -->
+                <div class="sidebar-card">
+                    <div class="panel-header">
+                        <h3 class="panel-title">快速選擇客戶</h3>
+                        <a href="#" style="font-size:13px;color:var(--primary)">查看全部</a>
+                    </div>
+                    <div class="client-list">
+                        <div class="client-item">
+                            <div class="client-avatar">枸</div>
+                            <div class="client-info">
+                                <div class="client-name">客主創意 - 枸杞</div>
+                                <div class="client-meta">年訂單 16-20萬 | 立牌主力</div>
+                            </div>
+                            <div class="client-status active"></div>
+                        </div>
+                        <div class="client-item">
+                            <div class="client-avatar">名</div>
+                            <div class="client-info">
+                                <div class="client-name">台灣銘版 - 名城</div>
+                                <div class="client-meta">悠遊卡定制 | 進行中 3案</div>
+                            </div>
+                            <div class="client-status active"></div>
+                        </div>
+                        <div class="client-item">
+                            <div class="client-avatar">魏</div>
+                            <div class="client-info">
+                                <div class="client-name">鴻祥 - 魏先生</div>
+                                <div class="client-meta">兒童節禮品 | 提案中</div>
+                            </div>
+                            <div class="client-status pending"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="sidebar-card">
+                    <div class="panel-header">
+                        <h3 class="panel-title">最近活動</h3>
+                    </div>
+                    <div class="activity-list">
+                        <div class="activity-item quote">
+                            <div class="activity-icon"><i class="fas fa-file-invoice"></i></div>
+                            <div class="activity-content">
+                                <div class="activity-title">提交報價單 - 客主壓克力立牌</div>
+                                <div class="activity-time">30分鐘前</div>
+                            </div>
+                        </div>
+                        <div class="activity-item email">
+                            <div class="activity-icon"><i class="fas fa-envelope"></i></div>
+                            <div class="activity-content">
+                                <div class="activity-title">草擬回覆 - 名城詢問交期</div>
+                                <div class="activity-time">2小時前</div>
+                            </div>
+                        </div>
+                        <div class="activity-item call">
+                            <div class="activity-icon"><i class="fas fa-phone"></i></div>
+                            <div class="activity-content">
+                                <div class="activity-title">電話記錄 - 魏先生確認規格</div>
+                                <div class="activity-time">4小時前</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tool-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+
+        // Quick tag selection
+        document.querySelectorAll('.quick-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html>

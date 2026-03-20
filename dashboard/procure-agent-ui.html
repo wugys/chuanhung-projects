@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procure-Agent 採購控制中心 | 銓宏國際</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #F59E0B;
+            --primary-dark: #D97706;
+            --secondary: #10B981;
+            --info: #06B6D4;
+            --danger: #EF4444;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .quick-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+        .stat-icon.blue { background: rgba(6, 182, 212, 0.1); color: #06B6D4; }
+        .stat-icon.red { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+
+        .stat-change {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .stat-change.positive { color: var(--secondary); }
+        .stat-change.negative { color: var(--danger); }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Main Content */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+        }
+
+        /* Supplier Section */
+        .suppliers-panel {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-tab {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: none;
+            background: var(--bg);
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-tab:hover, .filter-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Supplier Cards */
+        .supplier-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .supplier-card {
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 12px;
+            border-left: 4px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .supplier-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .supplier-card.grade-a { border-left-color: var(--secondary); }
+        .supplier-card.grade-b { border-left-color: var(--primary); }
+        .supplier-card.grade-c { border-left-color: var(--danger); }
+
+        .supplier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .supplier-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .supplier-grade {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .supplier-grade.a { background: rgba(16, 185, 129, 0.1); color: #059669; }
+        .supplier-grade.b { background: rgba(245, 158, 11, 0.1); color: #D97706; }
+        .supplier-grade.c { background: rgba(239, 68, 68, 0.1); color: #DC2626; }
+
+        .supplier-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .info-item {
+            font-size: 13px;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-weight: 500;
+        }
+
+        .supplier-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag {
+            padding: 4px 8px;
+            background: white;
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Inquiry Panel */
+        .inquiry-panel {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* Quick Select */
+        .quick-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .quick-tag {
+            padding: 6px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-tag:hover, .quick-tag.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Tracking Section */
+        .tracking-section {
+            margin-top: 24px;
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .tracking-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .tracking-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 10px;
+        }
+
+        .tracking-status {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .tracking-status.ordered { background: rgba(6, 182, 212, 0.1); color: #06B6D4; }
+        .tracking-status.producing { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+        .tracking-status.shipping { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+
+        .tracking-info {
+            flex: 1;
+        }
+
+        .tracking-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .tracking-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .tracking-date {
+            text-align: right;
+        }
+
+        .tracking-date .date {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .tracking-date .label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .supplier-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div>
+                    <h1><i class="fas fa-shopping-cart"></i> Procure-Agent 採購控制中心</h1>
+                    <p>供應商管理、詢價比價、交期追蹤一站式平台</p>
+                </div>
+                <div class="quick-actions">
+                    <button class="quick-btn"><i class="fas fa-plus"></i> 新增供應商</button>
+                    <button class="quick-btn"><i class="fas fa-file-alt"></i> 詢價記錄</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon orange"><i class="fas fa-truck"></i></div>
+                    <span class="stat-change positive">+2</span>
+                </div>
+                <div class="stat-value">8</div>
+                <div class="stat-label">合作供應商</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                    <span class="stat-change positive">95%</span>
+                </div>
+                <div class="stat-value">42</div>
+                <div class="stat-label">本月詢價</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+                    <span class="stat-change negative">-30分</span>
+                </div>
+                <div class="stat-value">3.5<span style="font-size:16px">h</span></div>
+                <div class="stat-label">平均詢價時效</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                    <span class="stat-change">注意</span>
+                </div>
+                <div class="stat-value">2</div>
+                <div class="stat-label">待追蹤交期</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Suppliers Panel -->
+            <div class="suppliers-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">供應商資料庫</h2>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active">全部</button>
+                        <button class="filter-tab">A級</button>
+                        <button class="filter-tab">B級</button>
+                    </div>
+                </div>
+
+                <div class="supplier-list">
+                    <div class="supplier-card grade-a">
+                        <div class="supplier-header">
+                            <span class="supplier-name">🔥 雷射加工 - 小廖</span>
+                            <span class="supplier-grade a">A級</span>
+                        </div>
+                        <div class="supplier-info">
+                            <div class="info-item">
+                                <div class="info-label">專長</div>
+                                <div class="info-value">雷射雕刻/切割</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">回覆速度</div>
+                                <div class="info-value"><i class="fas fa-bolt"></i> 快速</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">最近交易</div>
+                                <div class="info-value">3天前</div>
+                            </div>
+                        </div>
+                        <div class="supplier-tags">
+                            <span class="tag">木板加工</span>
+                            <span class="tag">壓克力切割</span>
+                            <span class="tag">團體服</span>
+                        </div>
+                    </div>
+
+                    <div class="supplier-card grade-a">
+                        <div class="supplier-header">
+                            <span class="supplier-name">嘉鴻泰 - 任總</span>
+                            <span class="supplier-grade a">A級</span>
+                        </div>
+                        <div class="supplier-info">
+                            <div class="info-item">
+                                <div class="info-label">專長</div>
+                                <div class="info-value">絨毛玩具</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">回覆速度</div>
+                                <div class="info-value"><i class="fas fa-bolt"></i> 快速</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">最近交易</div>
+                                <div class="info-value">1週前</div>
+                            </div>
+                        </div>
+                        <div class="supplier-tags">
+                            <span class="tag">絨毛娃娃</span>
+                            <span class="tag">客製玩具</span>
+                        </div>
+                    </div>
+
+                    <div class="supplier-card grade-b">
+                        <div class="supplier-header">
+                            <span class="supplier-name">本道紙塑 - 陳先生</span>
+                            <span class="supplier-grade b">B級</span>
+                        </div>
+                        <div class="supplier-info">
+                            <div class="info-item">
+                                <div class="info-label">專長</div>
+                                <div class="info-value">壓克力製品</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">回覆速度</div>
+                                <div class="info-value">一般</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">最近交易</div>
+                                <div class="info-value">進行中</div>
+                            </div>
+                        </div>
+                        <div class="supplier-tags">
+                            <span class="tag">壓克力立牌</span>
+                            <span class="tag">帆布袋</span>
+                            <span class="tag">無紡布袋</span>
+                        </div>
+                    </div>
+
+                    <div class="supplier-card grade-b">
+                        <div class="supplier-header">
+                            <span class="supplier-name">佑展 - 小郭</span>
+                            <span class="supplier-grade b">B級</span>
+                        </div>
+                        <div class="supplier-info">
+                            <div class="info-item">
+                                <div class="info-label">專長</div>
+                                <div class="info-value">紙盒包裝</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">回覆速度</div>
+                                <div class="info-value">一般</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">最近交易</div>
+                                <div class="info-value">2週前</div>
+                            </div>
+                        </div>
+                        <div class="supplier-tags">
+                            <span class="tag">彩盒</span>
+                            <span class="tag">包裝盒</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inquiry Panel -->
+            <div class="inquiry-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">快速詢價</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">選擇供應商</label>
+                    <select class="form-select">
+                        <option>選擇供應商...</option>
+                        <option>雷射加工 - 小廖</option>
+                        <option>本道紙塑 - 陳先生</option>
+                        <option>佑展 - 小郭</option>
+                        <option>嘉鴻泰 - 任總</option>
+                        <option>澤洋 - 陳小姐</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">產品名稱</label>
+                    <input type="text" class="form-input" placeholder="例如：壓克力立牌">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">規格描述</label>
+                    <input type="text" class="form-input" placeholder="例如：3mm透明壓克力">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">數量</label>
+                    <input type="number" class="form-input" placeholder="5000">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">詢價項目</label>
+                    <div class="quick-select">
+                        <span class="quick-tag active">單價</span>
+                        <span class="quick-tag active">打樣費</span>
+                        <span class="quick-tag">運費</span>
+                        <span class="quick-tag active">交期</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">備註</label>
+                    <textarea class="form-textarea" placeholder="特殊要求、參考價格等..."></textarea>
+                </div>
+
+                <button class="generate-btn">
+                    <i class="fas fa-paper-plane"></i>
+                    生成詢價單
+                </button>
+            </div>
+        </div>
+
+        <!-- Tracking Section -->
+        <div class="tracking-section">
+            <div class="panel-header">
+                <h2 class="panel-title">交期追蹤</h2>
+                <a href="#" style="font-size:13px;color:var(--primary)">查看全部</a>
+            </div>
+
+            <div class="tracking-list">
+                <div class="tracking-item">
+                    <div class="tracking-status producing"><i class="fas fa-cog"></i></div>
+                    <div class="tracking-info">
+                        <div class="tracking-title">A0001-260302 壓克力鑰匙圈</div>
+                        <div class="tracking-meta">本道紙塑 · 生產中 · 4000個</div>
+                    </div>
+                    <div class="tracking-date">
+                        <div class="date">3/31</div>
+                        <div class="label">約定交期</div>
+                    </div>
+                </div>
+
+                <div class="tracking-item">
+                    <div class="tracking-status ordered"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="tracking-info">
+                        <div class="tracking-title">A0008-260316 花朵皮革鏡子</div>
+                        <div class="tracking-meta">易集-Rebecca · 已下單 · 75000個</div>
+                    </div>
+                    <div class="tracking-date">
+                        <div class="date">4/25</div>
+                        <div class="label">約定交期</div>
+                    </div>
+                </div>
+
+                <div class="tracking-item">
+                    <div class="tracking-status shipping"><i class="fas fa-truck"></i></div>
+                    <div class="tracking-info">
+                        <div class="tracking-title">A0004-260310 無紡布覆膜袋</div>
+                        <div class="tracking-meta">本道紙塑 · 運送中 · 30000個</div>
+                    </div>
+                    <div class="tracking-date">
+                        <div class="date">3/20</div>
+                        <div class="label">預計到貨</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+
+        // Quick tag selection
+        document.querySelectorAll('.quick-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html>
