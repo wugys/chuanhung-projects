@@ -2,8 +2,8 @@
 // 使用 Supabase Auth + JWT + Custom Claims
 
 // Supabase 配置
-const SUPABASE_URL = 'https://roszrhrmuvwmnutvgxaer.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvc3pyaHJtdXZtbnV0dmd4YWVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4ODIzMzgsImV4cCI6MjA5NDU4MzM4fQ.jWmEeNdsdEuX05P9FOHgrIpz9g_Qlz9dNFvPehQr-1c';
+const SUPABASE_URL = 'https://djvyozmdenvzlbyieyss.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdnlvem1kZW52emxieWlleXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTA1ODcsImV4cCI6MjA4OTY4NjU4N30.xc33MXQmbNph4EcFHwNbmai3dXDanIj2VKStJ6Xy2Tg';
 
 // 初始化 Supabase 客戶端
 let supabaseClient = null;
