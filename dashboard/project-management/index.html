@@ -7,6 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>銓宏國際 - 專案管理系統</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
@@ -24,6 +25,16 @@
                     <a href="../../index.html" class="back-to-main-btn">
                         <i class="fas fa-home"></i> 回主系統
                     </a>
+                    <button class="btn-add-project" onclick="openAddProjectModal()">
+                        <i class="fas fa-plus-circle"></i> 新增專案
+                    </button>
+                    <div class="user-info" id="user-info">
+                        <span class="user-role" id="user-role"></span>
+                        <span class="user-name" id="user-name"></span>
+                        <button onclick="logout()" class="btn-logout">
+                            <i class="fas fa-sign-out-alt"></i> 登出
+                        </button>
+                    </div>
                 </div>
                 <div class="status-bar-badges">
                     <span class="badge urgent">🔴 緊急: <span id="urgent-count">0</span></span>
@@ -183,9 +194,101 @@
                 <div id="todo-modal-body"></div>
             </div>
         </div>
+        <!-- 新增專案彈窗 -->
+        <div id="add-project-modal" class="modal">
+            <div class="modal-content add-project-modal-content">
+                <span class="close-btn" onclick="closeAddProjectModal()">×</span>
+                <h2>📋 新增專案</h2>
+                <form id="add-project-form" onsubmit="submitNewProject(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>專案編號 <span class="required">*</span></label>
+                            <input type="text" id="new-project-id" required readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>客戶名稱 <span class="required">*</span></label>
+                            <select id="new-project-client" required>
+                                <option value="">選擇客戶</option>
+                                <option value="客主創意">客主創意</option>
+                                <option value="易集">易集</option>
+                                <option value="葉林傳">葉林傳</option>
+                                <option value="new">+ 新增客戶</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>產品名稱 <span class="required">*</span></label>
+                            <input type="text" id="new-project-name" placeholder="例如：NFC 鑰匙圈" required>
+                        </div>
+                        <div class="form-group">
+                            <label>產品類型 <span class="required">*</span></label>
+                            <select id="new-project-type" required>
+                                <option value="">選擇類型</option>
+                                <option value="印刷類">印刷類</option>
+                                <option value="紙盒包裝">紙盒包裝</option>
+                                <option value="紙置物架">紙置物架</option>
+                                <option value="高周波">高周波</option>
+                                <option value="微量射出">微量射出</option>
+                                <option value="矽膠">矽膠</option>
+                                <option value="五金飾品">五金飾品</option>
+                                <option value="絨毛玩具">絨毛玩具</option>
+                                <option value="皮革">皮革</option>
+                                <option value="包袋">包袋</option>
+                                <option value="紡織">紡織</option>
+                                <option value="3D列印">3D列印</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>數量 <span class="required">*</span></label>
+                            <input type="number" id="new-project-quantity" placeholder="1000" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>預計交期 <span class="required">*</span></label>
+                            <input type="date" id="new-project-deadline" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>目前階段 <span class="required">*</span></label>
+                            <select id="new-project-phase" required>
+                                <option value="">選擇階段</option>
+                                <option value="proposing">💡 提案</option>
+                                <option value="quoting">📋 報價</option>
+                                <option value="sampling">🔨 打樣</option>
+                                <option value="production">🏭 生產</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>負責業務 <span class="required">*</span></label>
+                            <select id="new-project-sales" required>
+                                <option value="">選擇業務</option>
+                                <option value="姿姿">姿姿</option>
+                                <option value="Betty">Betty</option>
+                                <option value="Kevin">Kevin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>備註</label>
+                        <textarea id="new-project-notes" rows="3" placeholder="其他說明..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeAddProjectModal()">取消</button>
+                        <button type="submit" class="btn-primary">✅ 建立專案</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <!-- 認證模組 -->
+    <script src="../auth.js"></script>
     <script src="app.js?v=11"></script>
 </body>
 </html>
