@@ -75,7 +75,7 @@
 👉 https://wugys.github.io/chuanhung-projects/dashboard/
 
 **各模組直達**：
-- 專案管理：https://wugys.github.io/chuanhung-projects/project-dashboard-web/
+- 專案管理：https://wugys.github.io/chuanhung-projects/dashboard/project-management/
 - 客戶管理：https://wugys.github.io/chuanhung-projects/dashboard/clients.html
 - AI 團隊指揮：https://wugys.github.io/chuanhung-projects/dashboard/eva-command.html
 - 設計中心：https://wugys.github.io/chuanhung-projects/dashboard/design-agent-ui.html
