@@ -414,14 +414,15 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 判斷是否為打樣後階段（顯示按鈕）
-    const showButtons = project.phase === 'sampling' || project.phase === 'production';
-    const buttonsHtml = showButtons ? `
+    // 所有專案都顯示四個按鈕
+    const buttonsHtml = `
         <div class="card-buttons">
-            <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 顯示甘特圖</button>
-            <button class="btn-todo" onclick="event.stopPropagation(); showProjectTodo('${project.id}')">📝 顯示待辦事項</button>
+            <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
+            <button class="btn-todo" onclick="event.stopPropagation(); showProjectTodo('${project.id}')">📝 待辦事項</button>
+            <button class="btn-all-tasks" onclick="event.stopPropagation(); showProjectAllTasks('${project.id}')">📋 全部事項</button>
+            <button class="btn-update" onclick="event.stopPropagation(); showProgressUpdate('${project.id}')">➕ 新進度回報</button>
         </div>
-    ` : '';
+    `;
     
     card.innerHTML = `
         <div class="card-header">
@@ -443,16 +444,11 @@ function createProjectCard(project) {
     `;
     
     // 點擊卡片顯示詳情（按鈕除外）
-    if (!showButtons) {
-        card.onclick = () => showProjectDetail(project);
-    } else {
-        // 打樣後階段點擊標題區域顯示詳情
-        card.onclick = (e) => {
-            if (!e.target.closest('.card-buttons')) {
-                showProjectDetail(project);
-            }
-        };
-    }
+    card.onclick = (e) => {
+        if (!e.target.closest('.card-buttons')) {
+            showProjectDetail(project);
+        }
+    };
     
     return card;
 }
@@ -944,6 +940,157 @@ function showProjectTodo(projectId) {
 // 關閉待辦事項彈窗
 function closeTodoModal() {
     document.getElementById('todo-modal').classList.remove('active');
+}
+
+// 顯示全部事項
+function showProjectAllTasks(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    const modal = document.getElementById('todo-modal');
+    const title = document.getElementById('todo-modal-title');
+    const body = document.getElementById('todo-modal-body');
+    
+    title.innerHTML = `📋 ${project.name} - 全部事項`;
+    
+    // 顯示所有任務
+    let allTasksHtml = `
+        <div class="all-tasks-list">
+            <div class="task-stats">
+                <span class="stat-item">📊 總任務: ${project.tasks.length}</span>
+                <span class="stat-item">✅ 已完成: ${project.tasks.filter(t => t.progress === 100).length}</span>
+                <span class="stat-item">🔄 進行中: ${project.tasks.filter(t => t.progress > 0 && t.progress < 100).length}</span>
+                <span class="stat-item">⏳ 未開始: ${project.tasks.filter(t => t.progress === 0).length}</span>
+            </div>
+    `;
+    
+    project.tasks.forEach((task, index) => {
+        const statusClass = task.progress === 100 ? 'completed' : task.progress > 0 ? 'in-progress' : 'pending';
+        const statusText = task.progress === 100 ? '✅ 已完成' : task.progress > 0 ? '🔄 進行中' : '⏳ 未開始';
+        
+        allTasksHtml += `
+            <div class="task-item ${statusClass}">
+                <div class="task-header">
+                    <span class="task-number">#${index + 1}</span>
+                    <span class="task-status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="task-name">${task.name}</div>                <div class="task-meta">
+                    <span>📅 ${task.start} ~ ${task.end}</span>
+                    <span class="task-progress">${task.progress}%</span>
+                </div>
+                <div class="task-progress-bar">
+                    <div class="task-progress-fill" style="width: ${task.progress}%"></div>
+                </div>
+            </div>
+        `;
+    });
+    
+    allTasksHtml += '</div>';
+    body.innerHTML = allTasksHtml;
+    modal.classList.add('active');
+}
+
+// 顯示新進度回報表單
+function showProgressUpdate(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    const modal = document.getElementById('todo-modal');
+    const title = document.getElementById('todo-modal-title');
+    const body = document.getElementById('todo-modal-body');
+    
+    title.innerHTML = `➕ ${project.name} - 新進度回報`;
+    
+    // 生成任務選項
+    const taskOptions = project.tasks.map((task, index) => 
+        `<option value="${index}">${task.name} (目前: ${task.progress}%)</option>`
+    ).join('');
+    
+    body.innerHTML = `
+        <form id="progress-update-form" class="progress-update-form">
+            <div class="form-group">
+                <label>📋 選擇任務</label>
+                <select id="update-task-select" class="form-select">
+                    <option value="">請選擇任務...</option>
+                    ${taskOptions}
+                    <option value="new">➕ 新增任務</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="new-task-group" style="display:none;">
+                <label>📝 新任務名稱</label>
+                <input type="text" id="new-task-name" class="form-input" placeholder="輸入任務名稱">
+            </div>
+            
+            <div class="form-group">
+                <label>📊 完成進度 (%)</label>
+                <input type="range" id="update-progress" class="form-range" min="0" max="100" value="0"
+                       oninput="document.getElementById('progress-value').textContent = this.value + '%'">
+                <span id="progress-value" class="progress-value">0%</span>
+            </div>
+            
+            <div class="form-group">
+                <label>💬 進度說明</label>
+                <textarea id="update-note" class="form-textarea" rows="3" placeholder="請描述本次進度更新內容..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>👤 回報人</label>
+                <select id="update-reporter" class="form-select">
+                    <option value="Kevin">Kevin</option>
+                    <option value="姿姿">姿姿</option>
+                    <option value="Betty">Betty</option>
+                    <option value="Mia">Mia</option>
+                    <option value="Yaryna">Yaryna</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="closeTodoModal()">❌ 取消</button>
+                <button type="button" class="btn-submit" onclick="submitProgressUpdate('${project.id}')">✅ 提交回報</button>
+            </div>
+        </form>
+    `;
+    
+    // 新增任務選項切換
+    document.getElementById('update-task-select').addEventListener('change', function() {
+        const newTaskGroup = document.getElementById('new-task-group');
+        if (this.value === 'new') {
+            newTaskGroup.style.display = 'block';
+        } else if (this.value !== '') {
+            newTaskGroup.style.display = 'none';
+            // 自動帶入目前進度
+            const taskIndex = parseInt(this.value);
+            if (!isNaN(taskIndex) && project.tasks[taskIndex]) {
+                document.getElementById('update-progress').value = project.tasks[taskIndex].progress;
+                document.getElementById('progress-value').textContent = project.tasks[taskIndex].progress + '%';
+            }
+        }
+    });
+    
+    modal.classList.add('active');
+}
+
+// 提交進度回報
+function submitProgressUpdate(projectId) {
+    const taskSelect = document.getElementById('update-task-select');
+    const progress = document.getElementById('update-progress').value;
+    const note = document.getElementById('update-note').value;
+    const reporter = document.getElementById('update-reporter').value;
+    
+    if (!taskSelect.value) {
+        alert('請選擇任務');
+        return;
+    }
+    
+    // 這裡可以加入實際的資料儲存邏輯
+    // 目前先顯示成功訊息
+    alert(`✅ 進度回報已提交！\n\n專案: ${projectId}\n回報人: ${reporter}\n進度: ${progress}%\n說明: ${note || '無'}`);
+    
+    closeTodoModal();
+    
+    // 重新渲染專案列表
+    renderAllViews();
 }
 
 // 點擊彈窗外關閉
