@@ -1,0 +1,1193 @@
+/* 銓宏國際專案管理系統 - 樣式 */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 標題區 */
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.status-bar {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.badge.urgent { background: #fee; color: #c33; }
+.badge.active { background: #ffeaa7; color: #b7791f; }
+.badge.completed { background: #d4edda; color: #155724; }
+
+.update-time {
+    margin-left: auto;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* 導航標籤 */
+.nav-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    background: #f0f0f0;
+}
+
+.tab-btn.active {
+    background: #667eea;
+    color: white;
+}
+
+.tab-btn.export-btn {
+    margin-left: auto;
+    background: #28a745;
+    color: white;
+    font-weight: 600;
+}
+
+.tab-btn.export-btn:hover {
+    background: #218838;
+}
+
+/* 視圖區域 */
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+}
+
+/* 區塊標題 */
+h2 {
+    margin: 25px 0 15px;
+    font-size: 20px;
+    color: #444;
+    border-left: 4px solid #667eea;
+    padding-left: 12px;
+}
+
+/* 專案卡片網格 */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+/* 專案卡片 */
+.project-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid #ddd;
+}
+
+.project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.project-card.urgent { border-left-color: #e74c3c; }
+.project-card.active { border-left-color: #f39c12; }
+.project-card.completed { border-left-color: #27ae60; }
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.card-id {
+    font-size: 12px;
+    color: #888;
+    font-family: monospace;
+}
+
+.card-status {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.card-status.urgent { background: #fee; color: #c33; }
+.card-status.active { background: #ffeaa7; color: #b7791f; }
+.card-status.completed { background: #d4edda; color: #155724; }
+
+.card-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.card-client {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 12px;
+}
+
+/* 進度條 */
+.progress-bar {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.3s;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+    text-align: right;
+}
+
+/* 甘特圖 - 全局詳細任務（固定表頭 + 可折疊） */
+.gantt-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* 甘特圖外層容器 */
+.gantt-wrapper {
+    position: relative;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 固定表頭 */
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+}
+
+/* 滾動內容區 */
+.gantt-scroll-container {
+    overflow-y: auto;
+    overflow-x: auto;
+    max-height: 500px;
+    padding-top: 10px;
+}
+
+.gantt-timeline-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    min-width: 800px;
+}
+
+.gantt-task-label {
+    width: 220px;
+    font-size: 14px;
+    flex-shrink: 0;
+    padding-right: 15px;
+}
+
+.gantt-task-label.project-name {
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 折疊圖示 */
+.collapse-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #667eea;
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.gantt-project-row.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.gantt-day-label {
+    position: absolute;
+    font-size: 11px;
+    color: #888;
+    transform: translateX(-50%);
+}
+
+/* 專案容器 */
+.gantt-project-container {
+    margin-bottom: 5px;
+}
+
+/* 可點擊的專案標題列 */
+.gantt-project-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+    margin-bottom: 2px;
+    min-width: 800px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-radius: 4px;
+}
+
+.gantt-project-row:hover {
+    background: #e9ecef;
+}
+
+.gantt-project-row.collapsed {
+    margin-bottom: 8px;
+}
+
+/* 專案時間條 */
+.gantt-project-bar {
+    position: absolute;
+    height: 28px;
+    top: 3px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.gantt-project-bar.urgent {
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+
+.gantt-project-bar.active {
+    background: linear-gradient(90deg, #f39c12, #e67e22);
+}
+
+.project-date-range {
+    white-space: nowrap;
+}
+
+/* 任務容器（可折疊） */
+.gantt-tasks-container {
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.gantt-tasks-container.expanded {
+    max-height: 500px;
+    opacity: 1;
+}
+
+.gantt-tasks-container.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+
+.gantt-task-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    min-width: 800px;
+    background: white;
+}
+
+.gantt-task-row:hover {
+    background: #fafbfc;
+}
+
+.gantt-timeline-track {
+    flex: 1;
+    position: relative;
+    height: 32px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.gantt-timeline-track-header {
+    flex: 1;
+    position: relative;
+    height: 30px;
+}
+
+.gantt-task-bar {
+    position: absolute;
+    height: 26px;
+    top: 3px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: white;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.gantt-task-bar.completed {
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+}
+
+.gantt-task-bar.in-progress {
+    background: linear-gradient(90deg, #f39c12, #f1c40f);
+}
+
+.gantt-task-bar.pending {
+    background: linear-gradient(90deg, #95a5a6, #bdc3c7);
+}
+
+.task-progress {
+    height: 100%;
+    background: rgba(255,255,255,0.3);
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.task-date {
+    position: relative;
+    z-index: 1;
+    padding: 0 8px;
+    white-space: nowrap;
+    font-size: 10px;
+}
+
+.task-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    margin-right: 8px;
+}
+
+.overdue-badge {
+    background: #e74c3c;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 8px;
+}
+
+.project-status {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 8px;
+}
+
+.project-status.urgent { background: #fee; color: #c33; }
+.project-status.active { background: #ffeaa7; color: #b7791f; }
+
+.gantt-separator {
+    height: 10px;
+    border-bottom: 1px dashed #ddd;
+    margin-bottom: 10px;
+}
+
+/* 舊版甘特圖兼容 */
+.gantt-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.gantt-label {
+    width: 200px;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.gantt-timeline {
+    flex: 1;
+    position: relative;
+    height: 30px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.gantt-bar {
+    position: absolute;
+    height: 24px;
+    top: 3px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    white-space: nowrap;
+}
+
+.gantt-bar.urgent { background: #e74c3c; }
+.gantt-bar.active { background: #f39c12; }
+.gantt-bar.completed { background: #27ae60; }
+
+/* 表格 */
+.project-table {
+    width: 100%;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-collapse: collapse;
+}
+
+.project-table th,
+.project-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.project-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+}
+
+.project-table tr:hover {
+    background: #f8f9fa;
+}
+
+/* 彈窗 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 800px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 12px;
+    padding: 30px;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+/* 專案詳情樣式 */
+.project-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.info-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.info-value.text-urgent {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.project-progress-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.progress-percent {
+    font-size: 20px;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.progress-bar.large {
+    height: 12px;
+}
+
+/* 專案甘特圖 */
+.project-gantt-section {
+    margin: 25px 0;
+}
+
+.project-gantt-section h3 {
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #444;
+}
+
+.project-gantt-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    overflow-x: auto;
+}
+
+.project-gantt-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 2px solid #667eea;
+    margin-bottom: 10px;
+    min-width: 600px;
+}
+
+.project-gantt-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+    min-width: 600px;
+}
+
+.gantt-label-col {
+    width: 200px;
+    flex-shrink: 0;
+    padding-right: 15px;
+}
+
+.gantt-timeline-col {
+    flex: 1;
+    position: relative;
+    height: 28px;
+    background: #e9ecef;
+    border-radius: 4px;
+}
+
+.task-timeline-bar {
+    position: absolute;
+    height: 22px;
+    top: 3px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.task-timeline-bar.completed {
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+}
+
+.task-timeline-bar.in-progress {
+    background: linear-gradient(90deg, #f39c12, #f1c40f);
+}
+
+.task-timeline-bar.pending {
+    background: linear-gradient(90deg, #95a5a6, #bdc3c7);
+}
+
+.task-progress-fill {
+    height: 100%;
+    background: rgba(255,255,255,0.3);
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.task-progress-text {
+    position: relative;
+    z-index: 1;
+    padding: 0 8px;
+    font-size: 11px;
+    color: white;
+    font-weight: 600;
+}
+
+.task-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.task-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.task-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.task-dates {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.badge-overdue {
+    background: #e74c3c;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 8px;
+}
+
+.day-marker {
+    position: absolute;
+    font-size: 10px;
+    color: #888;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.day-marker.today {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.day-marker.today::before {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 20px;
+    background: #e74c3c;
+}
+
+/* 任務清單 */
+.project-tasks-section {
+    margin: 25px 0;
+}
+
+.project-tasks-section h3 {
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #444;
+}
+
+.task-list {
+    list-style: none;
+    padding: 0;
+}
+
+.task-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #667eea;
+}
+
+.task-item.overdue {
+    border-left-color: #e74c3c;
+    background: #fff5f5;
+}
+
+.task-main {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.task-status-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.task-progress-bar {
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.task-progress-bar .task-progress-fill {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    position: relative;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header {
+        padding: 20px;
+    }
+    
+    .header h1 {
+        font-size: 22px;
+    }
+    
+    .nav-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        flex: 1;
+        min-width: 100px;
+    }
+    
+    .project-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .project-table {
+        font-size: 13px;
+    }
+    
+    .project-table th,
+    .project-table td {
+        padding: 8px 10px;
+    }
+}
+
+/* 卡片按鈕 */
+.card-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e9ecef;
+}
+
+.card-buttons button {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-gantt {
+    background: #667eea;
+    color: white;
+}
+
+.btn-gantt:hover {
+    background: #5a6fd6;
+}
+
+.btn-todo {
+    background: #48bb78;
+    color: white;
+}
+
+.btn-todo:hover {
+    background: #38a169;
+}
+
+/* 清單進度列可點擊 */
+.progress-cell {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.progress-cell:hover {
+    background: #f0f4ff;
+}
+
+.progress-cell:hover .progress-bar {
+    box-shadow: 0 0 0 2px #667eea40;
+}
+
+/* 甘特圖彈窗 */
+.gantt-modal-content {
+    max-width: 900px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.gantt-modal-body {
+    padding: 20px 0;
+}
+
+.single-gantt {
+    background: #fff;
+}
+
+.single-gantt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.gantt-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.gantt-project-id {
+    font-size: 12px;
+    color: #888;
+}
+
+.gantt-project-client {
+    font-size: 14px;
+    color: #555;
+}
+
+.gantt-progress {
+    text-align: right;
+}
+
+.gantt-progress-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.single-gantt-timeline {
+    position: relative;
+}
+
+.gantt-date-scale {
+    position: relative;
+    height: 30px;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 10px;
+}
+
+.gantt-date-label {
+    position: absolute;
+    font-size: 11px;
+    color: #888;
+    top: 5px;
+}
+
+.gantt-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.gantt-task-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.gantt-task-info {
+    width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.task-num {
+    width: 22px;
+    height: 22px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.task-name {
+    font-size: 13px;
+    color: #444;
+}
+
+.gantt-task-timeline {
+    flex: 1;
+    height: 24px;
+    position: relative;
+    background: #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.gantt-task-bar {
+    position: absolute;
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.gantt-task-bar.pending {
+    background: #e2e8f0;
+}
+
+.gantt-task-bar.in-progress {
+    background: #fef3c7;
+}
+
+.gantt-task-bar.completed {
+    background: #d1fae5;
+}
+
+.task-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.gantt-task-bar.completed .task-progress-fill {
+    background: #10b981;
+}
+
+.gantt-task-date {
+    width: 160px;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}
+
+.gantt-task-percent {
+    width: 50px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+    color: #667eea;
+}
+
+/* 待辦事項彈窗 */
+.todo-project-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.todo-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.todo-info-label {
+    font-size: 12px;
+    color: #888;
+}
+
+.todo-info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+}
+
+.todo-list {
+    list-style: none;
+    padding: 0;
+}
+
+.todo-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid #e2e8f0;
+}
+
+.todo-item.completed {
+    border-left-color: #10b981;
+    background: #f0fdf4;
+}
+
+.todo-item.in-progress {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.todo-item.overdue {
+    border-left-color: #e74c3c;
+    background: #fff5f5;
+}
+
+.todo-main {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.todo-status-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.todo-name {
+    font-weight: 500;
+    color: #444;
+}
+
+.todo-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.todo-progress-bar {
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.todo-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 3px;
+}
