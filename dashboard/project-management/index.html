@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>銓宏國際 - 專案管理系統</title>
+    <link rel="stylesheet" href="style.css?v=11">
+</head>
+<body>
+    <div class="container">
+        <!-- 標題區 -->
+        <header class="header">
+            <div class="header-left">
+                <a href="../index.html" class="back-btn" title="返回主畫面">
+                    <i class="fas fa-arrow-left"></i> 返回主畫面
+                </a>
+                <h1>📊 銓宏國際專案管理系統</h1>
+            </div>
+            <div class="status-bar">
+                <div class="status-bar-top">
+                    <a href="../dashboard/index.html" class="back-to-main-btn">
+                        <i class="fas fa-home"></i> 回主系統
+                    </a>
+                </div>
+                <div class="status-bar-badges">
+                    <span class="badge urgent">🔴 緊急: <span id="urgent-count">0</span></span>
+                    <span class="badge active">🟡 報價中: <span id="quote-count">0</span></span>
+                    <span class="badge pending">🔵 報價待確認: <span id="pending-count">0</span></span>
+                    <span class="badge sample">🟠 打樣後: <span id="sample-count">0</span></span>
+                    <span class="badge completed">🟢 已完成: <span id="completed-count">0</span></span>
+                </div>
+                <span class="update-time">更新: <span id="update-time">-</span></span>
+            </div>
+        </header>
+
+        <!-- 視圖切換 -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="showView('proposal')">💡 提案階段</button>
+            <button class="tab-btn" onclick="showView('quote')">📋 報價階段</button>
+            <button class="tab-btn" onclick="showView('sample')">🔨 打樣階段</button>
+            <button class="tab-btn" onclick="showView('production')">🏭 生產階段</button>
+            <button class="tab-btn" onclick="showView('list')">📑 全部</button>
+            <button class="tab-btn" onclick="showView('pending-confirm')">⏳ 待確認專案</button>
+            <button class="tab-btn export-btn" onclick="exportToExcel()">📥 匯出 Excel</button>
+        </nav>
+
+        <!-- 提案階段視圖 -->
+        <div id="proposal-view" class="view active">
+            <div class="proposal-section">
+                <h2>💡 提案中（需求確認/概念發想）</h2>
+                <div id="proposing-projects" class="project-grid"></div>
+            </div>
+            
+            <div class="proposal-section">
+                <div class="section-header">
+                    <h2>📤 提案待確認（已提案，等客戶回覆）</h2>
+                    <div class="search-box">
+                        <input type="text" id="proposal-search" placeholder="🔍 搜尋客戶或產品..." oninput="filterProposalProjects()">
+                    </div>
+                </div>
+                <div id="proposal-pending-projects" class="project-grid"></div>
+            </div>
+        </div>
+        
+        <!-- 報價階段視圖 -->
+        <div id="quote-view" class="view">
+            <!-- 報價中 -->
+            <div class="quote-section">
+                <h2>🟡 報價中（準備報價）</h2>
+                <div id="quoting-projects" class="project-grid"></div>
+            </div>
+            
+            <!-- 報價待確認 -->
+            <div class="quote-section">
+                <div class="section-header">
+                    <h2>🔵 報價待確認（已報價，等回覆）</h2>
+                    <div class="search-box">
+                        <input type="text" id="pending-search" placeholder="🔍 搜尋客戶或產品..." oninput="filterPendingProjects()">
+                    </div>
+                </div>
+                <div id="pending-projects" class="project-grid"></div>
+            </div>
+        </div>
+
+        <!-- 打樣階段視圖 -->
+        <div id="sample-view" class="view">
+            <h2>🔨 打樣階段</h2>
+            <div class="sample-subsections">
+                <div class="sample-section">
+                    <h3>🟠 打樣中 / 打樣修正</h3>
+                    <div id="sampling-projects" class="project-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生產階段視圖 -->
+        <div id="production-view" class="view">
+            <h2>🏭 生產階段</h2>
+            <div class="production-subsections">
+                <div class="production-section">
+                    <h3>🟢 生產中 / 已確認</h3>
+                    <div id="production-only-projects" class="project-grid"></div>
+                </div>
+                <div class="production-section">
+                    <h3>📦 即將出貨</h3>
+                    <div id="shipping-projects" class="project-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 全部視圖 -->
+        <div id="list-view" class="view">
+            <div class="list-filter">
+                <label>篩選階段：</label>
+                <select id="list-phase-filter" onchange="renderList()">
+                    <option value="all">全部</option>
+                    <option value="proposing">💡 提案中</option>
+                    <option value="proposal_pending">📤 提案待確認</option>
+                    <option value="quoting">📋 報價中</option>
+                    <option value="pending">🔵 報價待確認</option>
+                    <option value="sampling">🔨 打樣中</option>
+                    <option value="production">🟢 生產中</option>
+                    <option value="completed">✅ 已完成</option>
+                </select>
+            </div>
+            <h2>📑 全部</h2>
+            <table class="project-table">
+                <thead>
+                    <tr>
+                        <th>編號</th>
+                        <th>客戶</th>
+                        <th>產品</th>
+                        <th>數量</th>
+                        <th>截止日</th>
+                        <th>進度</th>
+                        <th>階段</th>
+                    </tr>
+                </thead>
+                <tbody id="project-list-body"></tbody>
+            </table>
+        </div>
+
+        <!-- 待確認專案視圖 -->
+        <div id="pending-confirm-view" class="view">
+            <h2>⏳ 待確認專案</h2>
+            <div class="pending-confirm-sections">
+                <div class="pending-confirm-section">
+                    <h3>📤 提案待確認（等客戶回覆）</h3>
+                    <div id="pending-confirm-proposal" class="project-grid"></div>
+                </div>
+                <div class="pending-confirm-section">
+                    <h3>🔵 報價待確認（等客戶回覆）</h3>
+                    <div id="pending-confirm-quote" class="project-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 專案詳情彈窗 -->
+        <div id="project-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeModal()">×</span>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+
+        <!-- 甘特圖彈窗 -->
+        <div id="gantt-modal" class="modal">
+            <div class="modal-content gantt-modal-content">
+                <span class="close-btn" onclick="closeGanttModal()">×</span>
+                <h2 id="gantt-modal-title">📅 專案甘特圖</h2>
+                <div id="gantt-modal-body" class="gantt-modal-body"></div>
+            </div>
+        </div>
+
+        <!-- 待辦事項彈窗 -->
+        <div id="todo-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeTodoModal()">×</span>
+                <h2 id="todo-modal-title">📝 待辦事項</h2>
+                <div id="todo-modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="app.js?v=11"></script>
+</body>
+</html>
