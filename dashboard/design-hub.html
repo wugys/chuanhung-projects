@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銓宏設計管理中心 | Chuanhung Design Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --primary-light: #3B82F6;
+            --secondary: #60A5FA;
+            --accent: #F59E0B;
+            --bg: #0F172A;
+            --bg-light: #1E293B;
+            --card: #334155;
+            --card-hover: #475569;
+            --text: #F1F5F9;
+            --text-muted: #94A3B8;
+            --border: #475569;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 20px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1::before {
+            content: "🎨";
+            font-size: 28px;
+        }
+
+        .api-status {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.active { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-dot.warning { background: var(--warning); }
+        .status-dot.error { background: var(--danger); }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 400px;
+            gap: 0;
+            height: calc(100vh - 76px);
+        }
+
+        /* Left Panel - Project List */
+        .project-panel {
+            background: var(--bg-light);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .btn-add {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--primary-light);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-add:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+
+        .project-list {
+            padding: 12px;
+        }
+
+        .project-item {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .project-item:hover {
+            background: var(--card);
+        }
+
+        .project-item.active {
+            background: var(--card);
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .project-id {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: monospace;
+            margin-bottom: 4px;
+        }
+
+        .project-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .project-client {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .badge-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-progress { background: rgba(59, 130, 246, 0.2); color: var(--secondary); }
+        .badge-done { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+
+        /* Center Panel - Generation Control */
+        .control-panel {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .style-option {
+            padding: 12px;
+            background: var(--card);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .style-option:hover {
+            background: var(--card-hover);
+        }
+
+        .style-option.selected {
+            border-color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .style-option .icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: white;
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .color-option.selected::after {
+            content: "✓";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .model-select {
+            display: flex;
+            gap: 12px;
+        }
+
+        .model-option {
+            flex: 1;
+            padding: 16px;
+            background: var(--card);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .model-option:hover {
+            background: var(--card-hover);
+        }
+
+        .model-option.selected {
+            border-color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .model-option .model-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .model-option .model-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Right Panel - Preview */
+        .preview-panel {
+            background: var(--bg-light);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-area {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--bg-light),
+                var(--bg-light) 10px,
+                var(--bg) 10px,
+                var(--bg) 20px
+            );
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .preview-placeholder .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .preview-actions {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+            background: var(--card-hover);
+            border-color: var(--primary-light);
+        }
+
+        .action-btn.primary {
+            background: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        .action-btn.primary:hover {
+            background: var(--secondary);
+        }
+
+        /* History Section */
+        .history-section {
+            grid-column: 1 / -1;
+            background: var(--bg-light);
+            border-top: 1px solid var(--border);
+            padding: 20px 32px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-grid {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .history-item {
+            flex-shrink: 0;
+            width: 120px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            transform: scale(1.05);
+        }
+
+        .history-thumb {
+            width: 120px;
+            height: 90px;
+            border-radius: 8px;
+            background: var(--card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 6px;
+            overflow: hidden;
+        }
+
+        .history-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .history-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Loading State */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary-light);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 240px 1fr 320px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>銓宏設計管理中心</h1>
+        <div class="api-status">
+            <div class="status-item">
+                <span class="status-dot active"></span>
+                <span>阿里雲万相</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot error"></span>
+                <span>Gemini (額度用完)</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot warning"></span>
+                <span>Ideogram (未配置)</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Left: Project List -->
+        <aside class="project-panel">
+            <div class="panel-header">
+                <span class="panel-title">進行中專案</span>
+                <button class="btn-add">+</button>
+            </div>
+            <div class="project-list">
+                <div class="project-item active">
+                    <div class="project-id">A0001-260302</div>
+                    <div class="project-name">KKBOX NFC 壓克力鑰匙圈</div>
+                    <div class="project-client">客主創意 - NINA</div>
+                    <div class="project-meta">
+                        <span class="badge badge-progress">進行中</span>
+                        <span class="badge badge-pending">3/31 交期</span>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="project-id">A0008-260316</div>
+                    <div class="project-name">花朵皮革鏡子鑰匙圈</div>
+                    <div class="project-client">易集 - Rebecca</div>
+                    <div class="project-meta">
+                        <span class="badge badge-progress">進行中</span>
+                        <span class="badge badge-pending">4/25 交期</span>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="project-id">A0009-260316</div>
+                    <div class="project-name">馬克杯摩天輪圖案</div>
+                    <div class="project-client">北市商 - 鳳翎主任</div>
+                    <div class="project-meta">
+                        <span class="badge badge-pending">報價中</span>
+                    </div>
+                </div>
+                <div class="project-item">
+                    <div class="project-id">A0010-260317</div>
+                    <div class="project-name">行李箱 Logo 印刷</div>
+                    <div class="project-client">高柏科技 - Joanne</div>
+                    <div class="project-meta">
+                        <span class="badge badge-pending">議價中</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Generation Control -->
+        <main class="control-panel">
+            <h2 class="section-title">⚡ 生成設定</h2>
+            
+            <div class="form-group">
+                <label class="form-label">提示詞 (Prompt)</label>
+                <textarea class="form-textarea" id="prompt" placeholder="描述你想生成的圖片內容，例如：科技公司活動贈品，壓克力鑰匙圈，簡約現代風格，藍色配色，專業感..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">設計風格</label>
+                <div class="style-grid">
+                    <div class="style-option selected" data-style="tech">
+                        <span class="icon">🔷</span>
+                        <div>科技風</div>
+                    </div>
+                    <div class="style-option" data-style="minimal">
+                        <span class="icon">⚪</span>
+                        <div>簡約風</div>
+                    </div>
+                    <div class="style-option" data-style="playful">
+                        <span class="icon">🎨</span>
+                        <div>活潑風</div>
+                    </div>
+                    <div class="style-option" data-style="premium">
+                        <span class="icon">💎</span>
+                        <div>質感風</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">配色方案</label>
+                <div class="color-palette">
+                    <div class="color-option selected" style="background: #1E3A8A;" data-color="blue"></div>
+                    <div class="color-option" style="background: #DC2626;" data-color="red"></div>
+                    <div class="color-option" style="background: #059669;" data-color="green"></div>
+                    <div class="color-option" style="background: #7C3AED;" data-color="purple"></div>
+                    <div class="color-option" style="background: #D97706;" data-color="orange"></div>
+                    <div class="color-option" style="background: #1F2937;" data-color="black"></div>
+                    <div class="color-option" style="background: linear-gradient(45deg, #FF6B6B, #4ECDC4);" data-color="gradient"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">選擇模型</label>
+                <div class="model-select">
+                    <div class="model-option selected" data-model="wanxiang">
+                        <div class="model-name">阿里雲万相</div>
+                        <div class="model-desc">中文理解強，適合禮品設計 ✅</div>
+                    </div>
+                    <div class="model-option" data-model="gemini" style="opacity: 0.5;">
+                        <div class="model-name">Gemini 2.0</div>
+                        <div class="model-desc">額度用完，明日恢復 ❌</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">圖片尺寸</label>
+                <select class="form-select" id="size">
+                    <option value="1024x1024">1024 × 1024 (方形)</option>
+                    <option value="1024x768">1024 × 768 (橫向)</option>
+                    <option value="768x1024">768 × 1024 (直向)</option>
+                </select>
+            </div>
+
+            <button class="generate-btn" id="generateBtn">
+                <span>🎨</span>
+                <span>生成設計概念圖</span>
+            </button>
+        </main>
+
+        <!-- Right: Preview -->
+        <aside class="preview-panel">
+            <div class="panel-header">
+                <span class="panel-title">預覽</span>
+            </div>
+            <div class="preview-area" id="previewArea">
+                <div class="preview-placeholder">
+                    <div class="icon">🖼️</div>
+                    <div>生成的圖片將顯示在這裡</div>
+                </div>
+            </div>
+            <div class="preview-actions">
+                <button class="action-btn" id="viewBtn" disabled>
+                    <span>👁️</span> 查看大圖
+                </button>
+                <button class="action-btn primary" id="downloadBtn" disabled>
+                    <span>💾</span> 下載
+                </button>
+            </div>
+        </aside>
+
+        <!-- Bottom: History -->
+        <section class="history-section">
+            <div class="history-title">
+                <span>📷</span>
+                <span>最近生成記錄</span>
+            </div>
+            <div class="history-grid" id="historyGrid">
+                <div class="history-item">
+                    <div class="history-thumb">🖼️</div>
+                    <div class="history-meta">尚無記錄</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">正在生成設計概念圖...</div>
+    </div>
+
+    <script>
+        // 樣式選擇
+        document.querySelectorAll('.style-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.style-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // 顏色選擇
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // 模型選擇
+        document.querySelectorAll('.model-option').forEach(option => {
+            option.addEventListener('click', () => {
+                if (option.dataset.model === 'wanxiang') {
+                    document.querySelectorAll('.model-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                }
+            });
+        });
+
+        // 專案選擇
+        document.querySelectorAll('.project-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.project-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // 生成按鈕
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt').value;
+            if (!prompt.trim()) {
+                alert('請先輸入提示詞');
+                return;
+            }
+
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('active');
+
+            // 模擬生成過程（實際使用時這裡會呼叫 API）
+            setTimeout(() => {
+                loadingOverlay.classList.remove('active');
+                
+                // 顯示占位圖（實際應顯示生成的圖）
+                const previewArea = document.getElementById('previewArea');
+                previewArea.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted);">
+                        <div style="font-size: 64px; margin-bottom: 16px;">🎨</div>
+                        <div>這裡會顯示生成的圖片</div>
+                        <div style="font-size: 12px; margin-top: 8px; opacity: 0.6;">
+                            （實際使用時會顯示 API 生成的圖片）
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('viewBtn').disabled = false;
+                document.getElementById('downloadBtn').disabled = false;
+            }, 2000);
+        });
+
+        // 下載按鈕
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            alert('下載功能會將圖片儲存到專案資料夾');
+        });
+    </script>
+</body>
+</html>

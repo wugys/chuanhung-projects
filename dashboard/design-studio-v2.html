@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銓宏設計工作室 v2.0 | AI 概念生成</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --primary-light: #3B82F6;
+            --primary-dark: #1E40AF;
+            --secondary: #60A5FA;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            
+            --bg: #0B0F19;
+            --bg-light: #151A27;
+            --bg-card: #1E2330;
+            --bg-hover: #2A3040;
+            
+            --text: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            
+            --border: #2D3548;
+            --border-light: #3D4558;
+            
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow: 0 4px 6px rgba(0,0,0,0.4);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
+            --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.3);
+            
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-light);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .brand-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .brand-text span {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .api-status {
+            display: flex;
+            gap: 12px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        .status-dot.active { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-dot.warning { background: var(--warning); }
+        .status-dot.error { background: var(--danger); }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .btn-icon:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 420px;
+            height: calc(100vh - 73px);
+        }
+
+        /* Left Panel - Navigation */
+        .nav-panel {
+            background: var(--bg-light);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .nav-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-card);
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--secondary);
+        }
+
+        .nav-item .icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Project List */
+        .project-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .project-card {
+            padding: 14px;
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .project-card:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-light);
+        }
+
+        .project-card.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--primary-light);
+        }
+
+        .project-id {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: monospace;
+            margin-bottom: 4px;
+        }
+
+        .project-name {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .project-client {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .project-badges {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .badge-urgent { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-progress { background: rgba(59, 130, 246, 0.2); color: var(--secondary); }
+        .badge-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        /* Center Panel - Workspace */
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .workspace-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .workspace-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .workspace-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            padding: 0 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-light);
+        }
+
+        .tab {
+            padding: 14px 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            color: var(--text);
+        }
+
+        .tab.active {
+            color: var(--secondary);
+            border-bottom-color: var(--primary-light);
+        }
+
+        /* Generation Panel */
+        .generation-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        /* Form Styles */
+        .form-section {
+            margin-bottom: 28px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            transition: var(--transition);
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Style Selector */
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .style-card {
+            padding: 20px 16px;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .style-card:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-light);
+        }
+
+        .style-card.selected {
+            border-color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .style-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .style-name {
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .style-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Color Selector */
+        .color-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-card {
+            width: 80px;
+            padding: 12px;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .color-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .color-card.selected {
+            border-color: var(--primary-light);
+        }
+
+        .color-preview {
+            width: 100%;
+            height: 40px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .color-name {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Model Selector */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .model-card {
+            padding: 16px;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .model-card:hover {
+            background: var(--bg-hover);
+        }
+
+        .model-card.selected {
+            border-color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .model-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .model-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .model-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--border);
+        }
+
+        .model-badge.free { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .model-badge.paid { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        .model-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .model-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .model-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            background: var(--bg-light);
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+
+        /* Generate Button */
+        .generate-section {
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary) 100%);
+            border: none;
+            border-radius: var(--radius);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-generate .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Right Panel - Preview & Results */
+        .preview-panel {
+            background: var(--bg-light);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(245, 158, 11, 0.03) 0%, transparent 50%),
+                var(--bg);
+        }
+
+        /* Result Grid */
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .result-card {
+            aspect-ratio: 1;
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .result-card.selected {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+        }
+
+        .result-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .result-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .result-placeholder .icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .result-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .result-card:hover .result-actions {
+            opacity: 1;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-action.primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-action.secondary {
+            background: rgba(255,255,255,0.9);
+            color: var(--bg);
+        }
+
+        /* Spec Panel */
+        .spec-panel {
+            padding: 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .spec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .spec-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .spec-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-light);
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-sm:hover {
+            background: var(--bg-hover);
+        }
+
+        .spec-content {
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        /* History Section */
+        .history-panel {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .history-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .history-list {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .history-item {
+            flex-shrink: 0;
+            width: 100px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            transform: scale(1.05);
+        }
+
+        .history-thumb {
+            width: 100px;
+            height: 75px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .history-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .history-info {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg-light);
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 14px 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border-left: 4px solid var(--success);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading State */
+        .loading-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .loading-state .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary-light);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        .loading-state p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 260px 1fr 360px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .nav-panel, .preview-panel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">🎨</div>
+            <div class="brand-text">
+                <h1>銓宏設計工作室</h1>
+                <span>Design Studio v2.0</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="api-status">
+                <div class="status-badge">
+                    <span class="status-dot active"></span>
+                    <span>Gemini 2.0 (1,500/日)</span>
+                </div>
+            </div>
+            <button class="btn-icon" onclick="showSettings()" title="設定">⚙️</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left: Navigation -->
+        <aside class="nav-panel">
+            <div class="nav-section">
+                <div class="nav-title">主要功能</div>
+                <div class="nav-menu">
+                    <div class="nav-item active" onclick="switchTab('generate')">
+                        <span class="icon">⚡</span>
+                        <span>快速生成</span>
+                    </div>
+                    <div class="nav-item" onclick="switchTab('explore')">
+                        <span class="icon">🎭</span>
+                        <span>風格探索</span>
+                    </div>
+                    <div class="nav-item" onclick="switchTab('batch')">
+                        <span class="icon">📦</span>
+                        <span>批量生成</span>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-section">
+                <div class="nav-title">進行中專案</div>
+                <div class="project-list" id="projectList">
+                    <!-- Projects will be loaded here -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Workspace -->
+        <main class="workspace">
+            <!-- Workspace Header -->
+            <div class="workspace-header">
+                <div>
+                    <div class="workspace-title" id="currentProject">快速概念生成</div>
+                    <div class="workspace-subtitle">輸入設計需求，AI 立即生成概念圖</div>
+                </div>
+            </div>
+
+            <!-- Generation Panel -->
+            <div class="generation-panel">
+                <!-- Prompt Input -->
+                <div class="form-section">
+                    <label class="form-label">設計需求描述</label>
+                    <textarea 
+                        class="form-textarea" 
+                        id="promptInput"
+                        placeholder="描述你想生成的設計，例如：
+• LINEPAY 品牌壓克力立牌，科技感，藍白配色，簡約現代風格
+• 企業禮品包裝盒，質感風格，燙金工藝，深藍色調
+• 學校活動紀念品，活潑風格，綠色系，年輕有活力"
+                    ></textarea>
+                </div>
+
+                <!-- Style Selector -->
+                <div class="form-section">
+                    <label class="form-label">設計風格</label>
+                    <div class="style-grid">
+                        <div class="style-card selected" data-style="tech" onclick="selectStyle(this)">
+                            <div class="style-icon">🔷</div>
+                            <div class="style-name">科技感</div>
+                            <div class="style-desc">冷色調 · 幾何線條</div>
+                        </div>
+                        <div class="style-card" data-style="minimal" onclick="selectStyle(this)">
+                            <div class="style-icon">⚪</div>
+                            <div class="style-name">簡約風</div>
+                            <div class="style-desc">留白 · 極簡</div>
+                        </div>
+                        <div class="style-card" data-style="playful" onclick="selectStyle(this)">
+                            <div class="style-icon">🎨</div>
+                            <div class="style-name">活潑風</div>
+                            <div class="style-desc">暖色調 · 動感</div>
+                        </div>
+                        <div class="style-card" data-style="premium" onclick="selectStyle(this)">
+                            <div class="style-icon">💎</div>
+                            <div class="style-name">質感風</div>
+                            <div class="style-desc">深色調 · 高級</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color Selector -->
+                <div class="form-section">
+                    <label class="form-label">配色方案</label>
+                    <div class="color-grid">
+                        <div class="color-card selected" data-color="blue-white" onclick="selectColor(this)">
+                            <div class="color-preview" style="background: linear-gradient(135deg, #1E3A8A 50%, #FFFFFF 50%);"></div>
+                            <div class="color-name">藍白</div>
+                        </div>
+                        <div class="color-card" data-color="red-white" onclick="selectColor(this)">
+                            <div class="color-preview" style="background: linear-gradient(135deg, #DC2626 50%, #FFFFFF 50%);"></div>
+                            <div class="color-name">紅白</div>
+                        </div>
+                        <div class="color-card" data-color="black-gold" onclick="selectColor(this)">
+                            <div class="color-preview" style="background: linear-gradient(135deg, #1F2937 50%, #D97706 50%);"></div>
+                            <div class="color-name">黑金</div>
+                        </div>
+                        <div class="color-card" data-color="green-white" onclick="selectColor(this)">
+                            <div class="color-preview" style="background: linear-gradient(135deg, #059669 50%, #FFFFFF 50%);"></div>
+                            <div class="color-name">綠白</div>
+                        </div>
+                        <div class="color-card" data-color="purple-white" onclick="selectColor(this)">
+                            <div class="color-preview" style="background: linear-gradient(135deg, #7C3AED 50%, #FFFFFF 50%);"></div>
+                            <div class="color-name">紫白</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Selector -->
+                <div class="form-section">
+                    <label class="form-label">AI 模型</label>
+                    <div class="model-grid">
+                        <div class="model-card selected" data-model="gemini" onclick="selectModel(this)">
+                            <div class="model-header">
+                                <span class="model-name">Gemini 2.0 Flash</span>
+                                <span class="model-badge free">免費</span>
+                            </div>
+                            <div class="model-desc">速度快、免費額度高，適合快速概念發想</div>
+                            <div class="model-tags">
+                                <span class="model-tag">1,500次/日</span>
+                                <span class="model-tag">中文強</span>
+                            </div>
+                        </div>
+                        <div class="model-card disabled" data-model="wanx" onclick="selectModel(this)">
+                            <div class="model-header">
+                                <span class="model-name">通義萬相</span>
+                                <span class="model-badge free">免費</span>
+                            </div>
+                            <div class="model-desc">東方美學、風格多樣，適合最終呈現</div>
+                            <div class="model-tags">
+                                <span class="model-tag">50點/日</span>
+                                <span class="model-tag">待配置</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <div class="generate-section">
+                    <button class="btn-generate" id="generateBtn" onclick="generateImages()">
+                        <span>🎨</span>
+                        <span>生成 4 張概念圖</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right: Preview Panel -->
+        <aside class="preview-panel">
+            <div class="panel-header">
+                <span>生成結果</span>
+                <span id="resultCount" style="color: var(--text-muted); font-size: 13px;"></span>
+            </div>
+            <div class="preview-area" id="previewArea">
+                <div class="empty-state">
+                    <div class="icon">🖼️</div>
+                    <h3>準備生成概念圖</h3>
+                    <p>在左側輸入設計需求，點擊生成按鈕</p>
+                </div>
+            </div>
+
+            <!-- Spec Panel -->
+            <div class="spec-panel" id="specPanel" style="display: none;">
+                <div class="spec-header">
+                    <span class="spec-title">📋 設計規格</span>
+                    <div class="spec-actions">
+                        <button class="btn-sm" onclick="copySpec()">複製</button>
+                        <button class="btn-sm" onclick="downloadSpec()">下載</button>
+                    </div>
+                </div>
+                <pre class="spec-content" id="specContent"></pre>
+            </div>
+
+            <!-- History Panel -->
+            <div class="history-panel">
+                <div class="history-title">📷 生成記錄</div>
+                <div class="history-list" id="historyList">
+                    <!-- History items will be loaded here -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal-overlay" id="imageModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">預覽</span>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <img class="modal-image" id="modalImage" src="" alt="Preview">
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal" style="width: 500px;">
+            <div class="modal-header">
+                <span class="modal-title">⚙️ API 設定</span>
+                <button class="modal-close" onclick="closeSettings()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <label class="form-label">Gemini API Key</label>
+                    <input type="password" class="form-textarea" id="geminiKey" style="min-height: 44px;" placeholder="輸入你的 Gemini API Key">
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                        取得方式：<a href="https://ai.google.dev/" target="_blank" style="color: var(--secondary);">Google AI Studio</a> 免費申請
+                    </p>
+                </div>
+                <button class="btn-generate" onclick="saveSettings()" style="margin-top: 12px;">
+                    儲存設定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            gemini: {
+                model: 'gemini-2.0-flash-exp-image-generation',
+                baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
+                // 預設 API Key - 由 Kevin 提供
+                defaultKey: 'AIzaSyDYUepuBNLlFRqKIDwgc57wiXb3vS6Rfow'
+            }
+        };
+
+        // State
+        let state = {
+            apiKey: localStorage.getItem('gemini_api_key') || CONFIG.gemini.defaultKey || '',
+            selectedStyle: 'tech',
+            selectedColor: 'blue-white',
+            selectedModel: 'gemini',
+            currentProject: null,
+            generationHistory: JSON.parse(localStorage.getItem('generation_history') || '[]'),
+            isGenerating: false
+        };
+
+        // Style presets
+        const stylePresets = {
+            tech: {
+                name: '科技感',
+                keywords: 'tech, futuristic, geometric lines, gradient, minimalist, clean, modern, professional',
+                icon: '🔷'
+            },
+            minimal: {
+                name: '簡約風',
+                keywords: 'minimalist, clean, simple, elegant, professional, white space, refined',
+                icon: '⚪'
+            },
+            playful: {
+                name: '活潑風',
+                keywords: 'colorful, playful, fun, vibrant, friendly, cheerful, dynamic',
+                icon: '🎨'
+            },
+            premium: {
+                name: '質感風',
+                keywords: 'premium, luxury, elegant, sophisticated, high-end, refined',
+                icon: '💎'
+            }
+        };
+
+        // Color presets
+        const colorPresets = {
+            'blue-white': {
+                name: '藍白配色',
+                keywords: 'blue and white gradient, #1E3A8A and #60A5FA, professional blue tones'
+            },
+            'red-white': {
+                name: '紅白配色',
+                keywords: 'red and white gradient, vibrant red accents, energetic'
+            },
+            'black-gold': {
+                name: '黑金配色',
+                keywords: 'black and gold, premium luxury, elegant dark with gold accents'
+            },
+            'green-white': {
+                name: '綠白配色',
+                keywords: 'green and white gradient, fresh natural, eco-friendly tones'
+            },
+            'purple-white': {
+                name: '紫白配色',
+                keywords: 'purple and white gradient, creative modern, vibrant purple tones'
+            }
+        };
+
+        // Sample projects
+        const projects = [
+            { id: 'A0001-260302', name: 'KKBOX NFC 壓克力鑰匙圈', client: '客主創意 - NINA', status: 'urgent', deadline: '3/31' },
+            { id: 'A0008-260316', name: '花朵皮革鏡子鑰匙圈', client: '易集 - Rebecca', status: 'progress', deadline: '4/25' },
+            { id: 'A0009-260316', name: '馬克杯摩天輪圖案', client: '北市商 - 鳳翎主任', status: 'pending' },
+            { id: 'A0010-260317', name: '行李箱 Logo 印刷', client: '高柏科技 - Joanne', status: 'pending' },
+            { id: 'A0014-260319', name: 'SSSTC 手提袋', client: '寶宸 - RAY', status: 'progress', deadline: '5/15' }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProjects();
+            loadHistory();
+            checkApiKey();
+        });
+
+        // Load projects
+        function loadProjects() {
+            const list = document.getElementById('projectList');
+            list.innerHTML = projects.map(p => `
+                <div class="project-card ${state.currentProject?.id === p.id ? 'active' : ''}" onclick="selectProject('${p.id}')">
+                    <div class="project-id">${p.id}</div>
+                    <div class="project-name">${p.name}</div>
+                    <div class="project-client">${p.client}</div>
+                    <div class="project-badges">
+                        ${p.status === 'urgent' ? '<span class="badge badge-urgent">緊急</span>' : ''}
+                        ${p.status === 'progress' ? '<span class="badge badge-progress">進行中</span>' : ''}
+                        ${p.deadline ? `<span class="badge badge-pending">${p.deadline}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Select project
+        function selectProject(id) {
+            state.currentProject = projects.find(p => p.id === id);
+            loadProjects();
+            document.getElementById('currentProject').textContent = state.currentProject.name;
+            showToast(`已選擇專案: ${state.currentProject.name}`);
+        }
+
+        // Select style
+        function selectStyle(element) {
+            document.querySelectorAll('.style-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            state.selectedStyle = element.dataset.style;
+        }
+
+        // Select color
+        function selectColor(element) {
+            document.querySelectorAll('.color-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            state.selectedColor = element.dataset.color;
+        }
+
+        // Select model
+        function selectModel(element) {
+            if (element.classList.contains('disabled')) {
+                showToast('此模型尚未配置', 'warning');
+                return;
+            }
+            document.querySelectorAll('.model-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            state.selectedModel = element.dataset.model;
+        }
+
+        // Generate images
+        async function generateImages() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            
+            if (!prompt) {
+                showToast('請輸入設計需求描述', 'error');
+                return;
+            }
+
+            if (!state.apiKey) {
+                showSettings();
+                showToast('請先設定 Gemini API Key', 'warning');
+                return;
+            }
+
+            if (state.isGenerating) return;
+
+            state.isGenerating = true;
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div><span>生成中...</span>';
+
+            // Show loading in preview area
+            const previewArea = document.getElementById('previewArea');
+            previewArea.innerHTML = `
+                <div class="result-grid">
+                    ${[1,2,3,4].map(i => `
+                        <div class="result-card">
+                            <div class="loading-state">
+                                <div class="spinner"></div>
+                                <p>生成中 ${i}/4...</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            try {
+                const images = [];
+                for (let i = 0; i < 4; i++) {
+                    const result = await generateWithGemini(prompt, i);
+                    if (result.success) {
+                        images.push(result);
+                    }
+                    // Update loading text
+                    const cards = previewArea.querySelectorAll('.result-card');
+                    if (cards[i]) {
+                        cards[i].innerHTML = `
+                            <div class="loading-state">
+                                <div class="spinner"></div>
+                                <p>生成中 ${i + 1}/4...</p>
+                            </div>
+                        `;
+                    }
+                }
+
+                displayResults(images);
+                saveToHistory(images, prompt);
+                showToast('✅ 概念圖生成完成！');
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                showToast('生成失敗: ' + error.message, 'error');
+                previewArea.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">❌</div>
+                        <h3>生成失敗</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                state.isGenerating = false;
+                btn.disabled = false;
+                btn.innerHTML = '<span>🎨</span><span>生成 4 張概念圖</span>';
+            }
+        }
+
+        // Generate with Gemini
+        async function generateWithGemini(userPrompt, index) {
+            const style = stylePresets[state.selectedStyle];
+            const color = colorPresets[state.selectedColor];
+            
+            // Build optimized prompt
+            const fullPrompt = buildPrompt(userPrompt, style, color);
+
+            try {
+                const response = await fetch(
+                    `${CONFIG.gemini.baseUrl}/${CONFIG.gemini.model}:generateContent?key=${state.apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{ text: fullPrompt }]
+                            }],
+                            generationConfig: {
+                                responseModalities: ['Text', 'Image']
+                            }
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Extract image from response
+                if (data.candidates?.[0]?.content?.parts) {
+                    for (const part of data.candidates[0].content.parts) {
+                        if (part.inlineData) {
+                            return {
+                                success: true,
+                                data: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+                                prompt: userPrompt,
+                                style: style.name,
+                                color: color.name,
+                                timestamp: new Date().toISOString()
+                            };
+                        }
+                    }
+                }
+
+                throw new Error('無法從回應中解析圖像');
+
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        // Build optimized prompt
+        function buildPrompt(userPrompt, style, color) {
+            const basePrompt = userPrompt;
+            const styleKeywords = style.keywords;
+            const colorKeywords = color.keywords;
+            
+            let prompt = `${basePrompt}, ${styleKeywords}, ${colorKeywords}`;
+            
+            // Add product-specific context
+            if (basePrompt.includes('立牌')) {
+                prompt += ', acrylic stand, product photography, studio lighting, clean background';
+            } else if (basePrompt.includes('包裝') || basePrompt.includes('盒')) {
+                prompt += ', packaging design, box mockup, professional presentation, studio shot';
+            } else if (basePrompt.includes('卡片')) {
+                prompt += ', card design, print-ready, professional layout';
+            } else if (basePrompt.includes('鑰匙圈')) {
+                prompt += ', keychain design, product photography, detailed view';
+            }
+            
+            // Add quality modifiers
+            prompt += ', high quality, detailed, professional design, 4k, sharp focus';
+            
+            return prompt;
+        }
+
+        // Display results
+        function displayResults(images) {
+            const previewArea = document.getElementById('previewArea');
+            const successfulImages = images.filter(img => img.success);
+            
+            if (successfulImages.length === 0) {
+                previewArea.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">❌</div>
+                        <h3>所有生成失敗</h3>
+                        <p>請檢查 API Key 是否正確，或稍後重試</p>
+                    </div>
+                `;
+                return;
+            }
+
+            previewArea.innerHTML = `
+                <div class="result-grid">
+                    ${successfulImages.map((img, i) => `
+                        <div class="result-card" data-index="${i}" onclick="selectImage(${i})">
+                            <img src="${img.data}" alt="Concept ${i + 1}" loading="lazy">
+                            <div class="result-actions">
+                                <button class="btn-action primary" onclick="event.stopPropagation(); selectImage(${i})">選擇</button>
+                                <button class="btn-action secondary" onclick="event.stopPropagation(); viewImage('${img.data}')">查看</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('resultCount').textContent = `${successfulImages.length} 張結果`;
+        }
+
+        // Select image
+        function selectImage(index) {
+            const cards = document.querySelectorAll('.result-card');
+            cards.forEach((card, i) => {
+                card.classList.toggle('selected', i === index);
+            });
+            
+            generateSpec(index);
+            showToast('已選擇設計，規格已生成');
+        }
+
+        // Generate spec
+        function generateSpec(index) {
+            const style = stylePresets[state.selectedStyle];
+            const color = colorPresets[state.selectedColor];
+            const prompt = document.getElementById('promptInput').value;
+            
+            const spec = {
+                type: '設計規格',
+                timestamp: new Date().toLocaleString('zh-TW'),
+                project: state.currentProject?.name || '未指定專案',
+                design: {
+                    description: prompt,
+                    style: style.name,
+                    colorScheme: color.name,
+                    keywords: `${style.keywords}, ${color.keywords}`
+                },
+                output: {
+                    selectedImage: `concept_${index + 1}.png`,
+                    recommendedFormat: 'PNG',
+                    recommendedResolution: '1024x1024'
+                },
+                nextSteps: [
+                    '1. 下載選定的概念圖',
+                    '2. 交給 Betty 進行細部設計',
+                    '3. 產出印刷規格文件'
+                ]
+            };
+
+            document.getElementById('specContent').textContent = JSON.stringify(spec, null, 2);
+            document.getElementById('specPanel').style.display = 'block';
+        }
+
+        // View image
+        function viewImage(src) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
+
+        // Save to history
+        function saveToHistory(images, prompt) {
+            const successfulImages = images.filter(img => img.success);
+            if (successfulImages.length === 0) return;
+
+            const historyItem = {
+                id: Date.now(),
+                prompt: prompt.substring(0, 50) + '...',
+                thumbnail: successfulImages[0].data,
+                count: successfulImages.length,
+                timestamp: new Date().toLocaleString('zh-TW', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            };
+
+            state.generationHistory.unshift(historyItem);
+            if (state.generationHistory.length > 10) {
+                state.generationHistory.pop();
+            }
+
+            localStorage.setItem('generation_history', JSON.stringify(state.generationHistory));
+            loadHistory();
+        }
+
+        // Load history
+        function loadHistory() {
+            const list = document.getElementById('historyList');
+            if (state.generationHistory.length === 0) {
+                list.innerHTML = '<div class="history-info">尚無記錄</div>';
+                return;
+            }
+
+            list.innerHTML = state.generationHistory.map(item => `
+                <div class="history-item" onclick="restoreHistory(${item.id})">
+                    <div class="history-thumb">
+                        <img src="${item.thumbnail}" alt="History" loading="lazy">
+                    </div>
+                    <div class="history-info">${item.timestamp} · ${item.count}張</div>
+                </div>
+            `).join('');
+        }
+
+        // Show settings
+        function showSettings() {
+            document.getElementById('geminiKey').value = state.apiKey;
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        // Close settings
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        // Save settings
+        function saveSettings() {
+            const key = document.getElementById('geminiKey').value.trim();
+            if (key) {
+                state.apiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                closeSettings();
+                showToast('✅ API Key 已儲存');
+            } else {
+                showToast('請輸入有效的 API Key', 'error');
+            }
+        }
+
+        // Check API key
+        function checkApiKey() {
+            if (!state.apiKey) {
+                setTimeout(() => {
+                    showToast('首次使用請設定 Gemini API Key', 'warning');
+                }, 1000);
+            }
+        }
+
+        // Copy spec
+        function copySpec() {
+            const content = document.getElementById('specContent').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                showToast('✅ 規格已複製到剪貼簿');
+            });
+        }
+
+        // Download spec
+        function downloadSpec() {
+            const content = document.getElementById('specContent').textContent;
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `design-spec-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('✅ 規格已下載');
+        }
+
+        // Show toast
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Close modal on overlay click
+        document.getElementById('imageModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+
+        document.getElementById('settingsModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeSettings();
+        });
+    </script>
+</body>
+</html>

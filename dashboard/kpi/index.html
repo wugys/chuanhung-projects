@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銓宏國際 KPI 績效管理系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #1a365d;
+            --secondary: #2c5282;
+            --accent: #3182ce;
+            --success: #38a169;
+            --warning: #d69e2e;
+            --danger: #e53e3e;
+            --light: #f7fafc;
+            --dark: #1a202c;
+            --gray: #718096;
+            --border: #e2e8f0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+        
+        header .subtitle {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .agent-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 16px;
+        }
+        
+        .sales { background: #ebf8ff; }
+        .design { background: #faf5ff; }
+        .procure { background: #f0fff4; }
+        .produce { background: #fffaf0; }
+        .pm { background: #fff5f5; }
+        .marketing { background: #f0f5ff; }
+        .eva { background: #fffbeb; }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+        
+        .kpi-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .kpi-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--light);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .kpi-item:hover {
+            background: #edf2f7;
+        }
+        
+        .kpi-weight {
+            background: var(--accent);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 12px;
+            min-width: 48px;
+            text-align: center;
+        }
+        
+        .kpi-info {
+            flex: 1;
+        }
+        
+        .kpi-name {
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+        
+        .kpi-target {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 2px;
+        }
+        
+        .summary-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .summary-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .summary-item {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .summary-item.excellent { background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%); }
+        .summary-item.good { background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%); }
+        .summary-item.warning { background: linear-gradient(135deg, #fefcbf 0%, #f6e05e 100%); }
+        .summary-item.danger { background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%); }
+        
+        .summary-score {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .summary-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-excellent { background: #c6f6d5; color: #22543d; }
+        .status-good { background: #bee3f8; color: #2a4365; }
+        .status-warning { background: #fefcbf; color: #744210; }
+        .status-danger { background: #fed7d7; color: #742a2a; }
+        
+        .process-flow {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .process-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 24px;
+        }
+        
+        .flow-chart {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .flow-step {
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .flow-arrow {
+            color: var(--gray);
+            font-size: 1.2rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 銓宏國際 KPI 績效管理系統</h1>
+            <div class="subtitle">Performance Auditor v1.0 | 每週五 15:00 自動評估 | 團隊效能持續優化</div>
+        </header>
+        
+        <div class="grid">
+            <!-- Sales-Agent -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="agent-icon sales">💰</div>
+                    <div>
+                        <div class="card-title">Sales-Agent <span class="status-badge status-good">林姿蓉協助</span></div>
+                        <div class="card-subtitle">業務專員 AI - 客戶溝通與報價</div>
+                    </div>
+                </div>
+                <div class="kpi-list">
+                    <div class="kpi-item">
+                        <span class="kpi-weight">30%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">客戶回覆時效</div>
+                            <div class="kpi-target">目標：&lt; 2小時 | 平均回覆時間</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">25%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">報價準確率</div>
+                            <div class="kpi-target">目標：&gt; 95% | 報價單錯誤率</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">20%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">需求理解度</div>
+                            <div class="kpi-target">目標：&gt; 90% | Kevin 評分</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">15%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">客戶滿意度</div>
+                            <div class="kpi-target">目標：&gt; 4.5/5 | 追蹤回饋</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">10%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">任務完成率</div>
+                            <div class="kpi-target">目標：100% | 本週任務完成比例</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Design-Agent -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="agent-icon design">🎨</div>
+                    <div>
+                        <div class="card-title">Design-Agent</div>
+                        <div class="card-subtitle">設計師 AI - 概念生成與設計執行</div>
+                    </div>
+                </div>
+                <div class="kpi-list">
+                    <div class="kpi-item">
+                        <span class="kpi-weight">35%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">設計通過率</div>
+                            <div class="kpi-target">目標：&gt; 80% | 一稿過比例</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">25%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">概念生成速度</div>
+                            <div class="kpi-target">目標：&lt; 30分鐘 | 提示詞產出時間</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">25%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">風格準確度</div>
+                            <div class="kpi-target">目標：&gt; 90% | Kevin 評分</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">15%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">修改次數</div>
+                            <div class="kpi-target">目標：&lt; 3次 | 平均修改輪數</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Procure-Agent -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="agent-icon procure">📦</div>
+                    <div>
+                        <div class="card-title">Procure-Agent</div>
+                        <div class="card-subtitle">採購專員 AI - 供應商詢價與比價</div>
+                    </div>
+                </div>
+                <div class="kpi-list">
+                    <div class="kpi-item">
+                        <span class="kpi-weight">30%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">詢價回覆率</div>
+                            <div class="kpi-target">目標：&gt; 90% | 供應商回覆比例</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">30%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">比價準確性</div>
+                            <div class="kpi-target">目標：&gt; 95% | 價格分析準確度</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">20%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">資料完整性</div>
+                            <div class="kpi-target">目標：100% | 供應商資訊完整度</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">20%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">時效性</div>
+                            <div class="kpi-target">目標：&lt; 4小時 | 詢價完成時間</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Produce-Agent -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="agent-icon produce">🏭</div>
+                    <div>
+                        <div class="card-title">Produce-Agent</div>
+                        <div class="card-subtitle">生管專員 AI - 生產排程與監控</div>
+                    </div>
+                </div>
+                <div class="kpi-list">
+                    <div class="kpi-item">
+                        <span class="kpi-weight">35%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">排程準確率</div>
+                            <div class="kpi-target">目標：&gt; 85% | 實際 vs 預估交期</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">25%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">資源利用率</div>
+                            <div class="kpi-target">目標：&gt; 80% | 設備使用率</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">25%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">異常預警率</div>
+                            <div class="kpi-target">目標：&gt; 90% | 提前發現問題比例</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">15%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">報表準確性</div>
+                            <div class="kpi-target">目標：100% | 數據錯誤次數</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PM-Agent -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="agent-icon pm">📋</div>
+                    <div>
+                        <div class="card-title">PM-Agent</div>
+                        <div class="card-subtitle">產品 PM AI - 專案進度管理</div>
+                    </div>
+                </div>
+                <div class="kpi-list">
+                    <div class="kpi-item">
+                        <span class="kpi-weight">35%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">專案準時率</div>
+                            <div class="kpi-target">目標：&gt; 90% | 準時完成比例</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">30%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">風險預警率</div>
+                            <div class="kpi-target">目標：&gt; 85% | 提前預警準確度</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">20%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">進度更新準時</div>
+                            <div class="kpi-target">目標：100% | 每日更新比例</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">15%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">跨部門協調</div>
+                            <div class="kpi-target">目標：&gt; 4/5 | 團隊協作評分</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Marketing-Agent -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="agent-icon marketing">📢</div>
+                    <div>
+                        <div class="card-title">Marketing-Agent</div>
+                        <div class="card-subtitle">行銷企劃 AI - 市場分析與推廣</div>
+                    </div>
+                </div>
+                <div class="kpi-list">
+                    <div class="kpi-item">
+                        <span class="kpi-weight">30%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">內容產出量</div>
+                            <div class="kpi-target">目標：&gt; 10篇/週 | 文章/文案數量</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">25%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">市場洞察準確度</div>
+                            <div class="kpi-target">目標：&gt; 85% | Kevin 評分</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">25%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">創意提案通過率</div>
+                            <div class="kpi-target">目標：&gt; 70% | 企劃採用比例</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">20%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">趨勢預測準確度</div>
+                            <div class="kpi-target">目標：&gt; 75% | 市場趨勢判斷</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Eva -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="agent-icon eva">🤖</div>
+                    <div>
+                        <div class="card-title">Eva <span class="status-badge status-excellent">協調中心</span></div>
+                        <div class="card-subtitle">Kevin 特助 AI - 任務分派與協調</div>
+                    </div>
+                </div>
+                <div class="kpi-list">
+                    <div class="kpi-item">
+                        <span class="kpi-weight">30%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">任務分派準確</div>
+                            <div class="kpi-target">目標：&gt; 95% | 正確分配比例</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">25%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">回應時效</div>
+                            <div class="kpi-target">目標：&lt; 1分鐘 | 平均回應時間</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">25%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">資訊彙整完整</div>
+                            <div class="kpi-target">目標：&gt; 95% | 報告完整度評分</div>
+                        </div>
+                    </div>
+                    <div class="kpi-item">
+                        <span class="kpi-weight">20%</span>
+                        <div class="kpi-info">
+                            <div class="kpi-name">異常處理率</div>
+                            <div class="kpi-target">目標：&gt; 90% | 問題解決比例</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 評估流程 -->
+        <div class="process-flow">
+            <div class="process-title">📅 每週評估流程</div>
+            <div class="flow-chart">
+                <div class="flow-step">週五 15:00<br>自動評估</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">收集數據<br>計算分數</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Eva 初審<br>確認調整</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Kevin 最終<br>審查</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">績效不佳<br>溝通改進</div>
+            </div>
+        </div>
+        
+        <!-- 評分標準 -->
+        <div class="summary-section">
+            <div class="summary-title">📊 評分等級標準</div>
+            <div class="summary-grid">
+                <div class="summary-item excellent">
+                    <div class="summary-score">90-100</div>
+                    <div class="summary-label">優秀 ⭐</div>
+                </div>
+                <div class="summary-item good">
+                    <div class="summary-score">80-89</div>
+                    <div class="summary-label">良好 ✅</div>
+                </div>
+                <div class="summary-item warning">
+                    <div class="summary-score">70-79</div>
+                    <div class="summary-label">待改進 ⚠️</div>
+                </div>
+                <div class="summary-item danger">
+                    <div class="summary-score">&lt;70</div>
+                    <div class="summary-label">需關注 ❌</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 績效處理流程 -->
+        <div class="process-flow">
+            <div class="process-title">⚠️ 績效不佳處理流程（連續2週 &lt;80分）</div>
+            <div class="flow-chart">
+                <div class="flow-step">標記需關注</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Eva 分析原因</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">與 Agent 溝通</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">提出調整對策</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Kevin 審批</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">執行改善</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">下週追蹤</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>銓宏國際有限公司 | KPI 績效管理系統 v1.0</p>
+            <p>建立日期：2026-03-14 | 下次自動評估：每週五 15:00</p>
+            <p>報告儲存位置：memory/kpi-reports/</p>
+        </footer>
+    </div>
+</body>
+</html>

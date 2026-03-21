@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1688-AI智能提案系統 | 報價計算機</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #DC2626;
+            --primary-light: #EF4444;
+            --primary-dark: #B91C1C;
+            --secondary: #F87171;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --info: #3B82F6;
+            --warning: #F59E0B;
+            
+            --bg: #0B0F19;
+            --bg-light: #151A27;
+            --bg-card: #1E2330;
+            --bg-hover: #2A3040;
+            
+            --text: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            
+            --border: #2D3548;
+            --border-light: #3D4558;
+            
+            --shadow: 0 4px 6px rgba(0,0,0,0.4);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
+            --shadow-glow: 0 0 30px rgba(220, 38, 38, 0.3);
+            
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .brand-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .brand-text span {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .btn-icon:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Main Container */
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 400px;
+            height: calc(100vh - 73px);
+        }
+
+        /* Left Panel - Customer Info */
+        .customer-panel {
+            background: var(--bg-light);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Category Grid */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .category-btn {
+            padding: 10px 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .category-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-light);
+        }
+
+        .category-btn.selected {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: var(--primary-light);
+            color: var(--primary-light);
+        }
+
+        /* Budget Grid */
+        .budget-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .budget-btn {
+            padding: 10px 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .budget-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-light);
+        }
+
+        .budget-btn.selected {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: var(--primary-light);
+            color: var(--primary-light);
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-light);
+            background: rgba(220, 38, 38, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .upload-text {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .upload-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .image-preview {
+            margin-top: 12px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            width: 100%;
+            display: block;
+        }
+
+        /* Center Panel - Calculator */
+        .calculator-panel {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title .icon {
+            font-size: 20px;
+        }
+
+        /* Product Card */
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-light);
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-sm:hover {
+            background: var(--bg-hover);
+        }
+
+        .btn-sm.danger {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .btn-sm.danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Grid Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group .form-input {
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+        }
+
+        .input-group-addon {
+            padding: 10px 12px;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-left: none;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Price Tiers */
+        .price-tiers {
+            margin-top: 20px;
+        }
+
+        .tier-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tier-table th,
+        .tier-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tier-table th {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .tier-table td {
+            font-size: 14px;
+        }
+
+        .tier-table tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .price-highlight {
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+
+        /* Proposal Options */
+        .proposal-options {
+            margin-top: 24px;
+        }
+
+        .option-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .option-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .option-card.selected {
+            border-color: var(--primary-light);
+            background: rgba(220, 38, 38, 0.1);
+        }
+
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .option-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .option-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--bg-light);
+        }
+
+        .option-form {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        /* Right Panel - Results */
+        .results-panel {
+            background: var(--bg-light);
+            border-left: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .result-header {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        .result-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .result-value.large {
+            font-size: 36px;
+            color: var(--primary-light);
+        }
+
+        .result-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Quote Actions */
+        .quote-actions {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            border: none;
+            border-radius: var(--radius);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-secondary {
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+        }
+
+        /* Settings Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            width: 500px;
+            max-height: 80vh;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg-light);
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .setting-group {
+            margin-bottom: 20px;
+        }
+
+        .setting-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .setting-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 14px 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border-left: 4px solid var(--success);
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 280px 1fr;
+            }
+            .results-panel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">🎯</div>
+            <div class="brand-text">
+                <h1>1688-AI智能提案系統</h1>
+                <span>報價計算機 v1.0</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" onclick="showSettings()" title="後台設定">⚙️</button>
+            <button class="btn-icon" onclick="saveData()" title="儲存">💾</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left: Customer Info -->
+        <aside class="customer-panel">
+            <div class="panel-title">📋 初步構想提案</div>
+            
+            <div class="form-group">
+                <label class="form-label">1. 公司名稱</label>
+                <input type="text" class="form-input" id="companyName" placeholder="請輸入公司名稱">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">2. 聯絡人</label>
+                <input type="text" class="form-input" id="contactPerson" placeholder="請輸入聯絡人姓名">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">3. 產品類型</label>
+                <div class="category-grid">
+                    <button class="category-btn" data-category="management">管理類</button>
+                    <button class="category-btn" data-category="marketing">行銷類</button>
+                    <button class="category-btn" data-category="promotion">促銷類</button>
+                    <button class="category-btn" data-category="welfare">員工福利</button>
+                    <button class="category-btn" data-category="gift">贈品小物</button>
+                    <button class="category-btn" data-category="custom">客製類</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">4. 預算類型</label>
+                <div class="budget-grid">
+                    <button class="budget-btn" data-budget="economy">經濟型</button>
+                    <button class="budget-btn" data-budget="standard">標準型</button>
+                    <button class="budget-btn" data-budget="premium">高級型</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">5. 客戶提供的參考圖片</label>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📎</div>
+                    <div class="upload-text">點擊或拖曳上傳圖片</div>
+                    <input type="file" class="upload-input" id="referenceImage" accept="image/*">
+                </div>
+                <div class="image-preview" id="imagePreview" style="display: none;"></div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">6. 其他需求</label>
+                <textarea class="form-textarea" id="otherRequirements" placeholder="請輸入其他需求說明，例如：Logo印刷、包裝要求、ESG需求、開模需求..."></textarea>
+            </div>
+        </aside>
+
+        <!-- Center: Calculator -->
+        <main class="calculator-panel">
+            <!-- Budget Planning Section -->
+            <div class="section-title">
+                <span class="icon">📊</span>
+                <span>預算規劃與利潤試算</span>
+            </div>
+            
+            <div class="budget-planning-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px;">
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">3. 預算下限</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" id="budgetMin" placeholder="0" value="0">
+                            <span class="input-group-addon">NTD</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">3. 預算上限</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" id="budgetMax" placeholder="0" value="0">
+                            <span class="input-group-addon">NTD</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">4. 成本 (MIN)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" id="costMin" placeholder="0" readonly>
+                            <span class="input-group-addon">NTD</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-grid-3" style="margin-top: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">4. 成本 (MAX)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" id="costMax" placeholder="0" readonly>
+                            <span class="input-group-addon">NTD</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">5. 利潤率 (%)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" id="profitRate" value="30" step="0.1">
+                            <span class="input-group-addon">%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">6. 損耗率 (%)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" id="wasteRateInput" value="5" step="0.1">
+                            <span class="input-group-addon">%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-grid" style="margin-top: 16px;">
+                    <div class="form-group">
+                        <label class="form-label">7. 運費計算</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" id="shippingCost" placeholder="0" value="0">
+                            <span class="input-group-addon">NTD</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">8. 工期 SCHEDULE</label>
+                        <input type="date" class="form-input" id="scheduleDate" value="2026-03-20">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 16px; display: flex; align-items: center; gap: 20px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" id="includeTax" checked style="width: 16px; height: 16px;">
+                        <span>含稅 5% (Tax included)</span>
+                    </label>
+                    
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                        <input type="checkbox" id="includeShipping" style="width: 16px; height: 16px;">
+                        <span>含運費 (Shipping)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Simulation Results -->
+            <div class="section-title">
+                <span class="icon">🎯</span>
+                <span>模擬結果 SIMULATION</span>
+            </div>
+            
+            <div class="simulation-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+                <div class="sim-card" style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border-left: 4px solid var(--success);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">目標利潤 (TARGET PRICE)</div>
+                    <div style="font-size: 24px; font-weight: 700; color: var(--success);" id="targetPrice">NTD 0</div>
+                </div>
+                
+                <div class="sim-card" style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border-left: 4px solid var(--info);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">預估成本 (EST. COST)</div>
+                    <div style="font-size: 24px; font-weight: 700; color: var(--info);" id="estCost">NTD 0</div>
+                </div>
+                
+                <div class="sim-card" style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border-left: 4px solid var(--warning);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">利潤 (MARGIN)</div>
+                    <div style="font-size: 24px; font-weight: 700; color: var(--warning);" id="margin">NTD 0</div>
+                </div>
+                
+                <div class="sim-card" style="background: var(--bg-card); border-radius: var(--radius); padding: 16px; border-left: 4px solid var(--accent);">
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">實際利潤率</div>
+                    <div style="font-size: 24px; font-weight: 700; color: var(--accent);" id="actualMargin">0%</div>
+                </div>
+            </div>
+
+            <!-- AI Prompt Section -->
+            <div class="section-title">
+                <span class="icon">🤖</span>
+                <span>AI 提示詞</span>
+            </div>
+            
+            <div class="ai-prompt-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px;">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+                    自定義 AI 分析提示詞（業務可自行調整內容）
+                </div>
+                
+                <div class="prompt-template" style="background: var(--bg); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 12px;">
+                    <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">生成的產品數量</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.8;">
+                        <strong>(1) 角色：</strong>資深禮品設計師 / 資深市場行銷 / 廣告公司總監<br>
+                        <strong>(2) 背景：</strong>根據我提供的客戶條件先分析其他需求，再分析（包括快速條件如 Logo、ESG、開模需求等），以及產品類型（如員工福利、促銷等），再分析客戶提供的參考資料（如產品照片、品牌調性）
+                    </div>
+                </div>
+                
+                <textarea class="form-textarea" id="aiPrompt" placeholder="輸入自定義 AI 提示詞..." style="min-height: 100px;"
+>你是一位資深禮品設計師與市場行銷專家，請根據以下客戶資訊，分析並推薦 3-5 款適合的禮品方案：
+
+【客戶資訊】
+- 公司：{company}
+- 產品類型：{category}
+- 預算範圍：{budget}
+- 受眾族群：{audience}
+- 特殊需求：{requirements}
+
+【輸出格式】
+1. 產品名稱
+2. 產品特色（50字內）
+3. 為何適合此客戶（100字內）
+4. 建議數量與單價區間
+5. 1688 搜尋關鍵字建議</textarea>
+                
+                <button class="btn-primary" onclick="analyzeWithAI()" style="width: 100%; margin-top: 12px;">
+                    <span>🤖</span>
+                    <span>AI 分析需求</span>
+                </button>
+            </div>
+            
+            <div id="productsContainer">
+                <!-- Product cards will be added here -->
+                <div class="product-card" data-product-id="1">
+                    <div class="product-header">
+                        <span class="product-name">產品 #1</span>
+                        <div class="product-actions">
+                            <button class="btn-sm danger" onclick="removeProduct(1)">刪除</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">產品名稱</label>
+                            <input type="text" class="form-input product-name-input" placeholder="例如：壓克力鑰匙圈">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">1688/淘寶連結</label>
+                            <input type="url" class="form-input product-url" placeholder="https://detail.1688.com/...">
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid-3">
+                        <div class="form-group">
+                            <label class="form-label">人民幣單價</label>
+                            <div class="input-group">
+                                <input type="number" class="form-input product-rmb-price" placeholder="3.50" step="0.01">
+                                <span class="input-group-addon">¥</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">匯率</label>
+                            <input type="number" class="form-input product-exchange-rate" value="4.5" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">台幣單價（自動計算）</label>
+                            <div class="input-group">
+                                <input type="number" class="form-input product-twd-price" readonly>
+                                <span class="input-group-addon">NTD</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grid-3">
+                        <div class="form-group">
+                            <label class="form-label">客製 Logo/包裝</label>
+                            <div class="input-group">
+                                <input type="number" class="form-input product-customization" value="0" step="0.1">
+                                <span class="input-group-addon">¥</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">損耗率</label>
+                            <div class="input-group">
+                                <input type="number" class="form-input product-waste-rate" value="5" step="0.1">
+                                <span class="input-group-addon">%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">風險率</label>
+                            <div class="input-group">
+                                <input type="number" class="form-input product-risk-rate" value="10" step="0.1">
+                                <span class="input-group-addon">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-secondary" onclick="addProduct()" style="width: 100%; margin-bottom: 24px;">
+                <span>➕ 新增產品</span>
+            </button>
+            
+            <!-- Price Tiers -->
+            <div class="section-title">
+                <span class="icon">📊</span>
+                <span>區間報價表</span>
+            </div>
+            
+            <div class="price-tiers">
+                <table class="tier-table">
+                    <thead>
+                        <tr>
+                            <th>數量區間</th>
+                            <th>單價（NTD）</th>
+                            <th>總價（NTD）</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tierTableBody">
+                        <!-- Price tiers will be generated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Proposal Options -->
+            <div class="section-title">
+                <span class="icon">💡</span>
+                <span>提案方案設定（最多三組）</span>
+            </div>
+            
+            <div class="proposal-options">
+                <div class="option-card" data-option="1">
+                    <div class="option-header">
+                        <span class="option-title">方案 A（基礎版）</span>
+                        <span class="option-badge">預設</span>
+                    </div>
+                    <div class="option-form">
+                        <div class="form-group">
+                            <label class="form-label">數量</label>
+                            <input type="number" class="form-input option-qty" value="100" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">單價（NTD）</label>
+                            <input type="number" class="form-input option-price" step="0.1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">工期（天）</label>
+                            <input type="number" class="form-input option-days" value="30" min="1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="option-card" data-option="2">
+                    <div class="option-header">
+                        <span class="option-title">方案 B（標準版）</span>
+                    </div>
+                    
+                    <div class="option-form">
+                        <div class="form-group">
+                            <label class="form-label">數量</label>
+                            <input type="number" class="form-input option-qty" value="500" min="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">單價（NTD）</label>
+                            <input type="number" class="form-input option-price" step="0.1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">工期（天）</label>
+                            <input type="number" class="form-input option-days" value="45" min="1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="option-card" data-option="3">
+                    <div class="option-header">
+                        <span class="option-title">方案 C（大量版）</span>
+                    </div>
+                    
+                    <div class="option-form">
+                        <div class="form-group">
+                            <label class="form-label">數量</label>
+                            <input type="number" class="form-input option-qty" value="1000" min="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">單價（NTD）</label>
+                            <input type="number" class="form-input option-price" step="0.1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">工期（天）</label>
+                            <input type="number" class="form-input option-days" value="60" min="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right: Results -->
+        <aside class="results-panel">
+            <div class="panel-title">📈 計算結果</div>
+            
+            <div class="result-card">
+                <div class="result-header">原始成本</div>
+                <div class="result-value" id="originalCost">¥0.00</div>
+                <div class="result-desc">人民幣單價 × 數量</div>
+            </div>
+            
+            <div class="result-card">
+                <div class="result-header">台幣成本價</div>
+                <div class="result-value" id="twdCost">NTD 0</div>
+                <div class="result-desc">含匯率換算</div>
+            </div>
+            
+            <div class="result-card">
+                <div class="result-header">建議報價（含利潤）</div>
+                <div class="result-value large" id="suggestedPrice">NTD 0</div>
+                <div class="result-desc">含損耗、風險、利潤</div>
+            </div>
+            
+            <div class="result-card">
+                <div class="result-header">利潤率</div>
+                <div class="result-value" style="color: var(--success);" id="profitMargin">0%</div>
+                <div class="result-desc">建議維持 25-35%</div>
+            </div>
+            
+            <div class="quote-actions">
+                <button class="btn-primary" onclick="generateProposal()">
+                    <span>📝</span>
+                    <span>轉提案</span>
+                </button>
+                
+                <button class="btn-primary" onclick="generateQuote()" style="background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);">
+                    <span>📄</span>
+                    <span>轉報價單</span>
+                </button>
+                
+                <button class="btn-secondary" onclick="generateFBPost()">
+                    <span>📱 生成 FB 分享文</span>
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">⚙️ 後台設定</span>
+                <button class="modal-close" onclick="closeSettings()">✕</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label class="setting-label">預設匯率（人民幣 → 台幣）</label>
+                    <p class="setting-desc">當產品未設定匯率時使用的預設值</p>
+                    <input type="number" class="form-input" id="defaultExchangeRate" value="4.5" step="0.01">
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">預設利潤率</label>
+                    <p class="setting-desc">報價計算時的基礎利潤率</p>
+                    <div class="input-group">
+                        <input type="number" class="form-input" id="defaultProfitRate" value="30" step="0.1">
+                        <span class="input-group-addon">%</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">預設損耗率</label>
+                    <div class="input-group">
+                        <input type="number" class="form-input" id="defaultWasteRate" value="5" step="0.1">
+                        <span class="input-group-addon">%</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">預設風險率</label>
+                    <div class="input-group">
+                        <input type="number" class="form-input" id="defaultRiskRate" value="10" step="0.1">
+                        <span class="input-group-addon">%</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">數量區間設定</label>
+                    <p class="setting-desc">報價表的數量分級（用逗號分隔）</p>
+                    <input type="text" class="form-input" id="quantityTiers" value="0,100,300,500,1000,3000,5000,10000">
+                </div>
+                
+                <button class="btn-primary" onclick="saveSettings()" style="width: 100%; margin-top: 12px;">
+                    儲存設定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Global Settings
+        let settings = {
+            defaultExchangeRate: 4.5,
+            defaultProfitRate: 30,
+            defaultWasteRate: 5,
+            defaultRiskRate: 10,
+            quantityTiers: [0, 100, 300, 500, 1000, 3000, 5000, 10000]
+        };
+
+        // Product counter
+        let productCount = 1;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            setupEventListeners();
+            calculateAll();
+            generatePriceTiers();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Category buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                });
+            });
+
+            // Budget buttons
+            document.querySelectorAll('.budget-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.budget-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                });
+            });
+
+            // File upload
+            const uploadInput = document.getElementById('referenceImage');
+            const uploadArea = document.getElementById('uploadArea');
+            const imagePreview = document.getElementById('imagePreview');
+
+            if (uploadInput) {
+                uploadInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                            imagePreview.style.display = 'block';
+                            uploadArea.style.display = 'none';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Product inputs
+            document.addEventListener('input', (e) => {
+                if (e.target.classList.contains('product-rmb-price') || 
+                    e.target.classList.contains('product-exchange-rate') ||
+                    e.target.classList.contains('product-customization') ||
+                    e.target.classList.contains('product-waste-rate') ||
+                    e.target.classList.contains('product-risk-rate')) {
+                    calculateProduct(e.target.closest('.product-card'));
+                    calculateAll();
+                }
+            });
+
+            // Option inputs
+            document.querySelectorAll('.option-qty, .option-price').forEach(input => {
+                input.addEventListener('input', calculateAll);
+            });
+        }
+
+        // Calculate single product
+        function calculateProduct(card) {
+            const rmbPrice = parseFloat(card.querySelector('.product-rmb-price').value) || 0;
+            const exchangeRate = parseFloat(card.querySelector('.product-exchange-rate').value) || settings.defaultExchangeRate;
+            
+            const twdPrice = rmbPrice * exchangeRate;
+            card.querySelector('.product-twd-price').value = twdPrice.toFixed(2);
+        }
+
+        // Calculate all
+        function calculateAll() {
+            let totalRmbCost = 0;
+            let totalTwdCost = 0;
+            let totalSuggestedPrice = 0;
+
+            document.querySelectorAll('.product-card').forEach(card => {
+                calculateProduct(card);
+                
+                const rmbPrice = parseFloat(card.querySelector('.product-rmb-price').value) || 0;
+                const twdPrice = parseFloat(card.querySelector('.product-twd-price').value) || 0;
+                const customization = parseFloat(card.querySelector('.product-customization').value) || 0;
+                const wasteRate = parseFloat(card.querySelector('.product-waste-rate').value) || settings.defaultWasteRate;
+                const riskRate = parseFloat(card.querySelector('.product-risk-rate').value) || settings.defaultRiskRate;
+                const profitRate = settings.defaultProfitRate;
+                
+                // Get quantity from first option
+                const qty = parseInt(document.querySelector('.option-card[data-option="1"] .option-qty').value) || 100;
+                
+                const exchangeRate = parseFloat(card.querySelector('.product-exchange-rate').value) || settings.defaultExchangeRate;
+                const customizationTwd = customization * exchangeRate;
+                
+                // Calculate costs
+                const productRmbCost = (rmbPrice + customization) * qty;
+                const productTwdCost = twdPrice * qty + customizationTwd * qty;
+                
+                // Add waste and risk
+                const wasteFactor = 1 + (wasteRate / 100);
+                const riskFactor = 1 + (riskRate / 100);
+                const profitFactor = 1 + (profitRate / 100);
+                
+                const suggestedPrice = productTwdCost * wasteFactor * riskFactor * profitFactor;
+                
+                totalRmbCost += productRmbCost;
+                totalTwdCost += productTwdCost;
+                totalSuggestedPrice += suggestedPrice;
+            });
+
+            // Update results
+            document.getElementById('originalCost').textContent = `¥${totalRmbCost.toFixed(2)}`;
+            document.getElementById('twdCost').textContent = `NTD ${totalTwdCost.toFixed(0)}`;
+            document.getElementById('suggestedPrice').textContent = `NTD ${totalSuggestedPrice.toFixed(0)}`;
+            
+            const margin = totalTwdCost > 0 ? ((totalSuggestedPrice - totalTwdCost) / totalSuggestedPrice * 100) : 0;
+            document.getElementById('profitMargin').textContent = `${margin.toFixed(1)}%`;
+
+            // Update option prices based on tiers
+            updateOptionPrices();
+        }
+
+        // Generate price tiers table
+        function generatePriceTiers() {
+            const tbody = document.getElementById('tierTableBody');
+            tbody.innerHTML = '';
+            
+            const tiers = settings.quantityTiers;
+            
+            for (let i = 0; i < tiers.length - 1; i++) {
+                const minQty = tiers[i];
+                const maxQty = tiers[i + 1] - 1;
+                const displayRange = minQty === 0 ? `1-${maxQty}` : 
+                                     maxQty >= 9999 ? `${minQty}+` : 
+                                     `${minQty}-${maxQty}`;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${displayRange}</td>
+                    <td class="price-highlight tier-price" data-tier="${i}">-</td>
+                    <td class="tier-total" data-tier="${i}">-</td>
+                `;
+                tbody.appendChild(row);
+            }
+            
+            updateTierPrices();
+        }
+
+        // Update tier prices
+        function updateTierPrices() {
+            // Calculate average unit price from products
+            let totalUnitPrice = 0;
+            let productCount = 0;
+            
+            document.querySelectorAll('.product-card').forEach(card => {
+                const twdPrice = parseFloat(card.querySelector('.product-twd-price').value) || 0;
+                const customization = parseFloat(card.querySelector('.product-customization').value) || 0;
+                const exchangeRate = parseFloat(card.querySelector('.product-exchange-rate').value) || settings.defaultExchangeRate;
+                const customizationTwd = customization * exchangeRate;
+                
+                const wasteRate = parseFloat(card.querySelector('.product-waste-rate').value) || settings.defaultWasteRate;
+                const riskRate = parseFloat(card.querySelector('.product-risk-rate').value) || settings.defaultRiskRate;
+                const profitRate = settings.defaultProfitRate;
+                
+                const wasteFactor = 1 + (wasteRate / 100);
+                const riskFactor = 1 + (riskRate / 100);
+                const profitFactor = 1 + (profitRate / 100);
+                
+                const finalUnitPrice = (twdPrice + customizationTwd) * wasteFactor * riskFactor * profitFactor;
+                
+                totalUnitPrice += finalUnitPrice;
+                productCount++;
+            });
+            
+            const avgUnitPrice = productCount > 0 ? totalUnitPrice / productCount : 0;
+            
+            // Update tier prices with volume discounts
+            const tiers = settings.quantityTiers;
+            document.querySelectorAll('.tier-price').forEach((cell, index) => {
+                const minQty = tiers[index];
+                const discountFactor = Math.max(0.85, 1 - (index * 0.03)); // 3% discount per tier, min 85%
+                const tierPrice = avgUnitPrice * discountFactor;
+                
+                cell.textContent = `NTD ${tierPrice.toFixed(1)}`;
+                
+                const totalCell = document.querySelector(`.tier-total[data-tier="${index}"]`);
+                const displayQty = minQty === 0 ? 100 : minQty;
+                const totalPrice = tierPrice * displayQty;
+                totalCell.textContent = `NTD ${totalPrice.toFixed(0)}`;
+            });
+        }
+
+        // Update option prices based on selected quantities
+        function updateOptionPrices() {
+            document.querySelectorAll('.option-card').forEach(card => {
+                const qty = parseInt(card.querySelector('.option-qty').value) || 100;
+                const priceInput = card.querySelector('.option-price');
+                
+                // Find appropriate tier price
+                const tiers = settings.quantityTiers;
+                let tierPrice = 0;
+                
+                for (let i = 0; i < tiers.length - 1; i++) {
+                    const minQty = tiers[i];
+                    const maxQty = tiers[i + 1];
+                    
+                    if (qty >= minQty && qty < maxQty) {
+                        const priceCell = document.querySelector(`.tier-price[data-tier="${i}"]`);
+                        if (priceCell) {
+                            const priceText = priceCell.textContent.replace('NTD ', '');
+                            tierPrice = parseFloat(priceText) || 0;
+                        }
+                        break;
+                    }
+                }
+                
+                if (priceInput.value === '' || priceInput.value === '0') {
+                    priceInput.value = tierPrice.toFixed(1);
+                }
+            });
+        }
+
+        // Add product
+        function addProduct() {
+            productCount++;
+            const container = document.getElementById('productsContainer');
+            
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            productCard.dataset.productId = productCount;
+            productCard.innerHTML = `
+                <div class="product-header">
+                    <span class="product-name">產品 #${productCount}</span>
+                    <div class="product-actions">
+                        <button class="btn-sm danger" onclick="removeProduct(${productCount})">刪除</button>
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">產品名稱</label>
+                        <input type="text" class="form-input product-name-input" placeholder="例如：壓克力鑰匙圈">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">1688/淘寶連結</label>
+                        <input type="url" class="form-input product-url" placeholder="https://detail.1688.com/...">
+                    </div>
+                </div>
+                
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">人民幣單價</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input product-rmb-price" placeholder="3.50" step="0.01">
+                            <span class="input-group-addon">¥</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">匯率</label>
+                        <input type="number" class="form-input product-exchange-rate" value="${settings.defaultExchangeRate}" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">台幣單價（自動計算）</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input product-twd-price" readonly>
+                            <span class="input-group-addon">NTD</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">客製 Logo/包裝</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input product-customization" value="0" step="0.1">
+                            <span class="input-group-addon">¥</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">損耗率</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input product-waste-rate" value="${settings.defaultWasteRate}" step="0.1">
+                            <span class="input-group-addon">%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">風險率</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input product-risk-rate" value="${settings.defaultRiskRate}" step="0.1">
+                            <span class="input-group-addon">%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(productCard);
+            showToast('✅ 已新增產品');
+        }
+
+        // Remove product
+        function removeProduct(id) {
+            const card = document.querySelector(`.product-card[data-product-id="${id}"]`);
+            if (card) {
+                card.remove();
+                calculateAll();
+                showToast('🗑️ 已刪除產品');
+            }
+        }
+
+        // Settings
+        function showSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('1688_system_settings');
+            if (saved) {
+                settings = JSON.parse(saved);
+                
+                document.getElementById('defaultExchangeRate').value = settings.defaultExchangeRate;
+                document.getElementById('defaultProfitRate').value = settings.defaultProfitRate;
+                document.getElementById('defaultWasteRate').value = settings.defaultWasteRate;
+                document.getElementById('defaultRiskRate').value = settings.defaultRiskRate;
+                document.getElementById('quantityTiers').value = settings.quantityTiers.join(',');
+            }
+        }
+
+        function saveSettings() {
+            settings.defaultExchangeRate = parseFloat(document.getElementById('defaultExchangeRate').value) || 4.5;
+            settings.defaultProfitRate = parseFloat(document.getElementById('defaultProfitRate').value) || 30;
+            settings.defaultWasteRate = parseFloat(document.getElementById('defaultWasteRate').value) || 5;
+            settings.defaultRiskRate = parseFloat(document.getElementById('defaultRiskRate').value) || 10;
+            
+            const tiersStr = document.getElementById('quantityTiers').value;
+            settings.quantityTiers = tiersStr.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            
+            localStorage.setItem('1688_system_settings', JSON.stringify(settings));
+            
+            closeSettings();
+            calculateAll();
+            generatePriceTiers();
+            showToast('✅ 設定已儲存');
+        }
+
+        // Generate Proposal
+        function generateProposal() {
+            const customer = document.getElementById('companyName').value || '未命名客戶';
+            showToast(`📝 正在為「${customer}」生成提案...`);
+            
+            // TODO: Integrate with AI to generate proposal
+            setTimeout(() => {
+                showToast('✅ 提案已生成（示範）');
+            }, 1500);
+        }
+
+        // Analyze with AI
+        function analyzeWithAI() {
+            const company = document.getElementById('companyName').value || '未命名公司';
+            const contact = document.getElementById('contactPerson').value || '未提供';
+            const categoryBtn = document.querySelector('.category-btn.selected');
+            const category = categoryBtn ? categoryBtn.textContent : '未選擇';
+            const budgetBtn = document.querySelector('.budget-btn.selected');
+            const budget = budgetBtn ? budgetBtn.textContent : '未選擇';
+            const requirements = document.getElementById('otherRequirements').value || '無';
+            
+            const prompt = document.getElementById('aiPrompt').value
+                .replace('{company}', company)
+                .replace('{category}', category)
+                .replace('{budget}', budget)
+                .replace('{audience}', '企業客戶')
+                .replace('{requirements}', requirements);
+            
+            showToast('🤖 AI 分析中...');
+            
+            // Copy prompt to clipboard for now
+            navigator.clipboard.writeText(prompt).then(() => {
+                showToast('✅ AI 提示詞已生成並複製到剪貼簿');
+            });
+            
+            // TODO: Integrate with Kimi API to get actual analysis
+            console.log('AI Prompt:', prompt);
+        }
+
+        // Generate Quote
+        function generateQuote() {
+            const customer = document.getElementById('companyName').value || '未命名客戶';
+            showToast(`📄 正在為「${customer}」生成報價單...`);
+            
+            // TODO: Generate PDF quote
+            setTimeout(() => {
+                showToast('✅ 報價單已生成（示範）');
+            }, 1500);
+        }
+
+        // Generate FB Post
+        function generateFBPost() {
+            showToast('📱 正在生成 FB 分享文...');
+            
+            // TODO: Integrate with AI to generate FB post
+            setTimeout(() => {
+                showToast('✅ FB 分享文已生成（示範）');
+            }, 1500);
+        }
+
+        // Save Data
+        function saveData() {
+            const data = {
+                customer: {
+                    company: document.getElementById('companyName').value,
+                    contact: document.getElementById('contactPerson').value,
+                    category: document.querySelector('.category-btn.selected')?.dataset.category || '',
+                    budget: document.querySelector('.budget-btn.selected')?.dataset.budget || '',
+                    requirements: document.getElementById('otherRequirements').value
+                },
+                products: [],
+                timestamp: new Date().toISOString()
+            };
+            
+            document.querySelectorAll('.product-card').forEach(card => {
+                data.products.push({
+                    name: card.querySelector('.product-name-input').value,
+                    url: card.querySelector('.product-url').value,
+                    rmbPrice: card.querySelector('.product-rmb-price').value,
+                    exchangeRate: card.querySelector('.product-exchange-rate').value,
+                    twdPrice: card.querySelector('.product-twd-price').value,
+                    customization: card.querySelector('.product-customization').value,
+                    wasteRate: card.querySelector('.product-waste-rate').value,
+                    riskRate: card.querySelector('.product-risk-rate').value
+                });
+            });
+            
+            localStorage.setItem('1688_system_data', JSON.stringify(data));
+            showToast('💾 資料已儲存');
+        }
+
+        // Show toast
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Close modal on overlay click
+        document.getElementById('settingsModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeSettings();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produce-Agent 生管控制中心 | 銓宏國際</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --secondary: #06B6D4;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .quick-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .stat-icon.green { background: rgba(16, 185, 129, 0.1); color: #10B981; }
+        .stat-icon.blue { background: rgba(6, 182, 212, 0.1); color: #06B6D4; }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+        .stat-icon.red { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
+
+        .stat-change {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .stat-change.positive { color: var(--primary); }
+        .stat-change.negative { color: var(--danger); }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Equipment Status */
+        .equipment-section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .equipment-card {
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .equipment-card:hover {
+            border-color: var(--primary);
+        }
+
+        .equipment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .equipment-name {
+            font-weight: 600;
+        }
+
+        .equipment-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .equipment-status.running { background: rgba(16, 185, 129, 0.1); color: #059669; }
+        .equipment-status.idle { background: rgba(6, 182, 212, 0.1); color: #0891B2; }
+        .equipment-status.maintenance { background: rgba(245, 158, 11, 0.1); color: #D97706; }
+
+        .equipment-utilization {
+            margin-bottom: 8px;
+        }
+
+        .utilization-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .utilization-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .utilization-fill.high { background: var(--primary); }
+        .utilization-fill.medium { background: var(--warning); }
+        .utilization-fill.low { background: var(--danger); }
+
+        .utilization-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .equipment-info {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+        }
+
+        /* Production Schedule */
+        .schedule-panel {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-tab {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: none;
+            background: var(--bg);
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-tab:hover, .filter-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Schedule List */
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .schedule-item.urgent { border-left-color: var(--danger); }
+        .schedule-item.warning { border-left-color: var(--warning); }
+
+        .schedule-timeline {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px;
+        }
+
+        .schedule-date {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .schedule-day {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .schedule-content {
+            flex: 1;
+        }
+
+        .schedule-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .schedule-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .schedule-progress {
+            width: 100px;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--primary);
+        }
+
+        /* Calculator Panel */
+        .calculator-panel {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Result Box */
+        .result-box {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 10px;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--primary-dark);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .result-value {
+            font-weight: 600;
+        }
+
+        .result-highlight {
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .equipment-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .equipment-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div>
+                    <h1><i class="fas fa-industry"></i> Produce-Agent 生管控制中心</h1>
+                    <p>生產排程、設備管理、交期計算一站式平台</p>
+                </div>
+                <div class="quick-actions">
+                    <button class="quick-btn"><i class="fas fa-plus"></i> 新增排程</button>
+                    <button class="quick-btn"><i class="fas fa-tools"></i> 設備維護</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon green"><i class="fas fa-tasks"></i></div>
+                    <span class="stat-change positive">+3</span>
+                </div>
+                <div class="stat-value">12</div>
+                <div class="stat-label">進行中訂單</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon blue"><i class="fas fa-percentage"></i></div>
+                    <span class="stat-change positive">+5%</span>
+                </div>
+                <div class="stat-value">78%</div>
+                <div class="stat-label">設備利用率</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+                    <span class="stat-change negative">-1天</span>
+                </div>
+                <div class="stat-value">18</div>
+                <div class="stat-label">平均交期(天)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
+                    <span class="stat-change">注意</span>
+                </div>
+                <div class="stat-value">2</div>
+                <div class="stat-label">交期預警</div>
+            </div>
+        </div>
+
+        <!-- Equipment Status -->
+        <div class="equipment-section">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-cogs"></i> 設備狀態監控</h2>
+                <span style="font-size:13px;color:var(--text-muted)">3台UV機 · 4台雷射機 · 1台燙印機</span>
+            </div>
+
+            <div class="equipment-grid">
+                <div class="equipment-card">
+                    <div class="equipment-header">
+                        <span class="equipment-name">UV直噴機 #1</span>
+                        <span class="equipment-status running">生產中</span>
+                    </div>
+                    <div class="equipment-utilization">
+                        <div class="utilization-bar">
+                            <div class="utilization-fill high" style="width:85%"></div>
+                        </div>
+                        <div class="utilization-label">
+                            <span>產能利用率</span>
+                            <span>85%</span>
+                        </div>
+                    </div>
+                    <div class="equipment-info">當前：A0001-260302 壓克力鑰匙圈</div>
+                </div>
+
+                <div class="equipment-card">
+                    <div class="equipment-header">
+                        <span class="equipment-name">UV直噴機 #2</span>
+                        <span class="equipment-status idle">待機中</span>
+                    </div>
+                    <div class="equipment-utilization">
+                        <div class="utilization-bar">
+                            <div class="utilization-fill low" style="width:0%"></div>
+                        </div>
+                        <div class="utilization-label">
+                            <span>產能利用率</span>
+                            <span>0%</span>
+                        </div>
+                    </div>
+                    <div class="equipment-info">可立即投入生產</div>
+                </div>
+
+                <div class="equipment-card">
+                    <div class="equipment-header">
+                        <span class="equipment-name">UV直噴機 #3</span>
+                        <span class="equipment-status running">生產中</span>
+                    </div>
+                    <div class="equipment-utilization">
+                        <div class="utilization-bar">
+                            <div class="utilization-fill medium" style="width:60%"></div>
+                        </div>
+                        <div class="utilization-label">
+                            <span>產能利用率</span>
+                            <span>60%</span>
+                        </div>
+                    </div>
+                    <div class="equipment-info">當前：A0009-260316 馬克杯定制</div>
+                </div>
+
+                <div class="equipment-card">
+                    <div class="equipment-header">
+                        <span class="equipment-name">CO2雷雕機</span>
+                        <span class="equipment-status maintenance">維護中</span>
+                    </div>
+                    <div class="equipment-utilization">
+                        <div class="utilization-bar">
+                            <div class="utilization-fill low" style="width:0%"></div>
+                        </div>
+                        <div class="utilization-label">
+                            <span>產能利用率</span>
+                            <span>維護</span>
+                        </div>
+                    </div>
+                    <div class="equipment-info">預計 3/20 恢復</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Production Schedule -->
+            <div class="schedule-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">生產排程</h2>
+                    <div class="filter-tabs">
+                        <button class="filter-tab active">全部</button>
+                        <button class="filter-tab">進行中</button>
+                        <button class="filter-tab">即將開始</button>
+                    </div>
+                </div>
+
+                <div class="schedule-list">
+                    <div class="schedule-item urgent">
+                        <div class="schedule-timeline">
+                            <span class="schedule-date">3/31</span>
+                            <span class="schedule-day">交期</span>
+                        </div>
+                        <div class="schedule-content">
+                            <div class="schedule-title">A0001-260302 KKBOX壓克力鑰匙圈</div>
+                            <div class="schedule-meta">4000個 · UV印刷 · 本道紙塑</div>
+                        </div>
+                        <div class="schedule-progress">
+                            <div class="progress-text">生產中 60%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width:60%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item warning">
+                        <div class="schedule-timeline">
+                            <span class="schedule-date">4/02</span>
+                            <span class="schedule-day">交期</span>
+                        </div>
+                        <div class="schedule-content">
+                            <div class="schedule-title">A0004-260310 無紡布覆膜袋</div>
+                            <div class="schedule-meta">30000個 · 外發生產 · 本道紙塑</div>
+                        </div>
+                        <div class="schedule-progress">
+                            <div class="progress-text">打樣確認 30%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width:30%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div class="schedule-timeline">
+                            <span class="schedule-date">4/25</span>
+                            <span class="schedule-day">交期</span>
+                        </div>
+                        <div class="schedule-content">
+                            <div class="schedule-title">A0008-260316 花朵皮革鏡子鑰匙圈</div>
+                            <div class="schedule-meta">75000個 · 外發生產 · 易集</div>
+                        </div>
+                        <div class="schedule-progress">
+                            <div class="progress-text">剛下單 10%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width:10%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Calculator -->
+            <div class="calculator-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="fas fa-calculator"></i> 交期計算器</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">產品類型</label>
+                    <select class="form-select">
+                        <option>選擇產品...</option>
+                        <option>壓克力立牌</option>
+                        <option>悠遊卡/卡片</option>
+                        <option>紙盒包裝</option>
+                        <option>馬克杯</option>
+                        <option>帆布袋</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">數量</label>
+                    <input type="number" class="form-input" placeholder="5000">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">加工方式</label>
+                    <select class="form-select">
+                        <option>自有設備生產</option>
+                        <option>外發生產</option>
+                        <option>混合生產</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">急單需求</label>
+                    <select class="form-select">
+                        <option>一般訂單</option>
+                        <option>急單（加速20%）</option>
+                        <option>特急（加速50%）</option>
+                    </select>
+                </div>
+
+                <button class="calculate-btn">
+                    <i class="fas fa-calculator"></i>
+                    計算交期
+                </button>
+
+                <!-- Sample Result -->
+                <div class="result-box">
+                    <div class="result-title"><i class="fas fa-check-circle"></i> 計算結果</div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">標準工時</span>
+                        <span class="result-value">5-7天</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">打樣確認</span>
+                        <span class="result-value">+2天</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">緩衝時間</span>
+                        <span class="result-value">+1天</span>
+                    </div>
+                    
+                    <div class="result-item" style="border-top:2px solid var(--primary);padding-top:12px;margin-top:12px;">
+                        <span class="result-label">建議交期</span>
+                        <span class="result-value result-highlight">8-10個工作天</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
