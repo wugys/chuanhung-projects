@@ -1019,11 +1019,116 @@ function closeTodoModal() {
     document.getElementById('todo-modal').classList.remove('active');
 }
 
+// ==================== 新增專案功能 ====================
+
+// 開啟新增專案彈窗
+function openAddProjectModal() {
+    const modal = document.getElementById('add-project-modal');
+    const projectIdInput = document.getElementById('new-project-id');
+    const deadlineInput = document.getElementById('new-project-deadline');
+    
+    // 自動生成專案編號
+    projectIdInput.value = generateProjectId();
+    
+    // 預設今天日期
+    const today = new Date();
+    deadlineInput.value = today.toISOString().split('T')[0];
+    
+    // 顯示彈窗
+    modal.classList.add('active');
+}
+
+// 關閉新增專案彈窗
+function closeAddProjectModal() {
+    document.getElementById('add-project-modal').classList.remove('active');
+    document.getElementById('add-project-form').reset();
+}
+
+// 生成專案編號（格式：A0001-YYMMDD）
+function generateProjectId() {
+    const date = new Date();
+    const yy = String(date.getFullYear()).slice(-2);
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    
+    // 從現有專案找出最大序號
+    let maxNum = 0;
+    projects.forEach(p => {
+        const match = p.id.match(/A(\d+)-/);
+        if (match) {
+            const num = parseInt(match[1]);
+            if (num > maxNum) maxNum = num;
+        }
+    });
+    
+    const sequence = String(maxNum + 1).padStart(4, '0');
+    return `A${sequence}-${yy}${mm}${dd}`;
+}
+
+// 提交新專案
+function submitNewProject(event) {
+    event.preventDefault();
+    
+    const formData = {
+        id: document.getElementById('new-project-id').value,
+        name: document.getElementById('new-project-name').value,
+        client: document.getElementById('new-project-client').value,
+        productType: document.getElementById('new-project-type').value,
+        quantity: document.getElementById('new-project-quantity').value + '個',
+        deadline: document.getElementById('new-project-deadline').value,
+        phase: document.getElementById('new-project-phase').value,
+        salesRep: document.getElementById('new-project-sales').value,
+        notes: document.getElementById('new-project-notes').value,
+        contact: '',
+        progress: 0,
+        status: 'active',
+        statusText: getStatusText(document.getElementById('new-project-phase').value),
+        tasks: []
+    };
+    
+    // 添加新專案到資料陣列
+    projects.push(formData);
+    
+    // 關閉彈窗並重新整理顯示
+    closeAddProjectModal();
+    renderAllViews();
+    
+    // 顯示成功提示
+    alert('✅ 專案建立成功！');
+}
+
+// 根據階段取得狀態文字
+function getStatusText(phase) {
+    const statusMap = {
+        'proposing': '💡 提案中',
+        'quoting': '📋 報價中',
+        'pending': '🔵 報價待確認',
+        'sampling': '🔨 打樣中',
+        'production': '🏭 生產中',
+        'completed': '✅ 已完成'
+    };
+    return statusMap[phase] || '💡 提案中';
+}
+
+// 重新整理所有視圖
+function renderAllViews() {
+    renderProposalView();
+    renderQuoteView();
+    renderSampleView();
+    renderProductionView();
+    renderList();
+    renderPendingConfirmView();
+    updateStats();
+}
+
+// ==================== 新增專案功能結束 ====================
+
 // 點擊彈窗外關閉
 window.onclick = function(event) {
     const modal = document.getElementById('project-modal');
     const ganttModal = document.getElementById('gantt-modal');
     const todoModal = document.getElementById('todo-modal');
+    const addProjectModal = document.getElementById('add-project-modal');
     
     if (event.target === modal) {
         modal.classList.remove('active');
@@ -1033,6 +1138,9 @@ window.onclick = function(event) {
     }
     if (event.target === todoModal) {
         todoModal.classList.remove('active');
+    }
+    if (event.target === addProjectModal) {
+        closeAddProjectModal();
     }
 }
 
