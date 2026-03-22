@@ -1503,3 +1503,542 @@ h2 {
         font-size: 12px;
     }
 }
+
+/* ==================== 專案進度AI輔助填入功能樣式 ==================== */
+
+/* 新增進度按鈕 */
+.btn-progress {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.btn-progress:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+}
+
+/* 新增進度彈窗 */
+.add-progress-modal-content {
+    max-width: 500px;
+}
+
+.progress-form {
+    padding: 20px 0;
+}
+
+.progress-form .hint {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.progress-form textarea {
+    width: 100%;
+    resize: vertical;
+}
+
+.ai-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+}
+
+.ai-btn:hover {
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4) !important;
+}
+
+/* AI 分析結果樣式 */
+.analysis-result {
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.analysis-result h4 {
+    color: #5b21b6;
+    margin: 0 0 16px 0;
+    font-size: 16px;
+}
+
+.analysis-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.analysis-item:last-child {
+    border-bottom: none;
+}
+
+.analysis-item .label {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.analysis-item .value {
+    color: #1f2937;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.analysis-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #ddd6fe;
+}
+
+/* 階段下拉選單樣式 */
+.phase-select {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s;
+}
+
+.phase-select:hover {
+    border-color: #667eea;
+}
+
+.phase-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.phase-select.proposing,
+.phase-select.proposal_pending {
+    color: #7c3aed;
+    background: #f5f3ff;
+}
+
+.phase-select.quoting,
+.phase-select.pending {
+    color: #0369a1;
+    background: #e0f2fe;
+}
+
+.phase-select.sampling {
+    color: #c2410c;
+    background: #fff7ed;
+}
+
+.phase-select.production {
+    color: #15803d;
+    background: #f0fdf4;
+}
+
+.phase-select.completed {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+/* Toast 提示動畫 */
+@keyframes slideUp {
+    from {
+        transform: translateX(-50%) translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ==================== 待辦事項功能優化樣式 (SYS-2026-0321-003) ==================== */
+
+/* 待辦事項控制欄 */
+.todo-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.todo-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+}
+
+.todo-toggle-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #10b981;
+}
+
+.todo-progress-summary {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.todo-progress-summary strong {
+    color: #059669;
+    font-size: 16px;
+}
+
+/* Checkbox 樣式 */
+.todo-checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-right: 12px;
+}
+
+.todo-checkbox {
+    display: none;
+}
+
+.todo-checkbox-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background: white;
+}
+
+.todo-checkbox:checked + .todo-checkbox-custom {
+    background: #10b981;
+    border-color: #10b981;
+}
+
+.todo-checkbox:checked + .todo-checkbox-custom::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.todo-checkbox-custom:hover {
+    border-color: #10b981;
+}
+
+/* 待辦事項項目樣式 */
+.todo-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+}
+
+.todo-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.todo-item.completed {
+    background: #f0fdf4;
+    border-color: #86efac;
+    opacity: 0.8;
+}
+
+.todo-item.completed .todo-name {
+    text-decoration: line-through;
+    color: #6b7280;
+}
+
+.todo-main {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.todo-name {
+    flex: 1;
+    font-weight: 500;
+    color: #1f2937;
+    font-size: 15px;
+}
+
+.todo-name.strikethrough {
+    text-decoration: line-through;
+    color: #9ca3af;
+}
+
+.todo-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.todo-progress {
+    font-weight: 600;
+    color: #f59e0b;
+}
+
+.todo-progress.completed {
+    color: #10b981;
+}
+
+.todo-progress-bar {
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.todo-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.todo-progress-fill.completed {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+/* Toast 提示 */
+.todo-toast {
+    animation: slideUp 0.3s ease;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .todo-controls {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    
+    .todo-main {
+        flex-wrap: wrap;
+    }
+    
+    .todo-name {
+        width: 100%;
+        margin-top: 8px;
+    }
+}
+
+/* ==================== 待辦事項功能優化樣式結束 ==================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==================== 專案進度AI輔助填入功能樣式結束 ==================== */
+
+/* ==================== 人員搜尋功能樣式 (SYS-2026-0321-007) ==================== */
+
+/* 人員篩選器容器 */
+.sales-rep-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.sales-rep-filter-container label {
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+}
+
+#sales-rep-filter {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+#sales-rep-filter:hover {
+    border-color: #667eea;
+}
+
+#sales-rep-filter:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* 我的專案按鈕 */
+.btn-my-projects {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btn-my-projects:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* 逾期警示區域 */
+.overdue-alert-section {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.overdue-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.overdue-icon {
+    font-size: 20px;
+}
+
+.overdue-title {
+    font-weight: 600;
+    color: #dc2626;
+    font-size: 15px;
+}
+
+.overdue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.overdue-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 3px solid #ef4444;
+}
+
+.overdue-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.overdue-project-id {
+    font-weight: 600;
+    color: #dc2626;
+    font-size: 13px;
+    min-width: 90px;
+}
+
+.overdue-project-name {
+    flex: 1;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.overdue-project-client {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.overdue-days {
+    background: #dc2626;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* 工作量統計彈窗 */
+.stats-modal-content {
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.stats-table-container {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 12px 16px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.stats-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+    position: sticky;
+    top: 0;
+}
+
+.stats-table td {
+    color: #4b5563;
+}
+
+.stats-table tr:hover {
+    background: #f8fafc;
+}
+
+.stats-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+/* ==================== 人員搜尋功能樣式結束 ==================== */

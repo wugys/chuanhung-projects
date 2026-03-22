@@ -2,8 +2,8 @@
 // 使用 Supabase Auth + JWT + Custom Claims
 
 // Supabase 配置
-const SUPABASE_URL = 'https://roszrhrmuvwmnutvgxaer.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvc3pyaHJtdXZtbnV0dmd4YWVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4ODIzMzgsImV4cCI6MjA5NDU4MzM4fQ.jWmEeNdsdEuX05P9FOHgrIpz9g_Qlz9dNFvPehQr-1c';
+const SUPABASE_URL = 'https://djvyozmdenvzlbyieyss.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdnlvem1kZW52emxieWlleXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTA1ODcsImV4cCI6MjA4OTY4NjU4N30.xc33MXQmbNph4EcFHwNbmai3dXDanIj2VKStJ6Xy2Tg';
 
 // 初始化 Supabase 客戶端
 let supabaseClient = null;
@@ -72,11 +72,19 @@ const ROLE_PERMISSIONS = {
     ]
 };
 
-// 初始化認證模組
+// 初始化認證模組（暫時禁用強制登入，允許直接訪問）
 async function initAuth() {
     if (!window.supabase) {
         console.error('Supabase library not loaded');
-        return false;
+        // 暫時允許無登入訪問
+        window.currentUser = {
+            id: 'guest',
+            email: 'guest@chuanhung.com',
+            role: ROLES.GUEST,
+            name: '訪客'
+        };
+        setupGuestMode();
+        return true;
     }
     
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -85,11 +93,16 @@ async function initAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (!session) {
-        // 未登入，導向登入頁面（如果不是在登入頁面）
-        if (!window.location.pathname.includes('login.html')) {
-            window.location.href = 'login.html';
-        }
-        return false;
+        // 暫時禁用強制登入，提供訪客模式
+        console.log('未登入，啟用訪客模式');
+        window.currentUser = {
+            id: 'guest',
+            email: 'guest@chuanhung.com',
+            role: ROLES.GUEST,
+            name: '訪客'
+        };
+        setupGuestMode();
+        return true;
     }
     
     // 儲存使用者資訊到全域
@@ -112,6 +125,66 @@ async function initAuth() {
     applyRoleBasedUI();
     
     return true;
+}
+
+// 訪客模式設置（暫時允許無登入訪問）
+function setupGuestMode() {
+    console.log('訪客模式已啟用');
+    
+    // 設定權限檢查函數到全域
+    window.checkPermission = checkPermission;
+    window.checkRole = checkRole;
+    window.logout = logout;
+    
+    // 更新 UI 顯示使用者資訊（顯示為訪客）
+    updateUserUI();
+    
+    // 訪客只有基本檢視權限
+    applyRoleBasedUI();
+    
+    // 顯示提示訊息
+    showGuestNotification();
+}
+
+// 顯示訪客模式提示
+function showGuestNotification() {
+    // 檢查是否已顯示過
+    if (sessionStorage.getItem('guest-notified')) return;
+    
+    // 建立提示元素
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #f59e0b;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    `;
+    notification.innerHTML = `
+        <span>👤</span>
+        <span>目前為訪客模式，部分功能受限</span>
+        <button onclick="this.parentElement.remove()" style="background:none;border:none;color:white;cursor:pointer;font-size:18px;">×</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // 標記已顯示
+    sessionStorage.setItem('guest-notified', 'true');
+    
+    // 5秒後自動消失
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
 }
 
 // 檢查是否有特定權限
@@ -142,7 +215,11 @@ async function logout() {
     if (supabaseClient) {
         await supabaseClient.auth.signOut();
     }
-    window.location.href = 'login.html';
+    // 根據目前路徑決定登入頁面的相對路徑
+    const loginPath = window.location.pathname.includes('/project-management/') 
+        ? '../login.html' 
+        : 'login.html';
+    window.location.href = loginPath;
 }
 
 // 更新 UI 顯示使用者資訊

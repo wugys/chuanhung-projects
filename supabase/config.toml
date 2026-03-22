@@ -1,0 +1,5 @@
+[functions.ai-progress-analyzer]
+verify_jwt = false
+
+[functions.ai-progress-analyzer.env]
+KIMI_API_KEY = "sk-yWwS2oNkubpo89CUnBnguFjRidDHrpKbiqXbSYuK01RwqQEv"

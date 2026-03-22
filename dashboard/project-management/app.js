@@ -502,24 +502,13 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 判斷是否為打樣後階段（顯示按鈕）
-    const showButtons = project.phase === 'sampling' || project.phase === 'production';
-    
-    // 新增進度按鈕（所有階段都顯示）
-    const progressButtonHtml = `
-        <button class="btn-progress" onclick="event.stopPropagation(); openAddProgressModal('${project.id}')">📈 新增進度</button>
-    `;
-    
-    const buttonsHtml = showButtons ? `
+    // 所有階段都顯示完整 4 個按鈕
+    const buttonsHtml = `
         <div class="card-buttons">
             <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
             <button class="btn-todo" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'incomplete')">📝 待辦事項</button>
             <button class="btn-all" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'all')">📋 全部事項</button>
-            ${progressButtonHtml}
-        </div>
-    ` : `
-        <div class="card-buttons">
-            ${progressButtonHtml}
+            <button class="btn-progress" onclick="event.stopPropagation(); openAddProgressModal('${project.id}')">📈 新增進度</button>
         </div>
     `;
     
@@ -543,16 +532,11 @@ function createProjectCard(project) {
     `;
     
     // 點擊卡片顯示詳情（按鈕除外）
-    if (!showButtons) {
-        card.onclick = () => showProjectDetail(project);
-    } else {
-        // 打樣後階段點擊標題區域顯示詳情
-        card.onclick = (e) => {
-            if (!e.target.closest('.card-buttons')) {
-                showProjectDetail(project);
-            }
-        };
-    }
+    card.onclick = (e) => {
+        if (!e.target.closest('.card-buttons')) {
+            showProjectDetail(project);
+        }
+    };
     
     return card;
 }
