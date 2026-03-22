@@ -274,8 +274,10 @@ const projects = [
 // 初始化
 function init() {
     updateStatusBar();
+    renderProposalView();
     renderQuoteView();
     renderSampleView();
+    renderProductionView();
     renderGantt();
     renderList();
     updateTime();
