@@ -475,13 +475,24 @@ function createProjectCard(project) {
     
     // 判斷是否為打樣後階段（顯示按鈕）
     const showButtons = project.phase === 'sampling' || project.phase === 'production';
+    
+    // 新增進度按鈕（所有階段都顯示）
+    const progressButtonHtml = `
+        <button class="btn-progress" onclick="event.stopPropagation(); openAddProgressModal('${project.id}')">📈 新增進度</button>
+    `;
+    
     const buttonsHtml = showButtons ? `
         <div class="card-buttons">
             <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
             <button class="btn-todo" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'incomplete')">📝 待辦事項</button>
             <button class="btn-all" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'all')">📋 全部事項</button>
+            ${progressButtonHtml}
         </div>
-    ` : '';
+    ` : `
+        <div class="card-buttons">
+            ${progressButtonHtml}
+        </div>
+    `;
     
     card.innerHTML = `
         <div class="card-header">
@@ -716,7 +727,17 @@ function renderList() {
                 </div>
                 <span style="font-size: 12px; color: #666; margin-left: 5px; cursor: pointer;">${project.progress}% 📊</span>
             </td>
-            <td><span class="phase-badge ${project.phase}">${phaseMap[project.phase]}</span></td>
+            <td>
+                <select class="phase-select ${project.phase}" onchange="updateProjectPhase('${project.id}', this.value)" onclick="event.stopPropagation()">
+                    <option value="proposing" ${project.phase === 'proposing' ? 'selected' : ''}>💡 提案</option>
+                    <option value="proposal_pending" ${project.phase === 'proposal_pending' ? 'selected' : ''}>📤 提案待確認</option>
+                    <option value="quoting" ${project.phase === 'quoting' ? 'selected' : ''}>📋 報價</option>
+                    <option value="pending" ${project.phase === 'pending' ? 'selected' : ''}>🔵 報價待確認</option>
+                    <option value="sampling" ${project.phase === 'sampling' ? 'selected' : ''}>🔨 打樣</option>
+                    <option value="production" ${project.phase === 'production' ? 'selected' : ''}>🏭 生產</option>
+                    <option value="completed" ${project.phase === 'completed' ? 'selected' : ''}>✅ 已完成</option>
+                </select>
+            </td>
         `;
         tbody.appendChild(row);
     });
@@ -1122,6 +1143,269 @@ function renderAllViews() {
 }
 
 // ==================== 新增專案功能結束 ====================
+
+// ==================== 專案進度AI輔助填入功能 ====================
+
+let currentProgressProjectId = null;
+
+// 開啟新增進度彈窗
+function openAddProgressModal(projectId) {
+    currentProgressProjectId = projectId;
+    const modal = document.getElementById('add-progress-modal');
+    const input = document.getElementById('progress-description');
+    const resultDiv = document.getElementById('progress-analysis-result');
+    
+    input.value = '';
+    resultDiv.innerHTML = '';
+    resultDiv.style.display = 'none';
+    
+    modal.classList.add('active');
+    input.focus();
+}
+
+// 關閉新增進度彈窗
+function closeAddProgressModal() {
+    document.getElementById('add-progress-modal').classList.remove('active');
+    currentProgressProjectId = null;
+}
+
+// AI 分析進度描述
+async function analyzeProgressWithAI() {
+    const input = document.getElementById('progress-description');
+    const resultDiv = document.getElementById('progress-analysis-result');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    
+    const description = input.value.trim();
+    if (!description) {
+        alert('請輸入進度描述');
+        return;
+    }
+    
+    analyzeBtn.disabled = true;
+    analyzeBtn.innerHTML = '🤔 分析中...';
+    
+    try {
+        // 簡易 AI 分析（本地規則）
+        const analysis = performLocalAnalysis(description);
+        
+        resultDiv.innerHTML = `
+            <div class="analysis-result">
+                <h4>📊 AI 分析結果</h4>
+                <div class="analysis-item">
+                    <span class="label">建議進度:</span>
+                    <span class="value">${analysis.progress}%</span>
+                </div>
+                <div class="analysis-item">
+                    <span class="label">建議階段:</span>
+                    <span class="value">${analysis.phaseText}</span>
+                </div>
+                ${analysis.deadline ? `
+                <div class="analysis-item">
+                    <span class="label">預計交期:</span>
+                    <span class="value">${analysis.deadline}</span>
+                </div>
+                ` : ''}
+                <div class="analysis-item">
+                    <span class="label">備註:</span>
+                    <span class="value">${analysis.notes || '無'}</span>
+                </div>
+                <div class="analysis-actions">
+                    <button onclick="applyProgressUpdate()" class="btn-primary">✅ 套用更新</button>
+                    <button onclick="document.getElementById('progress-description').focus()" class="btn-secondary">📝 修改描述</button>
+                </div>
+            </div>
+        `;
+        resultDiv.style.display = 'block';
+        
+        // 儲存分析結果供套用時使用
+        window.currentAnalysis = analysis;
+        
+    } catch (error) {
+        console.error('分析錯誤:', error);
+        alert('分析失敗，請稍後再試');
+    } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = '🤖 AI分析';
+    }
+}
+
+// 本地規則分析（簡易 AI）
+function performLocalAnalysis(description) {
+    const lowerDesc = description.toLowerCase();
+    let progress = 0;
+    let phase = '';
+    let phaseText = '';
+    let deadline = '';
+    let notes = description;
+    
+    // 進度關鍵詞分析
+    if (lowerDesc.includes('完成') || lowerDesc.includes('結束') || lowerDesc.includes('搞定')) {
+        if (lowerDesc.includes('全部') || lowerDesc.includes('所有') || lowerDesc.includes('100')) {
+            progress = 100;
+        } else {
+            progress = Math.min(progress + 30, 100);
+        }
+    }
+    if (lowerDesc.includes('進行中') || lowerDesc.includes('處理中') || lowerDesc.includes('製作中')) {
+        progress = Math.max(progress, 50);
+    }
+    if (lowerDesc.includes('開始') || lowerDesc.includes('啟動')) {
+        progress = Math.max(progress, 20);
+    }
+    if (lowerDesc.includes('確認') || lowerDesc.includes('審核通過')) {
+        progress = Math.max(progress, 70);
+    }
+    if (lowerDesc.includes('出貨') || lowerDesc.includes('交貨') || lowerDesc.includes('交付')) {
+        progress = Math.max(progress, 90);
+    }
+    
+    // 階段分析
+    if (lowerDesc.includes('提案') || lowerDesc.includes('概念')) {
+        phase = 'proposing';
+        phaseText = '💡 提案';
+    } else if (lowerDesc.includes('報價') || lowerDesc.includes('價格') || lowerDesc.includes('報價單')) {
+        phase = 'quoting';
+        phaseText = '📋 報價';
+        if (lowerDesc.includes('待確認') || lowerDesc.includes('等回覆')) {
+            phase = 'pending';
+            phaseText = '🔵 報價待確認';
+        }
+    } else if (lowerDesc.includes('打樣') || lowerDesc.includes('樣品')) {
+        phase = 'sampling';
+        phaseText = '🔨 打樣';
+    } else if (lowerDesc.includes('生產') || lowerDesc.includes('製作') || lowerDesc.includes('大貨')) {
+        phase = 'production';
+        phaseText = '🏭 生產';
+    } else if (lowerDesc.includes('完成') || lowerDesc.includes('結案')) {
+        phase = 'completed';
+        phaseText = '✅ 已完成';
+        progress = 100;
+    }
+    
+    // 日期分析
+    const dateMatch = description.match(/(\d{1,2})\/(\d{1,2})/);
+    if (dateMatch) {
+        const today = new Date();
+        const year = today.getFullYear();
+        deadline = `${year}-${dateMatch[1].padStart(2, '0')}-${dateMatch[2].padStart(2, '0')}`;
+    }
+    
+    // 如果沒有識別到階段，根據進度推斷
+    if (!phase) {
+        if (progress >= 100) {
+            phase = 'completed';
+            phaseText = '✅ 已完成';
+        } else if (progress >= 70) {
+            phase = 'production';
+            phaseText = '🏭 生產';
+        } else if (progress >= 40) {
+            phase = 'sampling';
+            phaseText = '🔨 打樣';
+        }
+    }
+    
+    return { progress, phase, phaseText, deadline, notes };
+}
+
+// 套用進度更新
+function applyProgressUpdate() {
+    if (!currentProgressProjectId || !window.currentAnalysis) {
+        alert('無法套用更新');
+        return;
+    }
+    
+    const project = projects.find(p => p.id === currentProgressProjectId);
+    if (!project) {
+        alert('找不到專案');
+        return;
+    }
+    
+    const analysis = window.currentAnalysis;
+    
+    // 更新專案資料
+    project.progress = analysis.progress;
+    if (analysis.phase) {
+        project.phase = analysis.phase;
+        project.statusText = analysis.phaseText;
+    }
+    if (analysis.deadline) {
+        project.deadline = analysis.deadline;
+    }
+    if (analysis.notes) {
+        project.notes = analysis.notes;
+    }
+    
+    // 關閉彈窗並重新整理
+    closeAddProgressModal();
+    renderAllViews();
+    
+    alert('✅ 進度更新成功！');
+}
+
+// 快速更新專案階段
+function updateProjectPhase(projectId, newPhase) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    const phaseMap = {
+        'proposing': '💡 提案中',
+        'proposal_pending': '📤 提案待確認',
+        'quoting': '📋 報價中',
+        'pending': '🔵 報價待確認',
+        'sampling': '🔨 打樣中',
+        'production': '🏭 生產中',
+        'completed': '✅ 已完成'
+    };
+    
+    // 確認變更
+    if (!confirm(`確定將「${project.name}」變更為「${phaseMap[newPhase]}」?`)) {
+        renderList(); // 重新整理恢復原狀
+        return;
+    }
+    
+    // 更新階段
+    project.phase = newPhase;
+    project.statusText = phaseMap[newPhase];
+    
+    // 如果完成，設定進度為100%
+    if (newPhase === 'completed') {
+        project.progress = 100;
+    }
+    
+    // 重新整理所有視圖
+    renderAllViews();
+    
+    // 顯示提示
+    showToast(`已更新為「${phaseMap[newPhase]}」`);
+}
+
+// 顯示 Toast 提示
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #10b981;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        font-size: 14px;
+        animation: slideUp 0.3s ease;
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// ==================== 專案進度AI輔助填入功能結束 ====================
 
 // 點擊彈窗外關閉
 window.onclick = function(event) {

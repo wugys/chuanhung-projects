@@ -282,6 +282,26 @@
                 </form>
             </div>
         </div>
+        
+        <!-- 新增進度彈窗 -->
+        <div id="add-progress-modal" class="modal">
+            <div class="modal-content add-progress-modal-content">
+                <span class="close-btn" onclick="closeAddProgressModal()">×</span>
+                <h2>📈 新增進度</h2>
+                <div class="progress-form">
+                    <div class="form-group full-width">
+                        <label>進度描述 <span class="hint">（用自然語言描述，如：「客戶已確認設計，預計週五出貨」）</span></label>
+                        <textarea id="progress-description" rows="4" placeholder="請描述目前進度..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeAddProgressModal()">取消</button>
+                        <button type="button" id="analyze-btn" class="btn-primary ai-btn" onclick="analyzeProgressWithAI()">🤖 AI分析</button>
+                    </div>
+                    
+                    <div id="progress-analysis-result" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -289,6 +309,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=12"></script>
+    <script src="app.js?v=13"></script>
 </body>
 </html>

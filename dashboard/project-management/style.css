@@ -1503,3 +1503,174 @@ h2 {
         font-size: 12px;
     }
 }
+
+/* ==================== 專案進度AI輔助填入功能樣式 ==================== */
+
+/* 新增進度按鈕 */
+.btn-progress {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.btn-progress:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+}
+
+/* 新增進度彈窗 */
+.add-progress-modal-content {
+    max-width: 500px;
+}
+
+.progress-form {
+    padding: 20px 0;
+}
+
+.progress-form .hint {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.progress-form textarea {
+    width: 100%;
+    resize: vertical;
+}
+
+.ai-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+}
+
+.ai-btn:hover {
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4) !important;
+}
+
+/* AI 分析結果樣式 */
+.analysis-result {
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.analysis-result h4 {
+    color: #5b21b6;
+    margin: 0 0 16px 0;
+    font-size: 16px;
+}
+
+.analysis-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.analysis-item:last-child {
+    border-bottom: none;
+}
+
+.analysis-item .label {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.analysis-item .value {
+    color: #1f2937;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.analysis-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #ddd6fe;
+}
+
+/* 階段下拉選單樣式 */
+.phase-select {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s;
+}
+
+.phase-select:hover {
+    border-color: #667eea;
+}
+
+.phase-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.phase-select.proposing,
+.phase-select.proposal_pending {
+    color: #7c3aed;
+    background: #f5f3ff;
+}
+
+.phase-select.quoting,
+.phase-select.pending {
+    color: #0369a1;
+    background: #e0f2fe;
+}
+
+.phase-select.sampling {
+    color: #c2410c;
+    background: #fff7ed;
+}
+
+.phase-select.production {
+    color: #15803d;
+    background: #f0fdf4;
+}
+
+.phase-select.completed {
+    color: #6b7280;
+    background: #f3f4f6;
+}
+
+/* Toast 提示動畫 */
+@keyframes slideUp {
+    from {
+        transform: translateX(-50%) translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==================== 專案進度AI輔助填入功能樣式結束 ==================== */
