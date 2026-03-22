@@ -45,6 +45,20 @@
                 </div>
                 <span class="update-time">更新: <span id="update-time">-</span></span>
             </div>
+            
+            <!-- 全局搜尋列 -->
+            <div class="global-search-bar">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="global-search" placeholder="🔍 搜尋客戶或產品..." oninput="filterGlobalProjects()">
+                </div>
+                <div class="quick-filters">
+                    <button class="quick-filter-btn active" onclick="clearGlobalFilter()">全部</button>
+                    <button class="quick-filter-btn" onclick="filterByRep('姿姿')">姿姿</button>
+                    <button class="quick-filter-btn" onclick="filterByRep('Betty')">Betty</button>
+                    <button class="quick-filter-btn" onclick="filterByRep('Kevin')">Kevin</button>
+                </div>
+            </div>
         </header>
 
         <!-- 視圖切換 -->
@@ -68,9 +82,6 @@
             <div class="proposal-section">
                 <div class="section-header">
                     <h2>📤 提案待確認（已提案，等客戶回覆）</h2>
-                    <div class="search-box">
-                        <input type="text" id="proposal-search" placeholder="🔍 搜尋客戶或產品..." oninput="filterProposalProjects()">
-                    </div>
                 </div>
                 <div id="proposal-pending-projects" class="project-grid"></div>
             </div>
@@ -88,9 +99,6 @@
             <div class="quote-section">
                 <div class="section-header">
                     <h2>🔵 報價待確認（已報價，等回覆）</h2>
-                    <div class="search-box">
-                        <input type="text" id="pending-search" placeholder="🔍 搜尋客戶或產品..." oninput="filterPendingProjects()">
-                    </div>
                 </div>
                 <div id="pending-projects" class="project-grid"></div>
             </div>
@@ -309,6 +317,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=20"></script>
 </body>
 </html>

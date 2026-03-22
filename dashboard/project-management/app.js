@@ -1635,8 +1635,16 @@ function renderTodoList(container, project, filter) {
     const tasksHtml = filteredTasks.map((task) => {
         const today = new Date();
         const taskEnd = new Date(task.end);
+        const taskStart = new Date(task.start);
         const isOverdue = taskEnd < today && task.progress < 100;
         const isCompleted = task.progress === 100;
+        
+        // 計算工作天數
+        const workDays = Math.ceil((taskEnd - taskStart) / (1000 * 60 * 60 * 24)) + 1;
+        
+        // 負責人和跟催人（預設值）
+        const assignedTo = task.assigned_to || project.sales_rep || '未分配';
+        const followUpBy = task.follow_up_by || 'Kevin';
         
         return `
             <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}">
@@ -1647,15 +1655,25 @@ function renderTodoList(container, project, filter) {
                             onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)">
                         <span class="todo-checkbox-custom"></span>
                     </label>
-                    <span class="todo-name ${isCompleted ? 'strikethrough' : ''}">${task.name}</span>
+                    <div class="todo-content">
+                        <div class="todo-name ${isCompleted ? 'strikethrough' : ''}">${task.name}</div>
+                        <div class="todo-assignees">
+                            <span class="assignee-badge assignee-primary">👤 ${assignedTo}</span>
+                            <span class="assignee-badge assignee-followup">🔔 ${followUpBy}</span>
+                        </div>
+                    </div>
                     ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
-                </div>
-                <div class="todo-meta">
-                    <span class="todo-date">📅 ${task.start} → ${task.end}</span>
-                    <span class="todo-progress ${isCompleted ? 'completed' : ''}">${task.progress}%</span>
-                </div>
-                <div class="todo-progress-bar">
-                    <div class="todo-progress-fill ${isCompleted ? 'completed' : ''}" style="width: ${task.progress}%"></div>
+                </div>                <div class="todo-details">
+                    <div class="todo-dates">
+                        <span class="date-range">📅 ${task.start} → ${task.end}</span>
+                        <span class="work-days">⏱️ ${workDays} 天</span>
+                    </div>
+                    <div class="todo-progress-info">
+                        <div class="progress-bar-small">
+                            <div class="progress-fill-small ${isCompleted ? 'completed' : ''}" style="width: ${task.progress}%"></div>
+                        </div>
+                        <span class="progress-text ${isCompleted ? 'completed' : ''}">${task.progress}%</span>
+                    </div>
                 </div>
             </li>
         `;
@@ -2027,6 +2045,44 @@ function getProjectsForView(phase) {
 }
 
 // ==================== 人員搜尋功能結束 ====================
+
+// ==================== 全局搜尋功能 ====================
+
+function filterGlobalProjects() {
+    const query = document.getElementById('global-search').value.toLowerCase().trim();
+    filterState.searchQuery = query;
+    renderAllViews();
+    
+    // 更新快速篩選按鈕狀態
+    updateQuickFilterButtons();
+}
+
+function filterByRep(repName) {
+    filterState.salesRep = repName;
+    filterState.searchQuery = '';
+    document.getElementById('global-search').value = '';
+    renderAllViews();
+    updateQuickFilterButtons(repName);
+}
+
+function clearGlobalFilter() {
+    filterState.salesRep = 'all';
+    filterState.searchQuery = '';
+    document.getElementById('global-search').value = '';
+    renderAllViews();
+    updateQuickFilterButtons('全部');
+}
+
+function updateQuickFilterButtons(activeBtn) {
+    const buttons = document.querySelectorAll('.quick-filter-btn');
+    buttons.forEach(btn => {
+        if (btn.textContent === activeBtn) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
 
 // 點擊彈窗外關閉
 window.onclick = function(event) {
