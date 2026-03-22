@@ -87,7 +87,11 @@ async function initAuth() {
     if (!session) {
         // 未登入，導向登入頁面（如果不是在登入頁面）
         if (!window.location.pathname.includes('login.html')) {
-            window.location.href = 'login.html';
+            // 根據目前路徑決定登入頁面的相對路徑
+            const loginPath = window.location.pathname.includes('/project-management/') 
+                ? '../login.html' 
+                : 'login.html';
+            window.location.href = loginPath;
         }
         return false;
     }
@@ -142,7 +146,11 @@ async function logout() {
     if (supabaseClient) {
         await supabaseClient.auth.signOut();
     }
-    window.location.href = 'login.html';
+    // 根據目前路徑決定登入頁面的相對路徑
+    const loginPath = window.location.pathname.includes('/project-management/') 
+        ? '../login.html' 
+        : 'login.html';
+    window.location.href = loginPath;
 }
 
 // 更新 UI 顯示使用者資訊

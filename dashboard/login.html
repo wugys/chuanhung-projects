@@ -77,6 +77,32 @@
             border-radius: 8px;
             font-size: 14px;
             transition: all 0.2s;
+            position: relative;
+            z-index: 1;
+            background-color: white;
+        }
+
+        /* 修復密碼欄位點擊問題 */
+        .form-group input::-webkit-credentials-auto-fill-button {
+            visibility: hidden;
+            display: none !important;
+        }
+        
+        .form-group input::-webkit-contacts-auto-fill-button {
+            visibility: hidden;
+            display: none !important;
+        }
+
+        /* 確保 input wrapper 有足夠的點擊區域 */
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+            min-height: 44px;
+        }
+
+        .input-wrapper input {
+            position: relative;
+            z-index: 2;
         }
 
         .form-group input:focus {
