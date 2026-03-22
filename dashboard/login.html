@@ -270,8 +270,14 @@
         async function checkAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                // 已登入，導向主系統
-                window.location.href = 'index.html';
+                // 已登入，導向原本要去的頁面或主系統
+                const urlParams = new URLSearchParams(window.location.search);
+                const returnUrl = urlParams.get('return');
+                if (returnUrl) {
+                    window.location.href = decodeURIComponent(returnUrl);
+                } else {
+                    window.location.href = 'index.html';
+                }
             }
         }
 
@@ -336,8 +342,14 @@
                     throw error;
                 }
 
-                // 登入成功，導向主系統
-                window.location.href = 'index.html';
+                // 登入成功，導向原本要去的頁面或主系統
+                const urlParams = new URLSearchParams(window.location.search);
+                const returnUrl = urlParams.get('return');
+                if (returnUrl) {
+                    window.location.href = decodeURIComponent(returnUrl);
+                } else {
+                    window.location.href = 'index.html';
+                }
 
             } catch (error) {
                 console.error('登入錯誤:', error);

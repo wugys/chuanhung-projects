@@ -87,10 +87,14 @@ async function initAuth() {
     if (!session) {
         // 未登入，導向登入頁面（如果不是在登入頁面）
         if (!window.location.pathname.includes('login.html')) {
+            // 儲存當前頁面 URL，登入後可以返回
+            const currentPath = window.location.pathname + window.location.search;
+            const returnUrl = encodeURIComponent(currentPath);
+            
             // 根據目前路徑決定登入頁面的相對路徑
             const loginPath = window.location.pathname.includes('/project-management/') 
-                ? '../login.html' 
-                : 'login.html';
+                ? '../login.html?return=' + returnUrl
+                : 'login.html?return=' + returnUrl;
             window.location.href = loginPath;
         }
         return false;
