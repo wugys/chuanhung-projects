@@ -1243,29 +1243,36 @@ async function analyzeProgressWithAI() {
             analysis = performLocalAnalysis(description);
         }
         
+        // 使用新的待辦事項格式呈現分析結果
+        const tasksHtml = analysis.tasks.map((task, index) => `
+            <div class="analysis-task-item">
+                <label class="task-checkbox-label">
+                    <input type="checkbox" checked onchange="toggleAnalysisTask(${index}, this.checked)">
+                    <span class="task-checkbox-custom"></span>
+                </label>
+                <div class="task-content">
+                    <div class="task-name">${task.name}</div>
+                    <div class="task-meta">
+                        <span class="task-progress">進度: ${task.progress}%</span>
+                        <span class="task-date">${task.start}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
         resultDiv.innerHTML = `
-            <div class="analysis-result">
-                <h4>📊 AI 分析結果</h4>
-                <div class="analysis-item">
-                    <span class="label">建議進度:</span>
-                    <span class="value">${analysis.progress}%</span>
+            <div class="analysis-result todo-style">
+                <h4>📝 待辦事項分析結果</h4>
+                <div class="analysis-summary">
+                    <span class="summary-item">共 ${analysis.tasks.length} 項</span>
+                    <span class="summary-item">整體進度: ${analysis.overallProgress}%</span>
+                    <span class="summary-item">階段: ${analysis.phaseText}</span>
                 </div>
-                <div class="analysis-item">
-                    <span class="label">建議階段:</span>
-                    <span class="value">${analysis.phaseText}</span>
-                </div>
-                ${analysis.deadline ? `
-                <div class="analysis-item">
-                    <span class="label">預計交期:</span>
-                    <span class="value">${analysis.deadline}</span>
-                </div>
-                ` : ''}
-                <div class="analysis-item">
-                    <span class="label">備註:</span>
-                    <span class="value">${analysis.notes || '無'}</span>
+                <div class="analysis-tasks-list">
+                    ${tasksHtml}
                 </div>
                 <div class="analysis-actions">
-                    <button onclick="applyProgressUpdate()" class="btn-primary">✅ 套用更新</button>
+                    <button onclick="applyProgressUpdate()" class="btn-primary">➕ 新增事項</button>
                     <button onclick="document.getElementById('progress-description').focus()" class="btn-secondary">📝 修改描述</button>
                 </div>
             </div>
@@ -1281,6 +1288,13 @@ async function analyzeProgressWithAI() {
     } finally {
         analyzeBtn.disabled = false;
         analyzeBtn.innerHTML = '🤖 AI分析';
+    }
+}
+
+// 切換分析任務的選擇狀態
+function toggleAnalysisTask(index, isChecked) {
+    if (window.currentAnalysis && window.currentAnalysis.tasks[index]) {
+        window.currentAnalysis.tasks[index].selected = isChecked;
     }
 }
 
@@ -1324,39 +1338,84 @@ function getProjectContext(projectId) {
     };
 }
 
-// 本地規則分析（簡易 AI）
+// 本地規則分析（簡易 AI）- 改為返回多個待辦事項
 function performLocalAnalysis(description) {
-    const lowerDesc = description.toLowerCase();
-    let progress = 0;
-    let phase = '';
-    let phaseText = '';
-    let deadline = '';
-    let notes = description;
+    const lines = description.split(/\n|\r|,/).filter(line => line.trim());
+    const tasks = [];
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
     
-    // 進度關鍵詞分析
-    if (lowerDesc.includes('完成') || lowerDesc.includes('結束') || lowerDesc.includes('搞定')) {
-        if (lowerDesc.includes('全部') || lowerDesc.includes('所有') || lowerDesc.includes('100')) {
+    // 解析每一行為一個待辦事項
+    lines.forEach((line, index) => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return;
+        
+        // 判斷進度
+        let progress = 0;
+        const lowerLine = trimmedLine.toLowerCase();
+        
+        if (lowerLine.includes('完成') || lowerLine.includes('搞定') || lowerLine.includes('結束')) {
             progress = 100;
-        } else {
-            progress = Math.min(progress + 30, 100);
+        } else if (lowerLine.includes('已到') || lowerLine.includes('已經') || lowerLine.includes('正在')) {
+            progress = 60;
+        } else if (lowerLine.includes('預計') || lowerLine.includes('準備') || lowerLine.includes('安排')) {
+            progress = 30;
         }
-    }
-    if (lowerDesc.includes('進行中') || lowerDesc.includes('處理中') || lowerDesc.includes('製作中')) {
-        progress = Math.max(progress, 50);
-    }
-    if (lowerDesc.includes('開始') || lowerDesc.includes('啟動')) {
-        progress = Math.max(progress, 20);
-    }
-    if (lowerDesc.includes('確認') || lowerDesc.includes('審核通過')) {
-        progress = Math.max(progress, 70);
-    }
-    if (lowerDesc.includes('出貨') || lowerDesc.includes('交貨') || lowerDesc.includes('交付')) {
-        progress = Math.max(progress, 90);
+        
+        tasks.push({
+            id: index,
+            name: trimmedLine.substring(0, 50) + (trimmedLine.length > 50 ? '...' : ''),
+            fullText: trimmedLine,
+            progress: progress,
+            start: todayStr,
+            end: todayStr,
+            selected: true  // 預設選中
+        });
+    });
+    
+    // 如果沒有解析到任何項目，將整段描述作為一個項目
+    if (tasks.length === 0) {
+        tasks.push({
+            id: 0,
+            name: description.substring(0, 50) + (description.length > 50 ? '...' : ''),
+            fullText: description,
+            progress: 0,
+            start: todayStr,
+            end: todayStr,
+            selected: true
+        });
     }
     
-    // 階段分析
+    // 計算整體進度
+    const avgProgress = Math.round(tasks.reduce((sum, t) => sum + t.progress, 0) / tasks.length);
+    
+    // 判斷整體階段
+    let phase = 'production';
+    let phaseText = '🏭 生產';
+    
+    const lowerDesc = description.toLowerCase();
     if (lowerDesc.includes('提案') || lowerDesc.includes('概念')) {
         phase = 'proposing';
+        phaseText = '💡 提案';
+    } else if (lowerDesc.includes('報價') || lowerDesc.includes('價格')) {
+        phase = 'quoting';
+        phaseText = '📋 報價';
+    } else if (lowerDesc.includes('打樣') || lowerDesc.includes('樣品')) {
+        phase = 'sampling';
+        phaseText = '🔨 打樣';
+    } else if (lowerDesc.includes('完成') || lowerDesc.includes('結案')) {
+        phase = 'completed';
+        phaseText = '✅ 已完成';
+    }
+    
+    return {
+        tasks: tasks,
+        overallProgress: avgProgress,
+        phase: phase,
+        phaseText: phaseText,
+        deadline: ''
+    };
+}
         phaseText = '💡 提案';
     } else if (lowerDesc.includes('報價') || lowerDesc.includes('價格') || lowerDesc.includes('報價單')) {
         phase = 'quoting';
@@ -1402,7 +1461,7 @@ function performLocalAnalysis(description) {
     return { progress, phase, phaseText, deadline, notes };
 }
 
-// 套用進度更新
+// 套用進度更新 - 將選中的事項加入全部清單
 function applyProgressUpdate() {
     if (!currentProgressProjectId || !window.currentAnalysis) {
         alert('無法套用更新');
@@ -1416,38 +1475,44 @@ function applyProgressUpdate() {
     }
     
     const analysis = window.currentAnalysis;
-    const description = document.getElementById('progress-description').value.trim();
     
-    // 更新專案資料
-    project.progress = analysis.progress;
+    // 取得選中的任務
+    const selectedTasks = analysis.tasks.filter(t => t.selected);
+    
+    if (selectedTasks.length === 0) {
+        alert('請至少選擇一個事項');
+        return;
+    }
+    
+    // 更新專案整體進度和階段
+    project.progress = analysis.overallProgress;
     if (analysis.phase) {
         project.phase = analysis.phase;
         project.statusText = analysis.phaseText;
     }
-    if (analysis.deadline) {
-        project.deadline = analysis.deadline;
-    }
-    if (analysis.notes) {
-        project.notes = analysis.notes;
-    }
     
-    // 將進度描述加入全部事項（tasks）
+    // 將選中的事項加入全部事項（tasks）
     if (!project.tasks) {
         project.tasks = [];
     }
     
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    // 為每個選中的任務建立 task 項目
+    selectedTasks.forEach(task => {
+        const newTask = {
+            name: task.name,
+            start: task.start,
+            end: task.end,
+            progress: task.progress
+        };
+        project.tasks.push(newTask);
+    });
     
-    // 建立新的進度任務項目
-    const newTask = {
-        name: `📈 進度更新: ${description.substring(0, 30)}${description.length > 30 ? '...' : ''}`,
-        start: todayStr,
-        end: analysis.deadline || todayStr,
-        progress: analysis.progress || 0
-    };
+    // 關閉彈窗並重新整理
+    closeAddProgressModal();
+    renderAllViews();
     
-    project.tasks.push(newTask);
+    alert(`✅ 成功新增 ${selectedTasks.length} 個事項到全部清單！`);
+}
     
     // 關閉彈窗並重新整理
     closeAddProgressModal();
