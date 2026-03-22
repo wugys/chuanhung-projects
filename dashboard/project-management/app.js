@@ -502,11 +502,10 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 所有階段都顯示完整 4 個按鈕
+    // 所有階段都顯示 3 個按鈕（移除待辦事項）
     const buttonsHtml = `
         <div class="card-buttons">
             <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
-            <button class="btn-todo" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'incomplete')">📝 待辦事項</button>
             <button class="btn-all" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'all')">📋 全部事項</button>
             <button class="btn-progress" onclick="event.stopPropagation(); openAddProgressModal('${project.id}')">📈 新增進度</button>
         </div>
