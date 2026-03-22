@@ -1418,50 +1418,6 @@ function performLocalAnalysis(description) {
         deadline: ''
     };
 }
-        phaseText = '💡 提案';
-    } else if (lowerDesc.includes('報價') || lowerDesc.includes('價格') || lowerDesc.includes('報價單')) {
-        phase = 'quoting';
-        phaseText = '📋 報價';
-        if (lowerDesc.includes('待確認') || lowerDesc.includes('等回覆')) {
-            phase = 'pending';
-            phaseText = '🔵 報價待確認';
-        }
-    } else if (lowerDesc.includes('打樣') || lowerDesc.includes('樣品')) {
-        phase = 'sampling';
-        phaseText = '🔨 打樣';
-    } else if (lowerDesc.includes('生產') || lowerDesc.includes('製作') || lowerDesc.includes('大貨')) {
-        phase = 'production';
-        phaseText = '🏭 生產';
-    } else if (lowerDesc.includes('完成') || lowerDesc.includes('結案')) {
-        phase = 'completed';
-        phaseText = '✅ 已完成';
-        progress = 100;
-    }
-    
-    // 日期分析
-    const dateMatch = description.match(/(\d{1,2})\/(\d{1,2})/);
-    if (dateMatch) {
-        const today = new Date();
-        const year = today.getFullYear();
-        deadline = `${year}-${dateMatch[1].padStart(2, '0')}-${dateMatch[2].padStart(2, '0')}`;
-    }
-    
-    // 如果沒有識別到階段，根據進度推斷
-    if (!phase) {
-        if (progress >= 100) {
-            phase = 'completed';
-            phaseText = '✅ 已完成';
-        } else if (progress >= 70) {
-            phase = 'production';
-            phaseText = '🏭 生產';
-        } else if (progress >= 40) {
-            phase = 'sampling';
-            phaseText = '🔨 打樣';
-        }
-    }
-    
-    return { progress, phase, phaseText, deadline, notes };
-}
 
 // 套用進度更新 - 將選中的事項加入全部清單
 function applyProgressUpdate() {
@@ -1514,13 +1470,6 @@ function applyProgressUpdate() {
     renderAllViews();
     
     alert(`✅ 成功新增 ${selectedTasks.length} 個事項到全部清單！`);
-}
-    
-    // 關閉彈窗並重新整理
-    closeAddProgressModal();
-    renderAllViews();
-    
-    alert('✅ 進度更新成功！已加入全部事項');
 }
 
 // 快速更新專案階段
