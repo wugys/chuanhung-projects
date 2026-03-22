@@ -1407,6 +1407,201 @@ function showToast(message) {
 
 // ==================== 專案進度AI輔助填入功能結束 ====================
 
+// ==================== 待辦事項功能優化 (SYS-2026-0321-003) ====================
+
+let currentTodoProject = null;
+let currentTodoFilter = 'all';
+let hideCompleted = false;
+
+// 覆寫顯示專案待辦事項函數
+const originalShowProjectTodo = showProjectTodo;
+showProjectTodo = function(projectId, filter = 'all') {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    currentTodoProject = project;
+    currentTodoFilter = filter;
+    
+    const modal = document.getElementById('todo-modal');
+    const title = document.getElementById('todo-modal-title');
+    const body = document.getElementById('todo-modal-body');
+    
+    const filterText = filter === 'incomplete' ? '（待辦事項）' : '（全部事項）';
+    title.innerHTML = `📝 ${project.name} - ${filterText}`;
+    
+    // 計算並更新專案進度
+    updateProjectProgress(project);
+    
+    renderTodoList(body, project, filter);
+    
+    modal.classList.add('active');
+};
+
+// 渲染待辦事項列表
+function renderTodoList(container, project, filter) {
+    // 根據篩選條件過濾任務
+    let filteredTasks = project.tasks.map((task, index) => ({ ...task, originalIndex: index }));
+    
+    if (filter === 'incomplete') {
+        filteredTasks = filteredTasks.filter(task => task.progress < 100);
+    }
+    
+    if (hideCompleted) {
+        filteredTasks = filteredTasks.filter(task => task.progress < 100);
+    }
+    
+    const completedCount = project.tasks.filter(t => t.progress === 100).length;
+    const totalCount = project.tasks.length;
+    
+    const tasksHtml = filteredTasks.map((task) => {
+        const today = new Date();
+        const taskEnd = new Date(task.end);
+        const isOverdue = taskEnd < today && task.progress < 100;
+        const isCompleted = task.progress === 100;
+        
+        return `
+            <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}">
+                <div class="todo-main">
+                    <label class="todo-checkbox-label">
+                        <input type="checkbox" class="todo-checkbox" 
+                            ${isCompleted ? 'checked' : ''} 
+                            onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)">
+                        <span class="todo-checkbox-custom"></span>
+                    </label>
+                    <span class="todo-name ${isCompleted ? 'strikethrough' : ''}">${task.name}</span>
+                    ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
+                </div>
+                <div class="todo-meta">
+                    <span class="todo-date">📅 ${task.start} → ${task.end}</span>
+                    <span class="todo-progress ${isCompleted ? 'completed' : ''}">${task.progress}%</span>
+                </div>
+                <div class="todo-progress-bar">
+                    <div class="todo-progress-fill ${isCompleted ? 'completed' : ''}" style="width: ${task.progress}%"></div>
+                </div>
+            </li>
+        `;
+    }).join('');
+    
+    // 如果沒有待辦事項
+    const emptyMessage = filteredTasks.length === 0 
+        ? `<div class="todo-empty">
+            ${hideCompleted ? '✅ 已完成項目已隱藏' : '🎉 所有事項已完成！'}
+          </div>` 
+        : '';
+    
+    container.innerHTML = `
+        <div class="todo-controls">
+            <label class="todo-toggle-label">
+                <input type="checkbox" id="hide-completed-toggle" ${hideCompleted ? 'checked' : ''} 
+                    onchange="toggleHideCompleted(this.checked)">
+                <span>隱藏已完成項目 (${completedCount}/${totalCount})</span>
+            </label>
+            <span class="todo-progress-summary">專案進度: <strong>${project.progress}%</strong></span>
+        </div>
+        <div class="todo-project-info">
+            <div class="todo-info-item">
+                <span class="todo-info-label">專案編號</span>
+                <span class="todo-info-value">${project.id}</span>
+            </div>
+            <div class="todo-info-item">
+                <span class="todo-info-label">客戶</span>
+                <span class="todo-info-value">${project.client} / ${project.contact}</span>
+            </div>
+            <div class="todo-info-item">
+                <span class="todo-info-label">截止日</span>
+                <span class="todo-info-value">${project.deadline}</span>
+            </div>
+        </div>
+        <h3>任務清單 (${filteredTasks.length} 項)</h3>
+        ${emptyMessage}
+        <ul class="todo-list">${tasksHtml}</ul>
+    `;
+}
+
+// 切換任務完成狀態
+function toggleTaskComplete(projectId, taskIndex, isChecked) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    // 更新任務進度
+    project.tasks[taskIndex].progress = isChecked ? 100 : 0;
+    
+    // 自動計算專案整體進度
+    updateProjectProgress(project);
+    
+    // 重新渲染列表
+    const body = document.getElementById('todo-modal-body');
+    renderTodoList(body, project, currentTodoFilter);
+    
+    // 顯示提示
+    const taskName = project.tasks[taskIndex].name;
+    const message = isChecked ? `✅ 「${taskName}」已完成` : `⏳ 「${taskName}」已標記為未完成`;
+    showTodoToast(message);
+}
+
+// 更新專案進度（自動計算）
+function updateProjectProgress(project) {
+    if (!project.tasks || project.tasks.length === 0) return;
+    
+    const totalProgress = project.tasks.reduce((sum, task) => sum + task.progress, 0);
+    const averageProgress = Math.round(totalProgress / project.tasks.length);
+    
+    project.progress = averageProgress;
+    
+    // 如果全部完成，更新狀態
+    if (project.progress === 100 && project.phase !== 'completed') {
+        project.phase = 'completed';
+        project.statusText = '✅ 已完成';
+    }
+}
+
+// 切換隱藏已完成項目
+function toggleHideCompleted(isChecked) {
+    hideCompleted = isChecked;
+    if (currentTodoProject) {
+        const body = document.getElementById('todo-modal-body');
+        renderTodoList(body, currentTodoProject, currentTodoFilter);
+    }
+}
+
+// 覆寫關閉待辦事項彈窗函數
+const originalCloseTodoModal = closeTodoModal;
+closeTodoModal = function() {
+    document.getElementById('todo-modal').classList.remove('active');
+    currentTodoProject = null;
+    currentTodoFilter = 'all';
+    // 重新整理主頁面以更新進度顯示
+    renderAllViews();
+};
+
+// 顯示待辦事項提示
+function showTodoToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'todo-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #10b981;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-size: 14px;
+        animation: slideUp 0.3s ease;
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 2000);
+}
+
+// ==================== 待辦事項功能優化結束 ====================
+
 // 點擊彈窗外關閉
 window.onclick = function(event) {
     const modal = document.getElementById('project-modal');
