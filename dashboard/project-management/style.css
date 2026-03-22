@@ -167,140 +167,126 @@ body {
 }
 
 /* 標題區 */
+/* 標題區樣式 */
 .header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 30px;
+    padding: 15px 20px;
     border-radius: 12px;
     margin-bottom: 20px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.header-left {
+.header-top {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.back-btn {
-    display: inline-flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    color: rgba(255,255,255,0.9);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 8px;
-    transition: all 0.2s;
-    width: fit-content;
+    margin-bottom: 12px;
 }
 
-.back-btn:hover {
-    background: rgba(255,255,255,0.25);
-    color: white;
-}
-
-.back-btn i {
-    font-size: 12px;
-}
-
-.header h1 {
-    font-size: 28px;
-}
-    margin-bottom: 15px;
-}
-
-.status-bar {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.status-bar-top {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 5px;
+.header-title h1 {
+    font-size: 20px;
+    margin: 0;
 }
 
 .header-actions {
     display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin: 10px 0;
+    align-items: center;
+    gap: 8px;
 }
 
-.header-actions .back-to-main-btn,
-.header-actions .btn-add-project {
-    display: inline-flex;
+.header-actions .user-info {
+    display: flex;
     align-items: center;
     gap: 6px;
-    color: white;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 8px 16px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 6px;
-    transition: all 0.2s;
-    border: none;
-    cursor: pointer;
-}
-
-.header-actions .btn-add-project {
-    background: #10b981;
-}
-
-.header-actions .back-to-main-btn:hover,
-.header-actions .btn-add-project:hover {
-    transform: translateY(-1px);
-    opacity: 0.9;
-}
-
-.back-to-main-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: white;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 500;
     padding: 6px 12px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 6px;
-    transition: all 0.2s;
+    background: rgba(255,255,255,0.15);
+    border-radius: 20px;
+    font-size: 12px;
 }
 
-.back-to-main-btn:hover {
-    background: rgba(255,255,255,0.3);
-    transform: translateY(-1px);
+.header-actions .btn-logout {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.header-middle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
 .status-bar-badges {
     display: flex;
-    gap: 15px;
+    gap: 8px;
     flex-wrap: wrap;
     align-items: center;
 }
 
 .badge {
-    padding: 6px 12px;
+    padding: 5px 10px;
     border-radius: 20px;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
 }
 
 .badge.urgent { background: #fee; color: #c33; }
 .badge.active { background: #ffeaa7; color: #b7791f; }
-.badge.completed { background: #d4edda; color: #155724; }
+.badge.pending { background: #dbeafe; color: #1e40af; }
+.badge.sample { background: #fed7aa; color: #9a3412; }
+.badge.completed { background: #d1fae5; color: #065f46; }
 
 .update-time {
-    margin-left: auto;
-    font-size: 13px;
-    opacity: 0.9;
+    font-size: 11px;
+    opacity: 0.8;
+    margin-left: 10px;
 }
 
+.header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.header-buttons .back-to-main-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.header-buttons .btn-add-project {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    background: #10b981;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.header-buttons .back-to-main-btn:hover,
+.header-buttons .btn-add-project:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
 /* 導航標籤 */
 .nav-tabs {
     display: flex;
@@ -2451,11 +2437,11 @@ h2 {
 .global-search-bar {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-top: 16px;
-    padding: 12px 16px;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 10px 14px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-radius: 10px;
     backdrop-filter: blur(10px);
 }
 
@@ -2468,18 +2454,18 @@ h2 {
 
 .search-input-wrapper .search-icon {
     position: absolute;
-    left: 14px;
+    left: 12px;
     color: rgba(255, 255, 255, 0.7);
-    font-size: 16px;
+    font-size: 14px;
 }
 
 #global-search {
     width: 100%;
-    padding: 12px 16px 12px 42px;
+    padding: 10px 14px 10px 38px;
     border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.95);
-    font-size: 15px;
+    font-size: 14px;
     color: #374151;
     transition: all 0.2s;
 }
@@ -2487,7 +2473,7 @@ h2 {
 #global-search:focus {
     outline: none;
     border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 #global-search::placeholder {
@@ -2496,7 +2482,7 @@ h2 {
 
 .quick-filters {
     display: flex;
-    gap: 8px;
+    gap: 6px;
 }
 
 .quick-filter-btn {

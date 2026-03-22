@@ -14,20 +14,31 @@
     <div class="container">
         <!-- 標題區 -->
         <header class="header">
-            <div class="header-left">
-                <h1>📊 銓宏國際專案管理系統</h1>
-            </div>
-            <div class="status-bar">
-                <div class="status-bar-top">
+            <div class="header-top">
+                <div class="header-title">
+                    <h1>📊 銓宏國際專案管理系統</h1>
+                </div>
+                <div class="header-actions">
                     <div class="user-info" id="user-info">
                         <span class="user-role" id="user-role"></span>
                         <span class="user-name" id="user-name"></span>
-                        <button onclick="logout()" class="btn-logout">
-                            <i class="fas fa-sign-out-alt"></i> 登出
-                        </button>
                     </div>
+                    <button onclick="logout()" class="btn-logout">
+                        <i class="fas fa-sign-out-alt"></i> 登出
+                    </button>
                 </div>
-                <div class="header-actions">
+            </div>
+            
+            <div class="header-middle">
+                <div class="status-bar-badges">
+                    <span class="badge urgent">🔴 緊急: <span id="urgent-count">0</span></span>
+                    <span class="badge active">🟡 報價中: <span id="quote-count">0</span></span>
+                    <span class="badge pending">🔵 報價待確認: <span id="pending-count">0</span></span>
+                    <span class="badge sample">🟠 打樣後: <span id="sample-count">0</span></span>
+                    <span class="badge completed">🟢 已完成: <span id="completed-count">0</span></span>
+                    <span class="update-time">更新: <span id="update-time">-</span></span>
+                </div>
+                <div class="header-buttons">
                     <a href="../../index.html" class="back-to-main-btn">
                         <i class="fas fa-home"></i> 回主系統
                     </a>
@@ -35,14 +46,6 @@
                         <i class="fas fa-plus-circle"></i> 新增專案
                     </button>
                 </div>
-                <div class="status-bar-badges">
-                    <span class="badge urgent">🔴 緊急: <span id="urgent-count">0</span></span>
-                    <span class="badge active">🟡 報價中: <span id="quote-count">0</span></span>
-                    <span class="badge pending">🔵 報價待確認: <span id="pending-count">0</span></span>
-                    <span class="badge sample">🟠 打樣後: <span id="sample-count">0</span></span>
-                    <span class="badge completed">🟢 已完成: <span id="completed-count">0</span></span>
-                </div>
-                <span class="update-time">更新: <span id="update-time">-</span></span>
             </div>
             
             <!-- 全局搜尋列 -->
@@ -316,6 +319,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=27"></script>
+    <script src="app.js?v=28"></script>
 </body>
 </html>
