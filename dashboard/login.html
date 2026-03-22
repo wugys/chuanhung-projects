@@ -263,25 +263,62 @@
         const SUPABASE_URL = 'https://djvyozmdenvzlbyieyss.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdnlvem1kZW52emxieWlleXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTA1ODcsImV4cCI6MjA4OTY4NjU4N30.xc33MXQmbNph4EcFHwNbmai3dXDanIj2VKStJ6Xy2Tg';
         
+        let supabase = null;
+        
         // 初始化 Supabase
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // 檢查是否已登入
-        async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                // 已登入，導向原本要去的頁面或主系統
-                const urlParams = new URLSearchParams(window.location.search);
-                const returnUrl = urlParams.get('return');
-                if (returnUrl) {
-                    window.location.href = decodeURIComponent(returnUrl);
-                } else {
-                    window.location.href = 'index.html';
+        function initSupabase() {
+            try {
+                if (!window.supabase) {
+                    console.error('Supabase library not loaded');
+                    showError('系統載入失敗，請重新整理頁面');
+                    return false;
                 }
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase initialized');
+                return true;
+            } catch (error) {
+                console.error('Supabase init error:', error);
+                showError('系統初始化失敗，請重新整理頁面');
+                return false;
             }
         }
 
-        // 頁面載入時檢查
+        // 檢查是否已登入
+        async function checkAuth() {
+            if (!supabase) {
+                console.error('Supabase not initialized');
+                return;
+            }
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    // 已登入，導向原本要去的頁面或主系統
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const returnUrl = urlParams.get('return');
+                    if (returnUrl) {
+                        window.location.href = decodeURIComponent(returnUrl);
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+            }
+        }
+
+        // 頁面載入時初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                if (initSupabase()) {
+                    checkAuth();
+                }
+            });
+        } else {
+            if (initSupabase()) {
+                checkAuth();
+            }
+        }
         checkAuth();
 
         // 切換密碼顯示
@@ -322,21 +359,34 @@
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideError();
+            
+            console.log('登入表單提交');
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('remember-me').checked;
             const loginBtn = document.getElementById('login-btn');
+            
+            console.log('Email:', email);
 
             // 顯示載入狀態
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<span class="loading"></span>登入中...';
 
             try {
+                // 檢查 Supabase 是否已初始化
+                if (!supabase) {
+                    throw new Error('Supabase 未初始化，請重新整理頁面');
+                }
+                
+                console.log('開始登入...');
+                
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email,
                     password
                 });
+                
+                console.log('登入結果:', data, error);
 
                 if (error) {
                     throw error;
@@ -359,6 +409,8 @@
                     errorMessage = '帳號或密碼錯誤，請重新輸入';
                 } else if (error.message.includes('Email not confirmed')) {
                     errorMessage = '帳號尚未驗證，請聯繫管理員';
+                } else if (error.message.includes('Supabase')) {
+                    errorMessage = '系統連線問題，請重新整理頁面再試';
                 }
                 
                 showError(errorMessage);
