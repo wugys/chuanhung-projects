@@ -875,13 +875,18 @@ function showProjectGantt(projectId) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
     
+    currentGanttProject = project;
     const modal = document.getElementById('gantt-modal');
     const title = document.getElementById('gantt-modal-title');
     const body = document.getElementById('gantt-modal-body');
     
     title.innerHTML = `📅 ${project.name} - 甘特圖`;
-    
-    // 計算時間範圍
+    renderGanttContent(body, project);
+    modal.classList.add('active');
+}
+
+// 渲染甘特圖內容
+function renderGanttContent(container, project) {
     const today = new Date();
     const minDate = new Date(today);
     minDate.setDate(minDate.getDate() - 3);
@@ -889,6 +894,27 @@ function showProjectGantt(projectId) {
     maxDate.setDate(maxDate.getDate() + 30);
     
     const totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
+    
+    // 篩選任務
+    let filteredTasks = project.tasks.map((task, index) => ({ ...task, originalIndex: index }));
+    
+    if (ganttHideCompleted) {
+        filteredTasks = filteredTasks.filter(task => task.progress < 100);
+    }
+    
+    if (ganttShowOverdue) {
+        filteredTasks = filteredTasks.filter(task => {
+            const taskEnd = new Date(task.end);
+            return taskEnd < today && task.progress < 100;
+        });
+    }
+    
+    const completedCount = project.tasks.filter(t => t.progress === 100).length;
+    const totalCount = project.tasks.length;
+    const overdueCount = project.tasks.filter(t => {
+        const taskEnd = new Date(t.end);
+        return taskEnd < today && t.progress < 100;
+    }).length;
     
     // 建立甘特圖 HTML
     let ganttHtml = `
@@ -904,6 +930,18 @@ function showProjectGantt(projectId) {
                         <div class="progress-fill" style="width: ${project.progress}%"></div>
                     </div>
                 </div>
+            </div>
+            <div class="gantt-filters">
+                <label class="gantt-filter-label">
+                    <input type="checkbox" ${ganttHideCompleted ? 'checked' : ''} 
+                        onchange="toggleGanttHideCompleted(this.checked)">
+                    <span>隱藏已完成 (${completedCount}/${totalCount})</span>
+                </label>
+                <label class="gantt-filter-label overdue">
+                    <input type="checkbox" ${ganttShowOverdue ? 'checked' : ''} 
+                        onchange="toggleGanttShowOverdue(this.checked)">
+                    <span>🔴 只顯示逾期 (${overdueCount})</span>
+                </label>
             </div>
             <div class="single-gantt-timeline">
                 <div class="gantt-date-scale">
@@ -921,12 +959,13 @@ function showProjectGantt(projectId) {
     ganttHtml += `</div><div class="gantt-tasks">`;
     
     // 任務列
-    project.tasks.forEach((task, index) => {
+    filteredTasks.forEach((task, index) => {
         const taskStart = new Date(task.start);
         const taskEnd = new Date(task.end);
         
         const startOffset = (taskStart - minDate) / (1000 * 60 * 60 * 24);
         const duration = (taskEnd - taskStart) / (1000 * 60 * 60 * 24) + 1;
+        const workDays = Math.ceil(duration);
         
         const leftPercent = Math.max(0, (startOffset / totalDays) * 100);
         const widthPercent = Math.max(2, (duration / totalDays) * 100);
@@ -937,11 +976,21 @@ function showProjectGantt(projectId) {
         
         const isOverdue = taskEnd < today && task.progress < 100;
         
+        // 負責人和跟催人
+        const assignedTo = task.assigned_to || project.sales_rep || '未分配';
+        const followUpBy = task.follow_up_by || 'Kevin';
+        
         ganttHtml += `
             <div class="gantt-task-row">
                 <div class="gantt-task-info">
-                    <span class="task-num">${index + 1}</span>
-                    <span class="task-name">${task.name}</span>
+                    <span class="task-num">${task.originalIndex + 1}</span>
+                    <div class="task-details">
+                        <span class="task-name">${task.name}</span>
+                        <div class="task-assignees">
+                            <span class="gantt-assignee">👤 ${assignedTo}</span>
+                            <span class="gantt-followup">🔔 ${followUpBy}</span>
+                        </div>
+                    </div>
                     ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
                 </div>
                 <div class="gantt-task-timeline">
@@ -949,7 +998,10 @@ function showProjectGantt(projectId) {
                         <div class="task-progress-fill" style="width: ${task.progress}%"></div>
                     </div>
                 </div>
-                <div class="gantt-task-date">${task.start} ~ ${task.end}</div>
+                <div class="gantt-task-meta">
+                    <div class="gantt-task-date">📅 ${task.start} ~ ${task.end}</div>
+                    <div class="gantt-task-days">⏱️ ${workDays} 天</div>
+                </div>
                 <div class="gantt-task-percent">${task.progress}%</div>
             </div>
         `;
@@ -957,13 +1009,33 @@ function showProjectGantt(projectId) {
     
     ganttHtml += `</div></div></div>`;
     
-    body.innerHTML = ganttHtml;
-    modal.classList.add('active');
+    container.innerHTML = ganttHtml;
+}
+
+// 切換甘特圖隱藏已完成
+function toggleGanttHideCompleted(isChecked) {
+    ganttHideCompleted = isChecked;
+    if (currentGanttProject) {
+        const body = document.getElementById('gantt-modal-body');
+        renderGanttContent(body, currentGanttProject);
+    }
+}
+
+// 切換甘特圖只顯示逾期
+function toggleGanttShowOverdue(isChecked) {
+    ganttShowOverdue = isChecked;
+    if (currentGanttProject) {
+        const body = document.getElementById('gantt-modal-body');
+        renderGanttContent(body, currentGanttProject);
+    }
 }
 
 // 關閉甘特圖彈窗
 function closeGanttModal() {
     document.getElementById('gantt-modal').classList.remove('active');
+    currentGanttProject = null;
+    ganttHideCompleted = false;
+    ganttShowOverdue = false;
 }
 
 // 顯示單一專案待辦事項
@@ -1543,6 +1615,9 @@ let currentTodoProject = null;
 let currentTodoFilter = 'all';
 let hideCompleted = false;
 let showOverdueOnly = false;
+let currentGanttProject = null;
+let ganttHideCompleted = false;
+let ganttShowOverdue = false;
 
 // 覆寫顯示專案待辦事項函數
 const originalShowProjectTodo = showProjectTodo;
