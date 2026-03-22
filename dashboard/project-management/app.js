@@ -1,5 +1,21 @@
 // 銓宏國際專案管理系統 - 功能邏輯
 
+// 業務人員列表
+const SALES_REPS = ['姿姿', 'Betty', 'Mia', 'Kevin'];
+
+// 目前登入使用者（暫時固定，待登入系統完成後動態取得）
+let currentUser = {
+    name: '訪客',
+    role: 'guest'
+};
+
+// 篩選狀態
+let filterState = {
+    phase: 'all',
+    salesRep: 'all',
+    searchQuery: ''
+};
+
 // 模擬資料（實際使用時會讀取 YAML 檔案）
 // phase: 'quoting' = 報價中, 'pending' = 報價待確認, 'sampling' = 打樣中, 'production' = 生產中, 'completed' = 已完成
 const projects = [
@@ -14,6 +30,7 @@ const projects = [
         status: "active",
         statusText: "🟢 已下單生產中",
         phase: "production",
+        sales_rep: "Kevin",
         tasks: [
             { name: "3/17 提供皮料樣冊", start: "2026-03-17", end: "2026-03-17", progress: 100 },
             { name: "3/17 確認下單（三色各25000pcs）", start: "2026-03-17", end: "2026-03-17", progress: 100 },
@@ -36,6 +53,7 @@ const projects = [
         status: "active",
         statusText: "🟡 打樣中",
         phase: "sampling",
+        sales_rep: "姿姿",
         tasks: [
             { name: "結構樣-高周波廠", start: "2026-03-10", end: "2026-03-15", progress: 100 },
             { name: "3/20前收Kaka圖稿", start: "2026-03-15", end: "2026-03-20", progress: 60 },
@@ -53,6 +71,7 @@ const projects = [
         status: "active",
         statusText: "🟡 打樣中",
         phase: "sampling",
+        sales_rep: "姿姿",
         tasks: [
             { name: "確認姿姿圖稿", start: "2026-03-10", end: "2026-03-13", progress: 100 },
             { name: "Betty跟進報價", start: "2026-03-13", end: "2026-03-17", progress: 100 },
@@ -72,6 +91,7 @@ const projects = [
         status: "active",
         statusText: "🟡 報價待確認",
         phase: "pending",
+        sales_rep: "姿姿",
         quoteDate: "3/16",
         tasks: [
             { name: "3/16 Kevin已報價給客戶", start: "2026-03-16", end: "2026-03-16", progress: 100 },
@@ -91,6 +111,7 @@ const projects = [
         status: "active",
         statusText: "🟡 打樣中",
         phase: "sampling",
+        sales_rep: "姿姿",
         tasks: [
             { name: "NFC晶片追蹤", start: "2026-03-10", end: "2026-03-15", progress: 100 },
             { name: "高周波廠確認", start: "2026-03-15", end: "2026-03-18", progress: 90 },
@@ -108,6 +129,7 @@ const projects = [
         status: "active",
         statusText: "🟡 準備打樣",
         phase: "sampling",
+        sales_rep: "姿姿",
         tasks: [
             { name: "確認新羽起算日", start: "2026-03-16", end: "2026-03-18", progress: 70 },
             { name: "確認打樣規格", start: "2026-03-18", end: "2026-03-22", progress: 20 },
@@ -125,6 +147,7 @@ const projects = [
         status: "active",
         statusText: "🟡 報價待確認",
         phase: "pending",
+        sales_rep: "姿姿",
         quoteDate: "待確認",
         tasks: [
             { name: "姿姿提供照片", start: "2026-03-16", end: "2026-03-18", progress: 80 },
@@ -143,6 +166,7 @@ const projects = [
         status: "active",
         statusText: "🟡 打樣修正",
         phase: "sampling",
+        sales_rep: "姿姿",
         tasks: [
             { name: "本道補木板", start: "2026-03-16", end: "2026-03-20", progress: 60 },
             { name: "kaka確認修正樣品", start: "2026-03-20", end: "2026-03-25", progress: 10 },
@@ -175,6 +199,7 @@ const projects = [
         status: "active",
         statusText: "🟡 議價中",
         phase: "quoting",
+        sales_rep: "Betty",
         tasks: [
             { name: "3/17 Joanne來電議價", start: "2026-03-17", end: "2026-03-17", progress: 100 },
             { name: "Kevin回覆依照原價送審", start: "2026-03-17", end: "2026-03-17", progress: 100 },
@@ -195,6 +220,7 @@ const projects = [
         status: "active",
         statusText: "🟡 報價中",
         phase: "quoting",
+        sales_rep: "Betty",
         tasks: [
             { name: "3/16 名城發新需求詢價", start: "2026-03-16", end: "2026-03-16", progress: 100 },
             { name: "Kevin口頭回覆可以", start: "2026-03-16", end: "2026-03-16", progress: 100 },
@@ -214,6 +240,7 @@ const projects = [
         status: "active",
         statusText: "🟡 詢價中",
         phase: "quoting",
+        sales_rep: "Betty",
         tasks: [
             { name: "收到ezLink新案件需求", start: "2026-03-17", end: "2026-03-17", progress: 100 },
             { name: "評估娘惹蓋盅3D造型卡", start: "2026-03-17", end: "2026-03-19", progress: 30 },
@@ -233,6 +260,7 @@ const projects = [
         status: "active",
         statusText: "🟡 送樣中",
         phase: "sampling",
+        sales_rep: "姿姿",
         tasks: [
             { name: "請本道提供織帶樣品", start: "2026-03-17", end: "2026-03-17", progress: 100 },
             { name: "等待廠商提供可定染織帶", start: "2026-03-17", end: "2026-03-20", progress: 20 },
@@ -251,6 +279,7 @@ function init() {
     renderGantt();
     renderList();
     updateTime();
+    initSalesRepFilter(); // 初始化人員篩選器
 }
 
 // 更新狀態列
@@ -1601,6 +1630,253 @@ function showTodoToast(message) {
 }
 
 // ==================== 待辦事項功能優化結束 ====================
+
+// ==================== 人員搜尋功能 (SYS-2026-0321-007) ====================
+
+// 初始化人員篩選器
+function initSalesRepFilter() {
+    // 檢查是否已存在篩選器
+    if (document.getElementById('sales-rep-filter')) return;
+    
+    // 在標題區添加人員篩選器
+    const statusBar = document.querySelector('.status-bar');
+    if (!statusBar) return;
+    
+    const filterContainer = document.createElement('div');
+    filterContainer.className = 'sales-rep-filter-container';
+    filterContainer.innerHTML = `
+        <label>👤 業務：</label>
+        <select id="sales-rep-filter" onchange="filterBySalesRep(this.value)">
+            <option value="all">全部人員</option>
+            ${SALES_REPS.map(rep => `<option value="${rep}">${rep}</option>`).join('')}
+        </select>
+        <button class="btn-my-projects" onclick="showMyProjects()">📋 我的專案</button>
+    `;
+    
+    statusBar.appendChild(filterContainer);
+    
+    // 添加逾期警示區域
+    addOverdueAlertSection();
+}
+
+// 依業務篩選
+function filterBySalesRep(salesRep) {
+    filterState.salesRep = salesRep;
+    renderAllViews();
+    
+    // 顯示篩選提示
+    if (salesRep !== 'all') {
+        showToast(`已篩選：${salesRep} 的專案`);
+    }
+}
+
+// 顯示「我的專案」
+function showMyProjects() {
+    // 暫時使用「姿姿」作為範例（待登入系統完成後使用目前登入者）
+    const myName = '姿姿';
+    filterState.salesRep = myName;
+    document.getElementById('sales-rep-filter').value = myName;
+    renderAllViews();
+    showToast(`👤 顯示 ${myName} 的專案`);
+}
+
+// 取得過濾後的專案列表
+function getFilteredProjects() {
+    return projects.filter(project => {
+        // 階段篩選
+        if (filterState.phase !== 'all' && project.phase !== filterState.phase) {
+            return false;
+        }
+        // 人員篩選
+        if (filterState.salesRep !== 'all' && project.sales_rep !== filterState.salesRep) {
+            return false;
+        }
+        // 搜尋關鍵詞
+        if (filterState.searchQuery) {
+            const query = filterState.searchQuery.toLowerCase();
+            const matchClient = project.client.toLowerCase().includes(query);
+            const matchName = project.name.toLowerCase().includes(query);
+            const matchId = project.id.toLowerCase().includes(query);
+            if (!matchClient && !matchName && !matchId) {
+                return false;
+            }
+        }
+        return true;
+    });
+}
+
+// 添加逾期警示區域
+function addOverdueAlertSection() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+    
+    const alertSection = document.createElement('div');
+    alertSection.id = 'overdue-alert-section';
+    alertSection.className = 'overdue-alert-section';
+    alertSection.style.display = 'none';
+    
+    container.insertBefore(alertSection, container.querySelector('.nav-tabs'));
+    
+    // 檢查並顯示逾期專案
+    updateOverdueAlerts();
+}
+
+// 更新逾期警示
+function updateOverdueAlerts() {
+    const alertSection = document.getElementById('overdue-alert-section');
+    if (!alertSection) return;
+    
+    const today = new Date();
+    const overdueProjects = projects.filter(p => {
+        const deadline = new Date(p.deadline);
+        return deadline < today && p.progress < 100 && p.phase !== 'completed';
+    });
+    
+    if (overdueProjects.length === 0) {
+        alertSection.style.display = 'none';
+        return;
+    }
+    
+    alertSection.style.display = 'block';
+    alertSection.innerHTML = `
+        <div class="overdue-header">
+            <span class="overdue-icon">🔴</span>
+            <span class="overdue-title">逾期警示：${overdueProjects.length} 個專案已逾期</span>
+        </div>
+        <div class="overdue-list">
+            ${overdueProjects.map(p => `
+                <div class="overdue-item" onclick="showProjectDetail(projects.find(proj => proj.id === '${p.id}'))">
+                    <span class="overdue-project-id">${p.id}</span>
+                    <span class="overdue-project-name">${p.name}</span>
+                    <span class="overdue-project-client">${p.client}</span>
+                    <span class="overdue-days">逾期 ${Math.ceil((today - new Date(p.deadline)) / (1000 * 60 * 60 * 24))} 天</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// 顯示工作量統計
+function showWorkloadStats() {
+    const stats = {};
+    SALES_REPS.forEach(rep => {
+        stats[rep] = {
+            total: 0,
+            proposing: 0,
+            quoting: 0,
+            sampling: 0,
+            production: 0,
+            completed: 0
+        };
+    });
+    
+    projects.forEach(p => {
+        const rep = p.sales_rep || '未分配';
+        if (stats[rep]) {
+            stats[rep].total++;
+            if (p.phase === 'proposing' || p.phase === 'proposal_pending') stats[rep].proposing++;
+            else if (p.phase === 'quoting' || p.phase === 'pending') stats[rep].quoting++;
+            else if (p.phase === 'sampling') stats[rep].sampling++;
+            else if (p.phase === 'production') stats[rep].production++;
+            else if (p.phase === 'completed') stats[rep].completed++;
+        }
+    });
+    
+    // 建立統計彈窗
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'workload-stats-modal';
+    modal.innerHTML = `
+        <div class="modal-content stats-modal-content">
+            <span class="close-btn" onclick="document.getElementById('workload-stats-modal').remove()">×</span>
+            <h2>📊 業務工作量統計</h2>
+            <div class="stats-table-container">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>業務</th>
+                            <th>負責中</th>
+                            <th>💡 提案</th>
+                            <th>📋 報價</th>
+                            <th>🔨 打樣</th>
+                            <th>🏭 生產</th>
+                            <th>✅ 已完成</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${SALES_REPS.map(rep => `
+                            <tr>
+                                <td><strong>${rep}</strong></td>
+                                <td>${stats[rep].total}</td>
+                                <td>${stats[rep].proposing}</td>
+                                <td>${stats[rep].quoting}</td>
+                                <td>${stats[rep].sampling}</td>
+                                <td>${stats[rep].production}</td>
+                                <td>${stats[rep].completed}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 點擊彈窗外關閉
+    modal.onclick = function(e) {
+        if (e.target === modal) modal.remove();
+    };
+}
+
+// 顯示提示
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #3b82f6;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-size: 14px;
+        animation: slideUp 0.3s ease;
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// 覆寫 renderAllViews 以支援篩選
+const originalRenderAllViews = renderAllViews;
+renderAllViews = function() {
+    // 更新各視圖
+    renderProposalView();
+    renderQuoteView();
+    renderSampleView();
+    renderProductionView();
+    renderList();
+    renderPendingConfirmView();
+    updateStats();
+    updateOverdueAlerts();
+};
+
+// 覆寫原本的渲染函數以支援篩選
+function getProjectsForView(phase) {
+    const filtered = getFilteredProjects();
+    if (phase === 'all') return filtered;
+    return filtered.filter(p => p.phase === phase);
+}
+
+// ==================== 人員搜尋功能結束 ====================
 
 // 點擊彈窗外關閉
 window.onclick = function(event) {
