@@ -1043,80 +1043,21 @@ function showProjectTodo(projectId, filter = 'all') {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
     
+    currentTodoProject = project;
+    currentTodoFilter = filter;
+    
     const modal = document.getElementById('todo-modal');
     const title = document.getElementById('todo-modal-title');
     const body = document.getElementById('todo-modal-body');
     
-    // 根據篩選條件過濾任務
-    let filteredTasks = project.tasks;
-    if (filter === 'incomplete') {
-        filteredTasks = project.tasks.filter(task => task.progress < 100);
-    }
-    
     const filterText = filter === 'incomplete' ? '（待辦事項）' : '（全部事項）';
     title.innerHTML = `📝 ${project.name} - ${filterText}`;
     
-    const tasksHtml = filteredTasks.map((task, index) => {
-        const today = new Date();
-        const taskEnd = new Date(task.end);
-        const isOverdue = taskEnd < today && task.progress < 100;
-        
-        let statusIcon = '⏳';
-        let statusClass = 'pending';
-        if (task.progress === 100) {
-            statusIcon = '✅';
-            statusClass = 'completed';
-        } else if (task.progress > 0) {
-            statusIcon = '🔄';
-            statusClass = 'in-progress';
-        }
-        
-        return `
-            <li class="todo-item ${statusClass} ${isOverdue ? 'overdue' : ''}">
-                <div class="todo-main">
-                    <span class="todo-status-icon">${statusIcon}</span>
-                    <span class="todo-name">${task.name}</span>
-                    ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
-                </div>
-                <div class="todo-meta">
-                    <span class="todo-date">📅 ${task.start} → ${task.end}</span>
-                    <span class="todo-progress">${task.progress}%</span>
-                </div>
-                <div class="todo-progress-bar">
-                    <div class="todo-progress-fill" style="width: ${task.progress}%"></div>
-                </div>
-            </li>
-        `;
-    }).join('');
+    // 計算並更新專案進度
+    updateProjectProgress(project);
     
-    // 如果沒有待辦事項
-    const emptyMessage = filter === 'incomplete' && filteredTasks.length === 0 
-        ? '<div class="todo-empty">🎉 所有事項已完成！</div>' 
-        : '';
-    
-    body.innerHTML = `
-        <div class="todo-project-info">
-            <div class="todo-info-item">
-                <span class="todo-info-label">專案編號</span>
-                <span class="todo-info-value">${project.id}</span>
-            </div>
-            <div class="todo-info-item">
-                <span class="todo-info-label">客戶</span>
-                <span class="todo-info-value">${project.client} / ${project.contact}</span>
-            </div>
-            <div class="todo-info-item">
-                <span class="todo-info-label">整體進度</span>
-                <span class="todo-info-value">${project.progress}%</span>
-            </div>
-            <div class="todo-info-item">
-                <span class="todo-info-label">截止日</span>
-                <span class="todo-info-value">${project.deadline}</span>
-            </div>
-        </div>
-        <h3>任務清單</h3>
-        ${emptyMessage}
-        <ul class="todo-list">${tasksHtml}</ul>
-    `;
+    // 使用統一的渲染函數
+    renderTodoList(body, project, filter);
     
     modal.classList.add('active');
 }
@@ -1619,30 +1560,6 @@ let currentGanttProject = null;
 let ganttHideCompleted = false;
 let ganttShowOverdue = false;
 
-// 覆寫顯示專案待辦事項函數
-const originalShowProjectTodo = showProjectTodo;
-showProjectTodo = function(projectId, filter = 'all') {
-    const project = projects.find(p => p.id === projectId);
-    if (!project) return;
-    
-    currentTodoProject = project;
-    currentTodoFilter = filter;
-    
-    const modal = document.getElementById('todo-modal');
-    const title = document.getElementById('todo-modal-title');
-    const body = document.getElementById('todo-modal-body');
-    
-    const filterText = filter === 'incomplete' ? '（待辦事項）' : '（全部事項）';
-    title.innerHTML = `📝 ${project.name} - ${filterText}`;
-    
-    // 計算並更新專案進度
-    updateProjectProgress(project);
-    
-    renderTodoList(body, project, filter);
-    
-    modal.classList.add('active');
-};
-
 // 渲染待辦事項列表
 function renderTodoList(container, project, filter) {
     // 根據篩選條件過濾任務
@@ -1696,10 +1613,10 @@ function renderTodoList(container, project, filter) {
                         <span class="todo-checkbox-custom"></span>
                     </label>
                     <div class="todo-content">
-                        <div class="todo-name ${isCompleted ? 'strikethrough' : ''}">${task.name}</div>
+                        <div class="todo-name ${isCompleted ? 'strikethrough' : ''}" onclick="editTaskNameInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">${task.name}</div>
                         <div class="todo-assignees">
-                            <span class="assignee-badge assignee-primary">👤 ${assignedTo}</span>
-                            <span class="assignee-badge assignee-followup">🔔 ${followUpBy}</span>
+                            <span class="assignee-badge assignee-primary" onclick="editTaskAssigneeInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">👤 ${assignedTo}</span>
+                            <span class="assignee-badge assignee-followup" onclick="editTaskFollowUpInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">🔔 ${followUpBy}</span>
                         </div>
                     </div>
                     ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
