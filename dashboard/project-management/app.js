@@ -1416,6 +1416,7 @@ function applyProgressUpdate() {
     }
     
     const analysis = window.currentAnalysis;
+    const description = document.getElementById('progress-description').value.trim();
     
     // 更新專案資料
     project.progress = analysis.progress;
@@ -1430,11 +1431,29 @@ function applyProgressUpdate() {
         project.notes = analysis.notes;
     }
     
+    // 將進度描述加入全部事項（tasks）
+    if (!project.tasks) {
+        project.tasks = [];
+    }
+    
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // 建立新的進度任務項目
+    const newTask = {
+        name: `📈 進度更新: ${description.substring(0, 30)}${description.length > 30 ? '...' : ''}`,
+        start: todayStr,
+        end: analysis.deadline || todayStr,
+        progress: analysis.progress || 0
+    };
+    
+    project.tasks.push(newTask);
+    
     // 關閉彈窗並重新整理
     closeAddProgressModal();
     renderAllViews();
     
-    alert('✅ 進度更新成功！');
+    alert('✅ 進度更新成功！已加入全部事項');
 }
 
 // 快速更新專案階段
