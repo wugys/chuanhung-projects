@@ -502,24 +502,13 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 判斷是否為打樣後階段（顯示按鈕）
-    const showButtons = project.phase === 'sampling' || project.phase === 'production';
-    
-    // 新增進度按鈕（所有階段都顯示）
-    const progressButtonHtml = `
-        <button class="btn-progress" onclick="event.stopPropagation(); openAddProgressModal('${project.id}')">📈 新增進度</button>
-    `;
-    
-    const buttonsHtml = showButtons ? `
+    // 所有階段都顯示完整 4 個按鈕
+    const buttonsHtml = `
         <div class="card-buttons">
             <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
             <button class="btn-todo" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'incomplete')">📝 待辦事項</button>
             <button class="btn-all" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'all')">📋 全部事項</button>
-            ${progressButtonHtml}
-        </div>
-    ` : `
-        <div class="card-buttons">
-            ${progressButtonHtml}
+            <button class="btn-progress" onclick="event.stopPropagation(); openAddProgressModal('${project.id}')">📈 新增進度</button>
         </div>
     `;
     
@@ -543,16 +532,11 @@ function createProjectCard(project) {
     `;
     
     // 點擊卡片顯示詳情（按鈕除外）
-    if (!showButtons) {
-        card.onclick = () => showProjectDetail(project);
-    } else {
-        // 打樣後階段點擊標題區域顯示詳情
-        card.onclick = (e) => {
-            if (!e.target.closest('.card-buttons')) {
-                showProjectDetail(project);
-            }
-        };
-    }
+    card.onclick = (e) => {
+        if (!e.target.closest('.card-buttons')) {
+            showProjectDetail(project);
+        }
+    };
     
     return card;
 }
@@ -1116,35 +1100,53 @@ function generateProjectId() {
 }
 
 // 提交新專案
-function submitNewProject(event) {
+async function submitNewProject(event) {
     event.preventDefault();
     
     const formData = {
         id: document.getElementById('new-project-id').value,
         name: document.getElementById('new-project-name').value,
         client: document.getElementById('new-project-client').value,
-        productType: document.getElementById('new-project-type').value,
+        product_type: document.getElementById('new-project-type').value,
         quantity: document.getElementById('new-project-quantity').value + '個',
         deadline: document.getElementById('new-project-deadline').value,
         phase: document.getElementById('new-project-phase').value,
-        salesRep: document.getElementById('new-project-sales').value,
+        sales_rep: document.getElementById('new-project-sales').value,
         notes: document.getElementById('new-project-notes').value,
         contact: '',
         progress: 0,
         status: 'active',
-        statusText: getStatusText(document.getElementById('new-project-phase').value),
+        status_text: getStatusText(document.getElementById('new-project-phase').value),
         tasks: []
     };
     
-    // 添加新專案到資料陣列
-    projects.push(formData);
-    
-    // 關閉彈窗並重新整理顯示
-    closeAddProjectModal();
-    renderAllViews();
-    
-    // 顯示成功提示
-    alert('✅ 專案建立成功！');
+    try {
+        // 寫入 Supabase
+        const { data, error } = await supabaseClient
+            .from('projects')
+            .insert([formData])
+            .select();
+        
+        if (error) {
+            console.error('Supabase 寫入錯誤:', error);
+            alert('❌ 專案建立失敗: ' + error.message);
+            return;
+        }
+        
+        // 添加到本地陣列（即時顯示）
+        projects.push(formData);
+        
+        // 關閉彈窗並重新整理顯示
+        closeAddProjectModal();
+        renderAllViews();
+        
+        // 顯示成功提示
+        alert('✅ 專案建立成功！已儲存至資料庫');
+        
+    } catch (error) {
+        console.error('寫入錯誤:', error);
+        alert('❌ 專案建立失敗: ' + error.message);
+    }
 }
 
 // 根據階段取得狀態文字
@@ -1199,6 +1201,17 @@ function closeAddProgressModal() {
 }
 
 // AI 分析進度描述
+// AI 分析設定
+const AI_CONFIG = {
+    // 使用 Kimi API (Moonshot AI)
+    apiUrl: 'https://api.moonshot.cn/v1/chat/completions',
+    model: 'moonshot-v1-8k',
+    // API Key 應該從環境變數或 Supabase 取得，這裡使用代理函數
+    useEdgeFunction: true,  // 使用 Supabase Edge Function 保護 API Key
+    edgeFunctionName: 'ai-progress-analyzer'
+};
+
+// 分析進度（使用真正 AI）
 async function analyzeProgressWithAI() {
     const input = document.getElementById('progress-description');
     const resultDiv = document.getElementById('progress-analysis-result');
@@ -1211,11 +1224,25 @@ async function analyzeProgressWithAI() {
     }
     
     analyzeBtn.disabled = true;
-    analyzeBtn.innerHTML = '🤔 分析中...';
+    analyzeBtn.innerHTML = '🤔 AI 分析中...';
     
     try {
-        // 簡易 AI 分析（本地規則）
-        const analysis = performLocalAnalysis(description);
+        let analysis;
+        
+        // 嘗試使用 AI API
+        if (AI_CONFIG.useEdgeFunction && supabaseClient) {
+            try {
+                analysis = await callAIWithEdgeFunction(description);
+            } catch (apiError) {
+                console.warn('AI API 呼叫失敗，使用備援分析:', apiError);
+                // 降級到本地規則分析
+                analysis = performLocalAnalysis(description);
+                analysis.notes = description + '\n\n(⚠️ AI 服務暫時不可用，使用本地分析)';
+            }
+        } else {
+            // 直接使用本地規則
+            analysis = performLocalAnalysis(description);
+        }
         
         resultDiv.innerHTML = `
             <div class="analysis-result">
@@ -1256,6 +1283,46 @@ async function analyzeProgressWithAI() {
         analyzeBtn.disabled = false;
         analyzeBtn.innerHTML = '🤖 AI分析';
     }
+}
+
+// 呼叫 Supabase Edge Function 進行 AI 分析
+async function callAIWithEdgeFunction(description) {
+    const { data, error } = await supabaseClient.functions.invoke(
+        AI_CONFIG.edgeFunctionName,
+        {
+            body: { 
+                description: description,
+                projectContext: currentProgressProjectId ? getProjectContext(currentProgressProjectId) : null
+            }
+        }
+    );
+    
+    if (error) {
+        throw new Error(`Edge Function 錯誤: ${error.message}`);
+    }
+    
+    return {
+        progress: data.progress || 0,
+        phase: data.phase || 'proposing',
+        phaseText: data.phaseText || '💡 提案',
+        deadline: data.deadline || '',
+        notes: data.notes || description
+    };
+}
+
+// 取得專案上下文（用於 AI 分析）
+function getProjectContext(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return null;
+    
+    return {
+        id: project.id,
+        name: project.name,
+        client: project.client,
+        currentPhase: project.phase,
+        currentProgress: project.progress,
+        deadline: project.deadline
+    };
 }
 
 // 本地規則分析（簡易 AI）
