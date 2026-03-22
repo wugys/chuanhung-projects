@@ -167,70 +167,99 @@ body {
 }
 
 /* 標題區 */
+/* 標題區樣式 */
 .header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 30px;
+    padding: 15px 20px;
     border-radius: 12px;
     margin-bottom: 20px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.header-left {
+.header-top {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
-.back-btn {
-    display: inline-flex;
+.header-title h1 {
+    font-size: 20px;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
     align-items: center;
     gap: 8px;
-    color: rgba(255,255,255,0.9);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 8px 12px;
+}
+
+.header-actions .user-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
     background: rgba(255,255,255,0.15);
-    border-radius: 8px;
-    transition: all 0.2s;
-    width: fit-content;
-}
-
-.back-btn:hover {
-    background: rgba(255,255,255,0.25);
-    color: white;
-}
-
-.back-btn i {
+    border-radius: 20px;
     font-size: 12px;
 }
 
-.header h1 {
-    font-size: 28px;
-}
-    margin-bottom: 15px;
+.header-actions .btn-logout {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
 }
 
-.status-bar {
+.header-middle {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
-.status-bar-top {
+.status-bar-badges {
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 5px;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
-.back-to-main-btn {
+.badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge.urgent { background: #fee; color: #c33; }
+.badge.active { background: #ffeaa7; color: #b7791f; }
+.badge.pending { background: #dbeafe; color: #1e40af; }
+.badge.sample { background: #fed7aa; color: #9a3412; }
+.badge.completed { background: #d1fae5; color: #065f46; }
+
+.update-time {
+    font-size: 11px;
+    opacity: 0.8;
+    margin-left: 10px;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.header-buttons .back-to-main-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     color: white;
     text-decoration: none;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     padding: 6px 12px;
     background: rgba(255,255,255,0.2);
@@ -238,35 +267,26 @@ body {
     transition: all 0.2s;
 }
 
-.back-to-main-btn:hover {
-    background: rgba(255,255,255,0.3);
-    transform: translateY(-1px);
-}
-
-.status-bar-badges {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
+.header-buttons .btn-add-project {
+    display: inline-flex;
     align-items: center;
-}
-
-.badge {
+    gap: 5px;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
     padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
+    background: #10b981;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.badge.urgent { background: #fee; color: #c33; }
-.badge.active { background: #ffeaa7; color: #b7791f; }
-.badge.completed { background: #d4edda; color: #155724; }
-
-.update-time {
-    margin-left: auto;
-    font-size: 13px;
+.header-buttons .back-to-main-btn:hover,
+.header-buttons .btn-add-project:hover {
+    transform: translateY(-1px);
     opacity: 0.9;
 }
-
 /* 導航標籤 */
 .nav-tabs {
     display: flex;
@@ -1329,6 +1349,185 @@ h2 {
     color: #667eea;
 }
 
+/* ==================== 任務快速編輯樣式 ==================== */
+
+.edit-input {
+    padding: 6px 10px;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    outline: none;
+}
+
+.edit-select {
+    padding: 4px 8px;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    font-size: 12px;
+    background: white;
+    outline: none;
+    cursor: pointer;
+}
+
+.edit-date-input {
+    padding: 4px 8px;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    font-size: 12px;
+    background: white;
+    outline: none;
+}
+
+.edit-save-btn {
+    padding: 4px 10px;
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.edit-save-btn:hover {
+    background: #059669;
+}
+
+.edit-progress input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    outline: none;
+}
+
+.edit-progress input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #667eea;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* 可點擊編輯的元素樣式 */
+.todo-name:hover,
+.assignee-badge:hover,
+.date-range:hover,
+.todo-progress-info:hover {
+    cursor: pointer;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 4px;
+}
+
+/* ==================== 任務快速編輯樣式結束 ==================== */
+
+/* 甘特圖篩選器 */
+.gantt-filters {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin: 12px 0;
+}
+
+.gantt-filter-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+}
+
+.gantt-filter-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #10b981;
+}
+
+.gantt-filter-label.overdue input[type="checkbox"] {
+    accent-color: #ef4444;
+}
+
+.gantt-filter-label.overdue span {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+/* 甘特圖任務詳情 */
+.gantt-task-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.gantt-task-info {
+    width: 220px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.task-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.task-assignees {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.gantt-assignee {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: #dbeafe;
+    color: #1e40af;
+    border-radius: 12px;
+}
+
+.gantt-followup {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 12px;
+}
+
+.gantt-task-meta {
+    width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.gantt-task-date {
+    color: #666;
+}
+
+.gantt-task-days {
+    color: #4338ca;
+    font-weight: 500;
+    background: #e0e7ff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-block;
+    width: fit-content;
+}
+
 /* 待辦事項彈窗 */
 .todo-project-info {
     display: grid;
@@ -1602,6 +1801,81 @@ h2 {
     border-top: 1px solid #ddd6fe;
 }
 
+/* 待辦事項格式的分析結果 */
+.analysis-result.todo-style {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.analysis-result.todo-style h4 {
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.analysis-summary {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    background: white;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.summary-item {
+    color: #64748b;
+}
+
+.summary-item strong {
+    color: #1e293b;
+}
+
+.analysis-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.analysis-task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.analysis-task-item:hover {
+    border-color: #cbd5e1;
+}
+
+.analysis-task-item .task-content {
+    flex: 1;
+}
+
+.analysis-task-item .task-name {
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.analysis-task-item .task-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.analysis-task-item .task-progress {
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
 /* 階段下拉選單樣式 */
 .phase-select {
     padding: 6px 10px;
@@ -1675,6 +1949,12 @@ h2 {
     margin-bottom: 16px;
 }
 
+.todo-filters {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
 .todo-toggle-label {
     display: flex;
     align-items: center;
@@ -1682,6 +1962,15 @@ h2 {
     cursor: pointer;
     font-size: 14px;
     color: #374151;
+}
+
+.todo-toggle-label.overdue-filter input[type="checkbox"] {
+    accent-color: #ef4444;
+}
+
+.todo-toggle-label.overdue-filter span {
+    color: #dc2626;
+    font-weight: 500;
 }
 
 .todo-toggle-label input[type="checkbox"] {
@@ -2042,3 +2331,193 @@ h2 {
 }
 
 /* ==================== 人員搜尋功能樣式結束 ==================== */
+
+/* ==================== 全部事項增強樣式 ==================== */
+
+.todo-content {
+    flex: 1;
+}
+
+.todo-assignees {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.assignee-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.assignee-primary {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.assignee-followup {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.todo-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 32px;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-radius: 8px;
+    gap: 16px;
+}
+
+.todo-dates {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.work-days {
+    background: #e0e7ff;
+    color: #4338ca;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.todo-progress-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 120px;
+}
+
+.progress-bar-small {
+    flex: 1;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill-small {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-fill-small.completed {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.progress-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3b82f6;
+    min-width: 40px;
+    text-align: right;
+}
+
+.progress-text.completed {
+    color: #10b981;
+}
+
+/* ==================== 全部事項增強樣式結束 ==================== */
+
+/* ==================== 全局搜尋列樣式 ==================== */
+
+.global-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.search-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-wrapper .search-icon {
+    position: absolute;
+    left: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+#global-search {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+#global-search:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+#global-search::placeholder {
+    color: #9ca3af;
+}
+
+.quick-filters {
+    display: flex;
+    gap: 6px;
+}
+
+.quick-filter-btn {
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.quick-filter-btn.active {
+    background: white;
+    color: #667eea;
+    font-weight: 500;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .global-search-bar {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .quick-filters {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+/* ==================== 全局搜尋列樣式結束 ==================== */

@@ -274,8 +274,10 @@ const projects = [
 // 初始化
 function init() {
     updateStatusBar();
+    renderProposalView();
     renderQuoteView();
     renderSampleView();
+    renderProductionView();
     renderGantt();
     renderList();
     updateTime();
@@ -502,11 +504,10 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 所有階段都顯示完整 4 個按鈕
+    // 所有階段都顯示 3 個按鈕（移除待辦事項）
     const buttonsHtml = `
         <div class="card-buttons">
             <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
-            <button class="btn-todo" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'incomplete')">📝 待辦事項</button>
             <button class="btn-all" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'all')">📋 全部事項</button>
             <button class="btn-progress" onclick="event.stopPropagation(); openAddProgressModal('${project.id}')">📈 新增進度</button>
         </div>
@@ -874,13 +875,18 @@ function showProjectGantt(projectId) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
     
+    currentGanttProject = project;
     const modal = document.getElementById('gantt-modal');
     const title = document.getElementById('gantt-modal-title');
     const body = document.getElementById('gantt-modal-body');
     
     title.innerHTML = `📅 ${project.name} - 甘特圖`;
-    
-    // 計算時間範圍
+    renderGanttContent(body, project);
+    modal.classList.add('active');
+}
+
+// 渲染甘特圖內容
+function renderGanttContent(container, project) {
     const today = new Date();
     const minDate = new Date(today);
     minDate.setDate(minDate.getDate() - 3);
@@ -888,6 +894,27 @@ function showProjectGantt(projectId) {
     maxDate.setDate(maxDate.getDate() + 30);
     
     const totalDays = (maxDate - minDate) / (1000 * 60 * 60 * 24);
+    
+    // 篩選任務
+    let filteredTasks = project.tasks.map((task, index) => ({ ...task, originalIndex: index }));
+    
+    if (ganttHideCompleted) {
+        filteredTasks = filteredTasks.filter(task => task.progress < 100);
+    }
+    
+    if (ganttShowOverdue) {
+        filteredTasks = filteredTasks.filter(task => {
+            const taskEnd = new Date(task.end);
+            return taskEnd < today && task.progress < 100;
+        });
+    }
+    
+    const completedCount = project.tasks.filter(t => t.progress === 100).length;
+    const totalCount = project.tasks.length;
+    const overdueCount = project.tasks.filter(t => {
+        const taskEnd = new Date(t.end);
+        return taskEnd < today && t.progress < 100;
+    }).length;
     
     // 建立甘特圖 HTML
     let ganttHtml = `
@@ -903,6 +930,18 @@ function showProjectGantt(projectId) {
                         <div class="progress-fill" style="width: ${project.progress}%"></div>
                     </div>
                 </div>
+            </div>
+            <div class="gantt-filters">
+                <label class="gantt-filter-label">
+                    <input type="checkbox" ${ganttHideCompleted ? 'checked' : ''} 
+                        onchange="toggleGanttHideCompleted(this.checked)">
+                    <span>隱藏已完成 (${completedCount}/${totalCount})</span>
+                </label>
+                <label class="gantt-filter-label overdue">
+                    <input type="checkbox" ${ganttShowOverdue ? 'checked' : ''} 
+                        onchange="toggleGanttShowOverdue(this.checked)">
+                    <span>🔴 只顯示逾期 (${overdueCount})</span>
+                </label>
             </div>
             <div class="single-gantt-timeline">
                 <div class="gantt-date-scale">
@@ -920,12 +959,13 @@ function showProjectGantt(projectId) {
     ganttHtml += `</div><div class="gantt-tasks">`;
     
     // 任務列
-    project.tasks.forEach((task, index) => {
+    filteredTasks.forEach((task, index) => {
         const taskStart = new Date(task.start);
         const taskEnd = new Date(task.end);
         
         const startOffset = (taskStart - minDate) / (1000 * 60 * 60 * 24);
         const duration = (taskEnd - taskStart) / (1000 * 60 * 60 * 24) + 1;
+        const workDays = Math.ceil(duration);
         
         const leftPercent = Math.max(0, (startOffset / totalDays) * 100);
         const widthPercent = Math.max(2, (duration / totalDays) * 100);
@@ -936,11 +976,21 @@ function showProjectGantt(projectId) {
         
         const isOverdue = taskEnd < today && task.progress < 100;
         
+        // 負責人和跟催人
+        const assignedTo = task.assigned_to || project.sales_rep || '未分配';
+        const followUpBy = task.follow_up_by || 'Kevin';
+        
         ganttHtml += `
             <div class="gantt-task-row">
                 <div class="gantt-task-info">
-                    <span class="task-num">${index + 1}</span>
-                    <span class="task-name">${task.name}</span>
+                    <span class="task-num">${task.originalIndex + 1}</span>
+                    <div class="task-details">
+                        <span class="task-name">${task.name}</span>
+                        <div class="task-assignees">
+                            <span class="gantt-assignee">👤 ${assignedTo}</span>
+                            <span class="gantt-followup">🔔 ${followUpBy}</span>
+                        </div>
+                    </div>
                     ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
                 </div>
                 <div class="gantt-task-timeline">
@@ -948,7 +998,10 @@ function showProjectGantt(projectId) {
                         <div class="task-progress-fill" style="width: ${task.progress}%"></div>
                     </div>
                 </div>
-                <div class="gantt-task-date">${task.start} ~ ${task.end}</div>
+                <div class="gantt-task-meta">
+                    <div class="gantt-task-date">📅 ${task.start} ~ ${task.end}</div>
+                    <div class="gantt-task-days">⏱️ ${workDays} 天</div>
+                </div>
                 <div class="gantt-task-percent">${task.progress}%</div>
             </div>
         `;
@@ -956,13 +1009,33 @@ function showProjectGantt(projectId) {
     
     ganttHtml += `</div></div></div>`;
     
-    body.innerHTML = ganttHtml;
-    modal.classList.add('active');
+    container.innerHTML = ganttHtml;
+}
+
+// 切換甘特圖隱藏已完成
+function toggleGanttHideCompleted(isChecked) {
+    ganttHideCompleted = isChecked;
+    if (currentGanttProject) {
+        const body = document.getElementById('gantt-modal-body');
+        renderGanttContent(body, currentGanttProject);
+    }
+}
+
+// 切換甘特圖只顯示逾期
+function toggleGanttShowOverdue(isChecked) {
+    ganttShowOverdue = isChecked;
+    if (currentGanttProject) {
+        const body = document.getElementById('gantt-modal-body');
+        renderGanttContent(body, currentGanttProject);
+    }
 }
 
 // 關閉甘特圖彈窗
 function closeGanttModal() {
     document.getElementById('gantt-modal').classList.remove('active');
+    currentGanttProject = null;
+    ganttHideCompleted = false;
+    ganttShowOverdue = false;
 }
 
 // 顯示單一專案待辦事項
@@ -970,80 +1043,21 @@ function showProjectTodo(projectId, filter = 'all') {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
     
+    currentTodoProject = project;
+    currentTodoFilter = filter;
+    
     const modal = document.getElementById('todo-modal');
     const title = document.getElementById('todo-modal-title');
     const body = document.getElementById('todo-modal-body');
     
-    // 根據篩選條件過濾任務
-    let filteredTasks = project.tasks;
-    if (filter === 'incomplete') {
-        filteredTasks = project.tasks.filter(task => task.progress < 100);
-    }
-    
     const filterText = filter === 'incomplete' ? '（待辦事項）' : '（全部事項）';
     title.innerHTML = `📝 ${project.name} - ${filterText}`;
     
-    const tasksHtml = filteredTasks.map((task, index) => {
-        const today = new Date();
-        const taskEnd = new Date(task.end);
-        const isOverdue = taskEnd < today && task.progress < 100;
-        
-        let statusIcon = '⏳';
-        let statusClass = 'pending';
-        if (task.progress === 100) {
-            statusIcon = '✅';
-            statusClass = 'completed';
-        } else if (task.progress > 0) {
-            statusIcon = '🔄';
-            statusClass = 'in-progress';
-        }
-        
-        return `
-            <li class="todo-item ${statusClass} ${isOverdue ? 'overdue' : ''}">
-                <div class="todo-main">
-                    <span class="todo-status-icon">${statusIcon}</span>
-                    <span class="todo-name">${task.name}</span>
-                    ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
-                </div>
-                <div class="todo-meta">
-                    <span class="todo-date">📅 ${task.start} → ${task.end}</span>
-                    <span class="todo-progress">${task.progress}%</span>
-                </div>
-                <div class="todo-progress-bar">
-                    <div class="todo-progress-fill" style="width: ${task.progress}%"></div>
-                </div>
-            </li>
-        `;
-    }).join('');
+    // 計算並更新專案進度
+    updateProjectProgress(project);
     
-    // 如果沒有待辦事項
-    const emptyMessage = filter === 'incomplete' && filteredTasks.length === 0 
-        ? '<div class="todo-empty">🎉 所有事項已完成！</div>' 
-        : '';
-    
-    body.innerHTML = `
-        <div class="todo-project-info">
-            <div class="todo-info-item">
-                <span class="todo-info-label">專案編號</span>
-                <span class="todo-info-value">${project.id}</span>
-            </div>
-            <div class="todo-info-item">
-                <span class="todo-info-label">客戶</span>
-                <span class="todo-info-value">${project.client} / ${project.contact}</span>
-            </div>
-            <div class="todo-info-item">
-                <span class="todo-info-label">整體進度</span>
-                <span class="todo-info-value">${project.progress}%</span>
-            </div>
-            <div class="todo-info-item">
-                <span class="todo-info-label">截止日</span>
-                <span class="todo-info-value">${project.deadline}</span>
-            </div>
-        </div>
-        <h3>任務清單</h3>
-        ${emptyMessage}
-        <ul class="todo-list">${tasksHtml}</ul>
-    `;
+    // 使用統一的渲染函數
+    renderTodoList(body, project, filter);
     
     modal.classList.add('active');
 }
@@ -1244,29 +1258,36 @@ async function analyzeProgressWithAI() {
             analysis = performLocalAnalysis(description);
         }
         
+        // 使用新的待辦事項格式呈現分析結果
+        const tasksHtml = analysis.tasks.map((task, index) => `
+            <div class="analysis-task-item">
+                <label class="task-checkbox-label">
+                    <input type="checkbox" checked onchange="toggleAnalysisTask(${index}, this.checked)">
+                    <span class="task-checkbox-custom"></span>
+                </label>
+                <div class="task-content">
+                    <div class="task-name">${task.name}</div>
+                    <div class="task-meta">
+                        <span class="task-progress">進度: ${task.progress}%</span>
+                        <span class="task-date">${task.start}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
         resultDiv.innerHTML = `
-            <div class="analysis-result">
-                <h4>📊 AI 分析結果</h4>
-                <div class="analysis-item">
-                    <span class="label">建議進度:</span>
-                    <span class="value">${analysis.progress}%</span>
+            <div class="analysis-result todo-style">
+                <h4>📝 待辦事項分析結果</h4>
+                <div class="analysis-summary">
+                    <span class="summary-item">共 ${analysis.tasks.length} 項</span>
+                    <span class="summary-item">整體進度: ${analysis.overallProgress}%</span>
+                    <span class="summary-item">階段: ${analysis.phaseText}</span>
                 </div>
-                <div class="analysis-item">
-                    <span class="label">建議階段:</span>
-                    <span class="value">${analysis.phaseText}</span>
-                </div>
-                ${analysis.deadline ? `
-                <div class="analysis-item">
-                    <span class="label">預計交期:</span>
-                    <span class="value">${analysis.deadline}</span>
-                </div>
-                ` : ''}
-                <div class="analysis-item">
-                    <span class="label">備註:</span>
-                    <span class="value">${analysis.notes || '無'}</span>
+                <div class="analysis-tasks-list">
+                    ${tasksHtml}
                 </div>
                 <div class="analysis-actions">
-                    <button onclick="applyProgressUpdate()" class="btn-primary">✅ 套用更新</button>
+                    <button onclick="applyProgressUpdate()" class="btn-primary">➕ 新增事項</button>
                     <button onclick="document.getElementById('progress-description').focus()" class="btn-secondary">📝 修改描述</button>
                 </div>
             </div>
@@ -1282,6 +1303,13 @@ async function analyzeProgressWithAI() {
     } finally {
         analyzeBtn.disabled = false;
         analyzeBtn.innerHTML = '🤖 AI分析';
+    }
+}
+
+// 切換分析任務的選擇狀態
+function toggleAnalysisTask(index, isChecked) {
+    if (window.currentAnalysis && window.currentAnalysis.tasks[index]) {
+        window.currentAnalysis.tasks[index].selected = isChecked;
     }
 }
 
@@ -1325,85 +1353,86 @@ function getProjectContext(projectId) {
     };
 }
 
-// 本地規則分析（簡易 AI）
+// 本地規則分析（簡易 AI）- 改為返回多個待辦事項
 function performLocalAnalysis(description) {
-    const lowerDesc = description.toLowerCase();
-    let progress = 0;
-    let phase = '';
-    let phaseText = '';
-    let deadline = '';
-    let notes = description;
+    const lines = description.split(/\n|\r|,/).filter(line => line.trim());
+    const tasks = [];
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
     
-    // 進度關鍵詞分析
-    if (lowerDesc.includes('完成') || lowerDesc.includes('結束') || lowerDesc.includes('搞定')) {
-        if (lowerDesc.includes('全部') || lowerDesc.includes('所有') || lowerDesc.includes('100')) {
+    // 解析每一行為一個待辦事項
+    lines.forEach((line, index) => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return;
+        
+        // 判斷進度
+        let progress = 0;
+        const lowerLine = trimmedLine.toLowerCase();
+        
+        if (lowerLine.includes('完成') || lowerLine.includes('搞定') || lowerLine.includes('結束')) {
             progress = 100;
-        } else {
-            progress = Math.min(progress + 30, 100);
+        } else if (lowerLine.includes('已到') || lowerLine.includes('已經') || lowerLine.includes('正在')) {
+            progress = 60;
+        } else if (lowerLine.includes('預計') || lowerLine.includes('準備') || lowerLine.includes('安排')) {
+            progress = 30;
         }
-    }
-    if (lowerDesc.includes('進行中') || lowerDesc.includes('處理中') || lowerDesc.includes('製作中')) {
-        progress = Math.max(progress, 50);
-    }
-    if (lowerDesc.includes('開始') || lowerDesc.includes('啟動')) {
-        progress = Math.max(progress, 20);
-    }
-    if (lowerDesc.includes('確認') || lowerDesc.includes('審核通過')) {
-        progress = Math.max(progress, 70);
-    }
-    if (lowerDesc.includes('出貨') || lowerDesc.includes('交貨') || lowerDesc.includes('交付')) {
-        progress = Math.max(progress, 90);
+        
+        tasks.push({
+            id: index,
+            name: trimmedLine.substring(0, 50) + (trimmedLine.length > 50 ? '...' : ''),
+            fullText: trimmedLine,
+            progress: progress,
+            start: todayStr,
+            end: todayStr,
+            selected: true  // 預設選中
+        });
+    });
+    
+    // 如果沒有解析到任何項目，將整段描述作為一個項目
+    if (tasks.length === 0) {
+        tasks.push({
+            id: 0,
+            name: description.substring(0, 50) + (description.length > 50 ? '...' : ''),
+            fullText: description,
+            progress: 0,
+            start: todayStr,
+            end: todayStr,
+            selected: true
+        });
     }
     
-    // 階段分析
+    // 計算整體進度
+    const avgProgress = Math.round(tasks.reduce((sum, t) => sum + t.progress, 0) / tasks.length);
+    
+    // 判斷整體階段
+    let phase = 'production';
+    let phaseText = '🏭 生產';
+    
+    const lowerDesc = description.toLowerCase();
     if (lowerDesc.includes('提案') || lowerDesc.includes('概念')) {
         phase = 'proposing';
         phaseText = '💡 提案';
-    } else if (lowerDesc.includes('報價') || lowerDesc.includes('價格') || lowerDesc.includes('報價單')) {
+    } else if (lowerDesc.includes('報價') || lowerDesc.includes('價格')) {
         phase = 'quoting';
         phaseText = '📋 報價';
-        if (lowerDesc.includes('待確認') || lowerDesc.includes('等回覆')) {
-            phase = 'pending';
-            phaseText = '🔵 報價待確認';
-        }
     } else if (lowerDesc.includes('打樣') || lowerDesc.includes('樣品')) {
         phase = 'sampling';
         phaseText = '🔨 打樣';
-    } else if (lowerDesc.includes('生產') || lowerDesc.includes('製作') || lowerDesc.includes('大貨')) {
-        phase = 'production';
-        phaseText = '🏭 生產';
     } else if (lowerDesc.includes('完成') || lowerDesc.includes('結案')) {
         phase = 'completed';
         phaseText = '✅ 已完成';
-        progress = 100;
     }
     
-    // 日期分析
-    const dateMatch = description.match(/(\d{1,2})\/(\d{1,2})/);
-    if (dateMatch) {
-        const today = new Date();
-        const year = today.getFullYear();
-        deadline = `${year}-${dateMatch[1].padStart(2, '0')}-${dateMatch[2].padStart(2, '0')}`;
-    }
-    
-    // 如果沒有識別到階段，根據進度推斷
-    if (!phase) {
-        if (progress >= 100) {
-            phase = 'completed';
-            phaseText = '✅ 已完成';
-        } else if (progress >= 70) {
-            phase = 'production';
-            phaseText = '🏭 生產';
-        } else if (progress >= 40) {
-            phase = 'sampling';
-            phaseText = '🔨 打樣';
-        }
-    }
-    
-    return { progress, phase, phaseText, deadline, notes };
+    return {
+        tasks: tasks,
+        overallProgress: avgProgress,
+        phase: phase,
+        phaseText: phaseText,
+        deadline: ''
+    };
 }
 
-// 套用進度更新
+// 套用進度更新 - 將選中的事項加入全部清單
 function applyProgressUpdate() {
     if (!currentProgressProjectId || !window.currentAnalysis) {
         alert('無法套用更新');
@@ -1418,24 +1447,42 @@ function applyProgressUpdate() {
     
     const analysis = window.currentAnalysis;
     
-    // 更新專案資料
-    project.progress = analysis.progress;
+    // 取得選中的任務
+    const selectedTasks = analysis.tasks.filter(t => t.selected);
+    
+    if (selectedTasks.length === 0) {
+        alert('請至少選擇一個事項');
+        return;
+    }
+    
+    // 更新專案整體進度和階段
+    project.progress = analysis.overallProgress;
     if (analysis.phase) {
         project.phase = analysis.phase;
         project.statusText = analysis.phaseText;
     }
-    if (analysis.deadline) {
-        project.deadline = analysis.deadline;
+    
+    // 將選中的事項加入全部事項（tasks）
+    if (!project.tasks) {
+        project.tasks = [];
     }
-    if (analysis.notes) {
-        project.notes = analysis.notes;
-    }
+    
+    // 為每個選中的任務建立 task 項目
+    selectedTasks.forEach(task => {
+        const newTask = {
+            name: task.name,
+            start: task.start,
+            end: task.end,
+            progress: task.progress
+        };
+        project.tasks.push(newTask);
+    });
     
     // 關閉彈窗並重新整理
     closeAddProgressModal();
     renderAllViews();
     
-    alert('✅ 進度更新成功！');
+    alert(`✅ 成功新增 ${selectedTasks.length} 個事項到全部清單！`);
 }
 
 // 快速更新專案階段
@@ -1508,30 +1555,10 @@ function showToast(message) {
 let currentTodoProject = null;
 let currentTodoFilter = 'all';
 let hideCompleted = false;
-
-// 覆寫顯示專案待辦事項函數
-const originalShowProjectTodo = showProjectTodo;
-showProjectTodo = function(projectId, filter = 'all') {
-    const project = projects.find(p => p.id === projectId);
-    if (!project) return;
-    
-    currentTodoProject = project;
-    currentTodoFilter = filter;
-    
-    const modal = document.getElementById('todo-modal');
-    const title = document.getElementById('todo-modal-title');
-    const body = document.getElementById('todo-modal-body');
-    
-    const filterText = filter === 'incomplete' ? '（待辦事項）' : '（全部事項）';
-    title.innerHTML = `📝 ${project.name} - ${filterText}`;
-    
-    // 計算並更新專案進度
-    updateProjectProgress(project);
-    
-    renderTodoList(body, project, filter);
-    
-    modal.classList.add('active');
-};
+let showOverdueOnly = false;
+let currentGanttProject = null;
+let ganttHideCompleted = false;
+let ganttShowOverdue = false;
 
 // 渲染待辦事項列表
 function renderTodoList(container, project, filter) {
@@ -1546,14 +1573,35 @@ function renderTodoList(container, project, filter) {
         filteredTasks = filteredTasks.filter(task => task.progress < 100);
     }
     
+    // 只顯示逾期事項
+    if (showOverdueOnly) {
+        const today = new Date();
+        filteredTasks = filteredTasks.filter(task => {
+            const taskEnd = new Date(task.end);
+            return taskEnd < today && task.progress < 100;
+        });
+    }
+    
     const completedCount = project.tasks.filter(t => t.progress === 100).length;
     const totalCount = project.tasks.length;
+    const overdueCount = project.tasks.filter(t => {
+        const taskEnd = new Date(t.end);
+        return taskEnd < new Date() && t.progress < 100;
+    }).length;
     
     const tasksHtml = filteredTasks.map((task) => {
         const today = new Date();
         const taskEnd = new Date(task.end);
+        const taskStart = new Date(task.start);
         const isOverdue = taskEnd < today && task.progress < 100;
         const isCompleted = task.progress === 100;
+        
+        // 計算工作天數
+        const workDays = Math.ceil((taskEnd - taskStart) / (1000 * 60 * 60 * 24)) + 1;
+        
+        // 負責人和跟催人（預設值）
+        const assignedTo = task.assigned_to || project.sales_rep || '未分配';
+        const followUpBy = task.follow_up_by || 'Kevin';
         
         return `
             <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}">
@@ -1564,15 +1612,25 @@ function renderTodoList(container, project, filter) {
                             onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)">
                         <span class="todo-checkbox-custom"></span>
                     </label>
-                    <span class="todo-name ${isCompleted ? 'strikethrough' : ''}">${task.name}</span>
+                    <div class="todo-content">
+                        <div class="todo-name ${isCompleted ? 'strikethrough' : ''}" onclick="editTaskNameInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">${task.name}</div>
+                        <div class="todo-assignees">
+                            <span class="assignee-badge assignee-primary" onclick="editTaskAssigneeInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">👤 ${assignedTo}</span>
+                            <span class="assignee-badge assignee-followup" onclick="editTaskFollowUpInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">🔔 ${followUpBy}</span>
+                        </div>
+                    </div>
                     ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
-                </div>
-                <div class="todo-meta">
-                    <span class="todo-date">📅 ${task.start} → ${task.end}</span>
-                    <span class="todo-progress ${isCompleted ? 'completed' : ''}">${task.progress}%</span>
-                </div>
-                <div class="todo-progress-bar">
-                    <div class="todo-progress-fill ${isCompleted ? 'completed' : ''}" style="width: ${task.progress}%"></div>
+                </div>                <div class="todo-details">
+                    <div class="todo-dates">
+                        <span class="date-range">📅 ${task.start} → ${task.end}</span>
+                        <span class="work-days">⏱️ ${workDays} 天</span>
+                    </div>
+                    <div class="todo-progress-info">
+                        <div class="progress-bar-small">
+                            <div class="progress-fill-small ${isCompleted ? 'completed' : ''}" style="width: ${task.progress}%"></div>
+                        </div>
+                        <span class="progress-text ${isCompleted ? 'completed' : ''}">${task.progress}%</span>
+                    </div>
                 </div>
             </li>
         `;
@@ -1587,11 +1645,18 @@ function renderTodoList(container, project, filter) {
     
     container.innerHTML = `
         <div class="todo-controls">
-            <label class="todo-toggle-label">
-                <input type="checkbox" id="hide-completed-toggle" ${hideCompleted ? 'checked' : ''} 
-                    onchange="toggleHideCompleted(this.checked)">
-                <span>隱藏已完成項目 (${completedCount}/${totalCount})</span>
-            </label>
+            <div class="todo-filters">
+                <label class="todo-toggle-label">
+                    <input type="checkbox" id="hide-completed-toggle" ${hideCompleted ? 'checked' : ''} 
+                        onchange="toggleHideCompleted(this.checked)">
+                    <span>隱藏已完成 (${completedCount}/${totalCount})</span>
+                </label>
+                <label class="todo-toggle-label overdue-filter">
+                    <input type="checkbox" id="show-overdue-toggle" ${showOverdueOnly ? 'checked' : ''} 
+                        onchange="toggleShowOverdueOnly(this.checked)">
+                    <span>🔴 只顯示逾期 (${overdueCount})</span>
+                </label>
+            </div>
             <span class="todo-progress-summary">專案進度: <strong>${project.progress}%</strong></span>
         </div>
         <div class="todo-project-info">
@@ -1660,12 +1725,23 @@ function toggleHideCompleted(isChecked) {
     }
 }
 
+// 切換只顯示逾期事項
+function toggleShowOverdueOnly(isChecked) {
+    showOverdueOnly = isChecked;
+    if (currentTodoProject) {
+        const body = document.getElementById('todo-modal-body');
+        renderTodoList(body, currentTodoProject, currentTodoFilter);
+    }
+}
+
 // 覆寫關閉待辦事項彈窗函數
 const originalCloseTodoModal = closeTodoModal;
 closeTodoModal = function() {
     document.getElementById('todo-modal').classList.remove('active');
     currentTodoProject = null;
     currentTodoFilter = 'all';
+    showOverdueOnly = false; // 重置逾期篩選
+    hideCompleted = false; // 重置隱藏已完成
     // 重新整理主頁面以更新進度顯示
     renderAllViews();
 };
@@ -1944,6 +2020,44 @@ function getProjectsForView(phase) {
 }
 
 // ==================== 人員搜尋功能結束 ====================
+
+// ==================== 全局搜尋功能 ====================
+
+function filterGlobalProjects() {
+    const query = document.getElementById('global-search').value.toLowerCase().trim();
+    filterState.searchQuery = query;
+    renderAllViews();
+    
+    // 更新快速篩選按鈕狀態
+    updateQuickFilterButtons();
+}
+
+function filterByRep(repName) {
+    filterState.salesRep = repName;
+    filterState.searchQuery = '';
+    document.getElementById('global-search').value = '';
+    renderAllViews();
+    updateQuickFilterButtons(repName);
+}
+
+function clearGlobalFilter() {
+    filterState.salesRep = 'all';
+    filterState.searchQuery = '';
+    document.getElementById('global-search').value = '';
+    renderAllViews();
+    updateQuickFilterButtons('全部');
+}
+
+function updateQuickFilterButtons(activeBtn) {
+    const buttons = document.querySelectorAll('.quick-filter-btn');
+    buttons.forEach(btn => {
+        if (btn.textContent === activeBtn) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
 
 // 點擊彈窗外關閉
 window.onclick = function(event) {
