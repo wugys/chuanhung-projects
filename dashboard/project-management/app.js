@@ -1542,6 +1542,7 @@ function showToast(message) {
 let currentTodoProject = null;
 let currentTodoFilter = 'all';
 let hideCompleted = false;
+let showOverdueOnly = false;
 
 // 覆寫顯示專案待辦事項函數
 const originalShowProjectTodo = showProjectTodo;
@@ -1580,8 +1581,21 @@ function renderTodoList(container, project, filter) {
         filteredTasks = filteredTasks.filter(task => task.progress < 100);
     }
     
+    // 只顯示逾期事項
+    if (showOverdueOnly) {
+        const today = new Date();
+        filteredTasks = filteredTasks.filter(task => {
+            const taskEnd = new Date(task.end);
+            return taskEnd < today && task.progress < 100;
+        });
+    }
+    
     const completedCount = project.tasks.filter(t => t.progress === 100).length;
     const totalCount = project.tasks.length;
+    const overdueCount = project.tasks.filter(t => {
+        const taskEnd = new Date(t.end);
+        return taskEnd < new Date() && t.progress < 100;
+    }).length;
     
     const tasksHtml = filteredTasks.map((task) => {
         const today = new Date();
@@ -1639,11 +1653,18 @@ function renderTodoList(container, project, filter) {
     
     container.innerHTML = `
         <div class="todo-controls">
-            <label class="todo-toggle-label">
-                <input type="checkbox" id="hide-completed-toggle" ${hideCompleted ? 'checked' : ''} 
-                    onchange="toggleHideCompleted(this.checked)">
-                <span>隱藏已完成項目 (${completedCount}/${totalCount})</span>
-            </label>
+            <div class="todo-filters">
+                <label class="todo-toggle-label">
+                    <input type="checkbox" id="hide-completed-toggle" ${hideCompleted ? 'checked' : ''} 
+                        onchange="toggleHideCompleted(this.checked)">
+                    <span>隱藏已完成 (${completedCount}/${totalCount})</span>
+                </label>
+                <label class="todo-toggle-label overdue-filter">
+                    <input type="checkbox" id="show-overdue-toggle" ${showOverdueOnly ? 'checked' : ''} 
+                        onchange="toggleShowOverdueOnly(this.checked)">
+                    <span>🔴 只顯示逾期 (${overdueCount})</span>
+                </label>
+            </div>
             <span class="todo-progress-summary">專案進度: <strong>${project.progress}%</strong></span>
         </div>
         <div class="todo-project-info">
@@ -1712,12 +1733,23 @@ function toggleHideCompleted(isChecked) {
     }
 }
 
+// 切換只顯示逾期事項
+function toggleShowOverdueOnly(isChecked) {
+    showOverdueOnly = isChecked;
+    if (currentTodoProject) {
+        const body = document.getElementById('todo-modal-body');
+        renderTodoList(body, currentTodoProject, currentTodoFilter);
+    }
+}
+
 // 覆寫關閉待辦事項彈窗函數
 const originalCloseTodoModal = closeTodoModal;
 closeTodoModal = function() {
     document.getElementById('todo-modal').classList.remove('active');
     currentTodoProject = null;
     currentTodoFilter = 'all';
+    showOverdueOnly = false; // 重置逾期篩選
+    hideCompleted = false; // 重置隱藏已完成
     // 重新整理主頁面以更新進度顯示
     renderAllViews();
 };

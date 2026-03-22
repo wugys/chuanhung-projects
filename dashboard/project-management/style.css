@@ -1750,6 +1750,12 @@ h2 {
     margin-bottom: 16px;
 }
 
+.todo-filters {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
 .todo-toggle-label {
     display: flex;
     align-items: center;
@@ -1757,6 +1763,15 @@ h2 {
     cursor: pointer;
     font-size: 14px;
     color: #374151;
+}
+
+.todo-toggle-label.overdue-filter input[type="checkbox"] {
+    accent-color: #ef4444;
+}
+
+.todo-toggle-label.overdue-filter span {
+    color: #dc2626;
+    font-weight: 500;
 }
 
 .todo-toggle-label input[type="checkbox"] {
