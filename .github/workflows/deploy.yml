@@ -1,0 +1,107 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'dashboard/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout main branch
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        fetch-depth: 0
+    
+    - name: Setup Git
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+    
+    - name: Check for broken links
+      run: |
+        echo "🔍 檢查連結正確性..."
+        
+        # 檢查是否有錯誤的 project-dashboard-web 連結
+        if grep -r "project-dashboard-web" dashboard/ 2>/dev/null; then
+          echo "❌ 發現錯誤連結：project-dashboard-web"
+          echo "請將所有 project-dashboard-web 改為 dashboard/project-management"
+          exit 1
+        fi
+        
+        # 檢查回主系統連結是否正確
+        INCORRECT_LINKS=$(grep -r "\.\./dashboard/index\.html" dashboard/ 2>/dev/null || true)
+        if [ -n "$INCORRECT_LINKS" ]; then
+          echo "❌ 發現錯誤的『回主系統』連結："
+          echo "$INCORRECT_LINKS"
+          echo "應該使用 ../index.html"
+          exit 1
+        fi
+        
+        echo "✅ 連結檢查通過"
+    
+    - name: Deploy to gh-pages
+      run: |
+        echo "🚀 部署到 gh-pages..."
+        
+        # 建立臨時目錄
+        mkdir -p /tmp/deploy-dashboard
+        
+        # 複製 dashboard 內容
+        cp -r dashboard/* /tmp/deploy-dashboard/
+        
+        # 切換到 gh-pages 分支
+        git fetch origin gh-pages
+        git checkout gh-pages
+        
+        # 備份根目錄的其他檔案（如 index.html, README 等）
+        mkdir -p /tmp/root-backup
+        for item in *; do
+          if [ "$item" != "dashboard" ] && [ "$item" != ".git" ]; then
+            cp -r "$item" /tmp/root-backup/ 2>/dev/null || true
+          fi
+        done
+        
+        # 清理並複製新內容
+        rm -rf dashboard
+        cp -r /tmp/deploy-dashboard dashboard
+        
+        # 恢復根目錄檔案
+        cp -r /tmp/root-backup/* . 2>/dev/null || true
+        
+        # 提交並推送
+        git add -A
+        if git diff --cached --quiet; then
+          echo "✅ 無變更，無需部署"
+        else
+          git commit -m "deploy: Auto-deploy from main $(date '+%Y-%m-%d %H:%M:%S')"
+          git push origin gh-pages
+          echo "✅ 部署完成"
+        fi
+        
+        # 切回 main
+        git checkout main
+    
+    - name: Verify deployment
+      run: |
+        echo "🔍 驗證部署..."
+        sleep 10
+        
+        # 檢查 GitHub Pages 是否可訪問
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://wugys.github.io/chuanhung-projects/dashboard/project-management/index.html || echo "000")
+        
+        if [ "$STATUS" = "200" ]; then
+          echo "✅ GitHub Pages 部署成功 (HTTP $STATUS)"
+        else
+          echo "⚠️ GitHub Pages 可能還在更新中 (HTTP $STATUS)"
+          echo "請稍後手動檢查: https://wugys.github.io/chuanhung-projects/dashboard/project-management/"
+        fi
