@@ -50,15 +50,18 @@
                 <div class="search-inputs-wrapper">
                     <div class="search-input-box">
                         <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="search-box-1" placeholder="🔍 搜尋客戶、產品或聯絡人..." oninput="filterGlobalProjects()">
+                        <input type="text" id="search-box-1" placeholder="🔍 搜尋客戶、產品或聯絡人...">
                     </div>
                     <div class="search-input-box">
                         <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="search-box-2" placeholder="🔍 進一步篩選（可留空）..." oninput="filterGlobalProjects()">
+                        <input type="text" id="search-box-2" placeholder="🔍 進一步篩選（可留空）...">
                     </div>
                 </div>
+                <button class="search-confirm-btn" onclick="openSearchResultsModal()">
+                    <i class="fas fa-search"></i> 搜尋
+                </button>
                 <button class="clear-search-btn" onclick="clearGlobalFilter()">
-                    <i class="fas fa-times"></i> 清除搜尋
+                    <i class="fas fa-times"></i> 清除
                 </button>
             </div>
         </header>
@@ -324,6 +327,15 @@
             </div>
         </div>
         
+        <!-- 搜尋結果彈窗 -->
+        <div id="search-results-modal" class="modal">
+            <div class="modal-content search-results-modal-content">
+                <span class="close-btn" onclick="closeSearchResultsModal()">×</span>
+                <h2 id="search-results-title">🔍 搜尋結果</h2>
+                <div id="search-results-info" class="search-results-info"></div>
+                <div id="search-results-body" class="search-results-grid"></div>
+            </div>
+        </div>
 
     </div>
     
@@ -332,7 +344,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=52"></script>
+    <script src="app.js?v=53"></script>
     <script>
         window.onload = function() {
             console.log('✅ Page loaded successfully');

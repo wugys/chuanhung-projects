@@ -2568,6 +2568,66 @@ h2 {
     background: rgba(255, 255, 255, 0.25);
 }
 
+/* 搜尋確認按鈕 */
+.search-confirm-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-confirm-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* 搜尋結果彈窗 */
+.search-results-modal-content {
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow-y: auto;
+    width: 90%;
+}
+
+.search-results-info {
+    background: #f3f4f6;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.search-results-info .search-term {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin: 0 4px;
+    font-weight: 500;
+}
+
+.search-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    padding: 10px 0;
+}
+
+.search-results-grid .project-card {
+    cursor: pointer;
+}
+
 /* 響應式設計 */
 @media (max-width: 768px) {
     .global-search-bar {
@@ -2580,8 +2640,19 @@ h2 {
         width: 100%;
     }
     
+    .search-confirm-btn,
     .clear-search-btn {
         width: 100%;
+        justify-content: center;
+    }
+    
+    .search-results-modal-content {
+        width: 95%;
+        max-height: 85vh;
+    }
+    
+    .search-results-grid {
+        grid-template-columns: 1fr;
     }
     
     .quick-filters {

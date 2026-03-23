@@ -2533,12 +2533,75 @@ function clearGlobalFilter() {
     renderAllViews();
 }
 
+// ==================== 搜尋結果彈窗功能 ====================
+
+function openSearchResultsModal() {
+    const query1 = document.getElementById('search-box-1').value.trim();
+    const query2 = document.getElementById('search-box-2').value.trim();
+    
+    // 更新篩選狀態
+    filterState.searchQuery1 = query1.toLowerCase();
+    filterState.searchQuery2 = query2.toLowerCase();
+    
+    // 執行搜尋
+    const results = getFilteredProjects();
+    
+    // 更新彈窗標題
+    const titleEl = document.getElementById('search-results-title');
+    titleEl.innerHTML = `🔍 搜尋結果 <span style="font-size: 14px; color: #6b7280;">(${results.length} 個專案)</span>`;
+    
+    // 更新搜尋資訊
+    const infoEl = document.getElementById('search-results-info');
+    let searchInfoHtml = '搜尋條件：';
+    if (query1) {
+        searchInfoHtml += `<span class="search-term">${query1}</span>`;
+    }
+    if (query2) {
+        searchInfoHtml += ` + <span class="search-term">${query2}</span>`;
+    }
+    if (!query1 && !query2) {
+        searchInfoHtml += '<span class="search-term">顯示全部</span>';
+    }
+    infoEl.innerHTML = searchInfoHtml;
+    
+    // 渲染結果
+    const resultsBody = document.getElementById('search-results-body');
+    resultsBody.innerHTML = '';
+    
+    if (results.length === 0) {
+        resultsBody.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; color: #6b7280;">
+                <i class="fas fa-search" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                <p>找不到符合條件的專案</p>
+                <p style="font-size: 13px; margin-top: 8px;">請嘗試其他關鍵字</p>
+            </div>
+        `;
+    } else {
+        results.forEach(project => {
+            const card = createProjectCard(project);
+            resultsBody.appendChild(card);
+        });
+    }
+    
+    // 顯示彈窗
+    const modal = document.getElementById('search-results-modal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSearchResultsModal() {
+    const modal = document.getElementById('search-results-modal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
 // 點擊彈窗外關閉
 window.onclick = function(event) {
     const modal = document.getElementById('project-modal');
     const ganttModal = document.getElementById('gantt-modal');
     const todoModal = document.getElementById('todo-modal');
     const addProjectModal = document.getElementById('add-project-modal');
+    const searchResultsModal = document.getElementById('search-results-modal');
     
     if (event.target === modal) {
         modal.classList.remove('active');
@@ -2551,6 +2614,9 @@ window.onclick = function(event) {
     }
     if (event.target === addProjectModal) {
         closeAddProjectModal();
+    }
+    if (event.target === searchResultsModal) {
+        closeSearchResultsModal();
     }
 }
 
