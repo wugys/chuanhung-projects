@@ -207,10 +207,9 @@
                 
                 <!-- 固定控制區域（分頁式設計） -->
                 <div id="todo-controls-fixed" style="display: flex !important; gap: 12px; padding: 12px 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px; border: 2px solid #3b82f6;">
-                    <button type="button" id="btn-show-all" onclick="switchTodoFilter('all')" style="flex: 1; padding: 8px 16px; border: none; border-radius: 6px; background: #3b82f6; color: white; font-size: 14px; cursor: pointer;">📋 全部</button>
-                    <button type="button" id="btn-show-incomplete" onclick="switchTodoFilter('incomplete')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">⏳ 待辦</button>
+                    <button type="button" id="btn-show-all" onclick="switchTodoFilter('all')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">📋 全部</button>
+                    <button type="button" id="btn-show-incomplete" onclick="switchTodoFilter('incomplete')" style="flex: 1; padding: 8px 16px; border: none; border-radius: 6px; background: #3b82f6; color: white; font-size: 14px; cursor: pointer;">⏳ 待辦</button>
                     <button type="button" id="btn-show-overdue" onclick="switchTodoFilter('overdue')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">🔴 逾期</button>
-                    <span style="font-size: 14px; color: #6b7280; display: flex; align-items: center;">專案進度: <strong id="todo-progress-display" style="margin-left: 4px;">0%</strong></span>
                 </div>
                 
                 <!-- 專案資訊區域 -->
@@ -399,7 +398,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=57"></script>
+    <script src="app.js?v=58"></script>
     <script>
         window.onload = function() {
             console.log('✅ Page loaded successfully');

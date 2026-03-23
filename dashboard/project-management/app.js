@@ -1375,7 +1375,7 @@ function closeGanttModal() {
 }
 
 // 顯示單一專案待辦事項（使用固定 HTML 元素）
-function showProjectTodo(projectId, filter = 'all') {
+function showProjectTodo(projectId, filter = 'incomplete') {
     console.log('showProjectTodo called:', { projectId, filter });
     
     const project = projects.find(p => p.id === projectId);
@@ -1402,8 +1402,8 @@ function showProjectTodo(projectId, filter = 'all') {
         return;
     }
     
-    const filterText = filter === 'incomplete' ? '（待辦事項）' : '（全部事項）';
-    title.innerHTML = `📝 ${project.name} - ${filterText}`;
+    const filterText = filter === 'incomplete' ? '（待辦事項）' : filter === 'overdue' ? '（逾期事項）' : '（全部事項）';
+    title.innerHTML = `📝 ${project.name} ${filterText}`;
     
     // 計算並更新專案進度
     updateProjectProgress(project);
@@ -1644,8 +1644,8 @@ function renderTaskListOnly(container, project, filter) {
                         </div>
                     </div>
                     <div style="display: flex; gap: 4px;">
+                        <button onclick="showTaskMaterials('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; color: #92400e; cursor: pointer;" title="查看客戶圖稿">📎 圖稿</button>
                         <button onclick="editTaskDates('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">📅 日期</button>
-                        <button onclick="editTaskProgress('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">📊 進度</button>
                         <button onclick="deleteTask('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #fef2f2; border: 1px solid #ef4444; border-radius: 4px; color: #ef4444; cursor: pointer;">🗑️ 刪除</button>
                     </div>
                     ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
@@ -1654,12 +1654,6 @@ function renderTaskListOnly(container, project, filter) {
                     <div class="todo-dates">
                         <span class="date-range">📅 ${task.start} → ${task.end}</span>
                         <span class="work-days">⏱️ ${workDays} 天</span>
-                    </div>
-                    <div class="todo-progress-info">
-                        <div class="progress-bar-small">
-                            <div class="progress-fill-small ${isCompleted ? 'completed' : ''}" style="width: ${task.progress}%"></div>
-                        </div>
-                        <span class="progress-text ${isCompleted ? 'completed' : ''}">${task.progress}%</span>
                     </div>
                 </div>
             </li>
@@ -1826,6 +1820,126 @@ function deleteTask(projectId, taskIndex) {
         
         alert('✅ 任務已刪除');
     }
+}
+
+// 顯示任務相關的客戶圖稿
+let currentTaskMaterialsProjectId = null;
+let currentTaskMaterialsTaskIndex = null;
+
+function showTaskMaterials(projectId, taskIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    currentTaskMaterialsProjectId = projectId;
+    currentTaskMaterialsTaskIndex = taskIndex;
+    
+    // 取得任務資訊
+    const task = project.tasks[taskIndex];
+    
+    // 取得已關聯的資料索引
+    const linkedIndices = task.linkedMaterials || [];
+    
+    // 建立彈窗內容
+    let modalContent = `
+        <div id="task-materials-modal" class="modal active">
+            <div class="modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+                <span class="close-btn" onclick="closeTaskMaterialsModal()">×</span>
+                <h3>📎 客戶圖稿 - ${task.name}</h3>
+                
+                <div style="margin: 15px 0; padding: 10px; background: #f8fafc; border-radius: 6px;">
+                    <p style="margin: 0; font-size: 13px; color: #6b7280;">
+                        選擇要關聯到此任務的客戶提供資料
+                    </p>
+                </div>
+    `;
+    
+    // 顯示所有客戶資料，可勾選關聯
+    if (project.clientMaterials && project.clientMaterials.length > 0) {
+        modalContent += '<div style="margin-top: 15px;">';
+        project.clientMaterials.forEach((material, index) => {
+            const isLinked = linkedIndices.includes(index);
+            modalContent += `
+                <div style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; margin-bottom: 8px; background: ${isLinked ? '#fef3c7' : '#f9fafb'}; border-radius: 8px; border: 1px solid ${isLinked ? '#f59e0b' : '#e5e7eb'};">
+                    <input type="checkbox" id="material-link-${index}" 
+                        ${isLinked ? 'checked' : ''} 
+                        onchange="toggleMaterialLink('${projectId}', ${taskIndex}, ${index})"
+                        style="margin-top: 3px; cursor: pointer;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; font-size: 14px; margin-bottom: 4px;">
+                            ${formatDateShort(material.date)} - ${material.description}
+                        </div>
+                        ${material.notes ? `<div style="font-size: 12px; color: #6b7280;">${material.notes}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        modalContent += '</div>';
+    } else {
+        modalContent += `
+            <div style="text-align: center; padding: 30px; color: #9ca3af;">
+                <p>尚無客戶提供資料</p>
+                <p style="font-size: 12px;">請先在「📎 客戶提供資料」區塊新增資料</p>
+            </div>
+        `;
+    }
+    
+    modalContent += `
+                <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button onclick="closeTaskMaterialsModal()" style="padding: 8px 16px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;">關閉</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 插入到頁面
+    const existingModal = document.getElementById('task-materials-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+}
+
+// 切換資料關聯
+function toggleMaterialLink(projectId, taskIndex, materialIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    const task = project.tasks[taskIndex];
+    
+    // 確保 linkedMaterials 陣列存在
+    if (!task.linkedMaterials) {
+        task.linkedMaterials = [];
+    }
+    
+    const linkIndex = task.linkedMaterials.indexOf(materialIndex);
+    
+    if (linkIndex === -1) {
+        // 新增關聯
+        task.linkedMaterials.push(materialIndex);
+    } else {
+        // 移除關聯
+        task.linkedMaterials.splice(linkIndex, 1);
+    }
+    
+    // 儲存
+    saveProjectsToLocalStorage();
+    
+    // 更新 UI
+    const checkbox = document.getElementById(`material-link-${materialIndex}`);
+    const container = checkbox.closest('div');
+    const isLinked = linkIndex === -1; // 剛剛新增
+    container.style.background = isLinked ? '#fef3c7' : '#f9fafb';
+    container.style.borderColor = isLinked ? '#f59e0b' : '#e5e7eb';
+}
+
+// 關閉任務圖稿彈窗
+function closeTaskMaterialsModal() {
+    const modal = document.getElementById('task-materials-modal');
+    if (modal) {
+        modal.remove();
+    }
+    currentTaskMaterialsProjectId = null;
+    currentTaskMaterialsTaskIndex = null;
 }
 
 // 固定控制區域的切換函數
