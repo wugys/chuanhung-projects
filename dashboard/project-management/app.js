@@ -1681,20 +1681,20 @@ function renderTodoList(container, project, filter) {
     
     // 渲染 HTML - 確保 todo-controls 始終顯示
     const html = `
-        <div class="todo-controls">
-            <div class="todo-filters">
-                <label class="todo-toggle-label">
+        <div class="todo-controls" style="display: flex !important; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px; border: 2px solid #3b82f6;">
+            <div class="todo-filters" style="display: flex !important; gap: 16px; flex-wrap: wrap;">
+                <label class="todo-toggle-label" style="display: flex !important; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #374151;">
                     <input type="checkbox" id="hide-completed-toggle" ${hideCompleted ? 'checked' : ''} 
-                        onchange="toggleHideCompleted(this.checked)">
+                        onchange="toggleHideCompleted(this.checked)" style="width: 18px; height: 18px; cursor: pointer;">
                     <span>隱藏已完成 (${completedCount}/${totalCount})</span>
                 </label>
-                <label class="todo-toggle-label overdue-filter">
+                <label class="todo-toggle-label overdue-filter" style="display: flex !important; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #dc2626; font-weight: 500;">
                     <input type="checkbox" id="show-overdue-toggle" ${showOverdueOnly ? 'checked' : ''} 
-                        onchange="toggleShowOverdueOnly(this.checked)">
+                        onchange="toggleShowOverdueOnly(this.checked)" style="width: 18px; height: 18px; cursor: pointer; accent-color: #ef4444;">
                     <span>🔴 只顯示逾期 (${overdueCount})</span>
                 </label>
             </div>
-            <span class="todo-progress-summary">專案進度: <strong>${project.progress}%</strong></span>
+            <span class="todo-progress-summary" style="font-size: 14px; color: #6b7280;">專案進度: <strong>${project.progress}%</strong></span>
         </div>
         <div class="todo-project-info">
             <div class="todo-info-item">
