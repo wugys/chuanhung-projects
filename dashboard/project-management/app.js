@@ -1958,6 +1958,59 @@ closeTodoModal = function() {
     // 不重新整理主頁面，避免競態條件
 };
 
+// 分頁式篩選切換（新設計）
+function switchTodoFilter(filter) {
+    if (!currentTodoProject) return;
+    
+    currentTodoFilter = filter;
+    
+    // 更新按鈕樣式
+    const btnAll = document.getElementById('btn-show-all');
+    const btnIncomplete = document.getElementById('btn-show-incomplete');
+    const btnOverdue = document.getElementById('btn-show-overdue');
+    
+    // 重置所有按鈕為未選中狀態
+    [btnAll, btnIncomplete, btnOverdue].forEach(btn => {
+        if (btn) {
+            btn.style.background = 'white';
+            btn.style.color = '#374151';
+            btn.style.border = '1px solid #d1d5db';
+        }
+    });
+    
+    // 設定選中按鈕樣式
+    let activeBtn;
+    switch(filter) {
+        case 'all':
+            activeBtn = btnAll;
+            hideCompleted = false;
+            showOverdueOnly = false;
+            break;
+        case 'incomplete':
+            activeBtn = btnIncomplete;
+            hideCompleted = true;
+            showOverdueOnly = false;
+            break;
+        case 'overdue':
+            activeBtn = btnOverdue;
+            hideCompleted = false;
+            showOverdueOnly = true;
+            break;
+    }
+    
+    if (activeBtn) {
+        activeBtn.style.background = '#3b82f6';
+        activeBtn.style.color = 'white';
+        activeBtn.style.border = '1px solid #3b82f6';
+    }
+    
+    // 重新渲染任務清單
+    const body = document.getElementById('todo-modal-body');
+    if (body) {
+        renderTaskListOnly(body, currentTodoProject, filter);
+    }
+}
+
 // 顯示待辦事項提示
 function showTodoToast(message) {
     const toast = document.createElement('div');

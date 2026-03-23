@@ -202,19 +202,11 @@
                 <span class="close-btn" onclick="closeTodoModal()">×</span>
                 <h2 id="todo-modal-title">📝 待辦事項</h2>
                 
-                <!-- 固定控制區域（不再由 JS 動態生成） -->
-                <div id="todo-controls-fixed" style="display: flex !important; visibility: visible !important; opacity: 1 !important; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f8fafc !important; border-radius: 8px; margin-bottom: 16px; border: 3px solid #ff0000 !important; min-height: 50px;">
-                    <div style="display: flex !important; gap: 16px; flex-wrap: wrap;">
-                        <label style="display: flex !important; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #374151;">
-                            <input type="checkbox" id="hide-completed-toggle-fixed" onchange="toggleHideCompletedFixed(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
-                            <span id="hide-completed-text">隱藏已完成 (0/0)</span>
-                        </label>
-                        <label style="display: flex !important; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: #dc2626; font-weight: 500;">
-                            <input type="checkbox" id="show-overdue-toggle-fixed" onchange="toggleShowOverdueOnlyFixed(this.checked)" style="width: 20px; height: 20px; cursor: pointer;">
-                            <span id="show-overdue-text">🔴 只顯示逾期 (0)</span>
-                        </label>
-                    </div>
-                    <span style="font-size: 14px; color: #6b7280;">專案進度: <strong id="todo-progress-display">0%</strong></span>
+                <!-- 固定控制區域（分頁式設計） -->
+                <div id="todo-controls-fixed" style="display: flex !important; gap: 12px; padding: 12px 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px; border: 2px solid #3b82f6;">
+                    <button type="button" id="btn-show-all" onclick="switchTodoFilter('all')" style="flex: 1; padding: 8px 16px; border: none; border-radius: 6px; background: #3b82f6; color: white; font-size: 14px; cursor: pointer;">📋 全部</button>
+                    <button type="button" id="btn-show-incomplete" onclick="switchTodoFilter('incomplete')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">⏳ 待辦</button>
+                    <button type="button" id="btn-show-overdue" onclick="switchTodoFilter('overdue')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">🔴 逾期</button>
                 </div>
                 
                 <!-- 專案資訊區域 -->
@@ -357,6 +349,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=39"></script>
+    <script src="app.js?v=40"></script>
 </body>
 </html>
