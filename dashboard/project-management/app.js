@@ -1082,11 +1082,6 @@ function showProjectTodo(projectId, filter = 'all') {
     document.getElementById('todo-project-deadline-display').textContent = project.deadline || 'N/A';
     document.getElementById('todo-project-sales-display').textContent = project.sales_rep || '未分配';
     document.getElementById('todo-progress-display').textContent = `${project.progress}%`;
-    
-    // 重置勾選框狀態
-    document.getElementById('hide-completed-toggle-fixed').checked = hideCompleted;
-    document.getElementById('show-overdue-toggle-fixed').checked = showOverdueOnly;
-    
     // 渲染任務清單
     const body = document.getElementById('todo-modal-body');
     if (body) {
@@ -1106,9 +1101,11 @@ function updateTodoStats(project) {
         return taskEnd < new Date() && t.progress < 100;
     }).length;
     
-    document.getElementById('hide-completed-text').textContent = `隱藏已完成 (${completedCount}/${totalCount})`;
-    document.getElementById('show-overdue-text').textContent = `🔴 只顯示逾期 (${overdueCount})`;
-    document.getElementById('todo-task-count').textContent = `任務清單 (${project.tasks.length} 項)`;
+    // 只更新存在的元素
+    const taskCountEl = document.getElementById('todo-task-count');
+    if (taskCountEl) {
+        taskCountEl.textContent = `任務清單 (${project.tasks.length} 項)`;
+    }
 }
 
 // 只渲染任務清單（不含控制區域）
