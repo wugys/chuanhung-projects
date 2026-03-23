@@ -1394,6 +1394,10 @@ function showProjectTodo(projectId, filter = 'incomplete') {
     currentTodoProject = project;
     currentTodoFilter = filter;
     
+    // 設置全局篩選狀態
+    hideCompleted = (filter === 'incomplete');
+    showOverdueOnly = (filter === 'overdue');
+    
     const modal = document.getElementById('todo-modal');
     const title = document.getElementById('todo-modal-title');
     
@@ -1427,6 +1431,31 @@ function showProjectTodo(projectId, filter = 'incomplete') {
         
         // 渲染客戶提供資料
         renderClientMaterials(project);
+        
+        // 設置初始按鈕樣式
+        const btnAll = document.getElementById('btn-show-all');
+        const btnIncomplete = document.getElementById('btn-show-incomplete');
+        const btnOverdue = document.getElementById('btn-show-overdue');
+        
+        // 重置所有按鈕
+        [btnAll, btnIncomplete, btnOverdue].forEach(btn => {
+            if (btn) {
+                btn.style.background = 'white';
+                btn.style.color = '#374151';
+                btn.style.border = '1px solid #d1d5db';
+            }
+        });
+        
+        // 設置當前選中按鈕
+        let activeBtn = btnIncomplete; // 默認待辦
+        if (filter === 'all') activeBtn = btnAll;
+        if (filter === 'overdue') activeBtn = btnOverdue;
+        
+        if (activeBtn) {
+            activeBtn.style.background = '#3b82f6';
+            activeBtn.style.color = 'white';
+            activeBtn.style.border = '1px solid #3b82f6';
+        }
         
         // 渲染任務清單
         const body = document.getElementById('todo-modal-body');
