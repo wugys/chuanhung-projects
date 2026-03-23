@@ -1039,7 +1039,7 @@ function closeGanttModal() {
 
 // 顯示單一專案待辦事項（使用固定 HTML 元素）
 function showProjectTodo(projectId, filter = 'all') {
-    // DEBUG removed
+    alert('showProjectTodo called: ' + projectId);
     console.log('showProjectTodo called:', { projectId, filter });
     
     const project = projects.find(p => p.id === projectId);
