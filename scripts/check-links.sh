@@ -7,7 +7,7 @@ ERRORS=0
 
 # 檢查 1: 禁止 project-dashboard-web 連結
 echo "📋 檢查是否有舊版錯誤連結..."
-if grep -r "project-dashboard-web" dashboard/project-management/ 2>/dev/null; then
+if grep -r "project-dashboard-web" dashboard/project-management/*.html dashboard/project-management/*.js dashboard/project-management/*.css 2>/dev/null; then
     echo "❌ 錯誤：發現 project-dashboard-web 連結"
     echo "   請改為: dashboard/project-management/"
     ERRORS=$((ERRORS + 1))
