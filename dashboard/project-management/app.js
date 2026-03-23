@@ -1075,6 +1075,7 @@ function showProjectTodo(projectId, filter = 'all') {
     
     // 使用統一的渲染函數
     try {
+        isTodoModalOpen = true; // 標記 modal 已開啟
         renderTodoList(body, project, filter);
         console.log('renderTodoList completed successfully');
     } catch (error) {
@@ -1579,12 +1580,19 @@ let currentTodoProject = null;
 let currentTodoFilter = 'all';
 let hideCompleted = false;
 let showOverdueOnly = false;
+let isTodoModalOpen = false; // 追蹤 modal 開啟狀態，防止競態條件
 let currentGanttProject = null;
 let ganttHideCompleted = false;
 let ganttShowOverdue = false;
 
 // 渲染待辦事項列表
 function renderTodoList(container, project, filter) {
+    // 防禦性檢查：確保 modal 是開啟狀態
+    if (!isTodoModalOpen) {
+        console.log('renderTodoList skipped: modal is not open');
+        return;
+    }
+    
     // 防禦性檢查
     if (!project) {
         console.error('renderTodoList: project is null/undefined');
@@ -1765,32 +1773,33 @@ function updateProjectProgress(project) {
 
 // 切換隱藏已完成項目
 function toggleHideCompleted(isChecked) {
+    if (!isTodoModalOpen) return; // 防止競態條件
     hideCompleted = isChecked;
     if (currentTodoProject) {
         const body = document.getElementById('todo-modal-body');
-        renderTodoList(body, currentTodoProject, currentTodoFilter);
+        if (body) renderTodoList(body, currentTodoProject, currentTodoFilter);
     }
 }
 
 // 切換只顯示逾期事項
 function toggleShowOverdueOnly(isChecked) {
+    if (!isTodoModalOpen) return; // 防止競態條件
     showOverdueOnly = isChecked;
     if (currentTodoProject) {
         const body = document.getElementById('todo-modal-body');
-        renderTodoList(body, currentTodoProject, currentTodoFilter);
+        if (body) renderTodoList(body, currentTodoProject, currentTodoFilter);
     }
 }
 
 // 覆寫關閉待辦事項彈窗函數
-const originalCloseTodoModal = closeTodoModal;
 closeTodoModal = function() {
     document.getElementById('todo-modal').classList.remove('active');
+    isTodoModalOpen = false; // 標記 modal 已關閉
     currentTodoProject = null;
     currentTodoFilter = 'all';
-    showOverdueOnly = false; // 重置逾期篩選
-    hideCompleted = false; // 重置隱藏已完成
-    // 重新整理主頁面以更新進度顯示
-    renderAllViews();
+    showOverdueOnly = false;
+    hideCompleted = false;
+    // 不重新整理主頁面，避免競態條件
 };
 
 // 顯示待辦事項提示
