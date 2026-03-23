@@ -377,8 +377,6 @@ function showView(viewName) {
         case 'pending-confirm': renderPendingConfirmView(); break;
     }
 }
-    }
-}
 
 // 渲染報價階段視圖
 function renderQuoteView() {
@@ -1253,7 +1251,6 @@ function renderTaskListOnly(container, project, filter) {
                 <button onclick="addNewTask('${project.id}')" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">新增</button>
             </div>
         </div>`;
-}
 }
 
 // 新增任務
