@@ -1040,8 +1040,20 @@ function closeGanttModal() {
 
 // 顯示單一專案待辦事項
 function showProjectTodo(projectId, filter = 'all') {
+    console.log('showProjectTodo called:', { projectId, filter });
+    
     const project = projects.find(p => p.id === projectId);
-    if (!project) return;
+    if (!project) {
+        console.error('showProjectTodo: project not found', projectId);
+        alert('❌ 找不到專案資料');
+        return;
+    }
+    
+    // 確保專案有 tasks 數組
+    if (!project.tasks) {
+        console.warn('showProjectTodo: project.tasks missing, initializing empty array');
+        project.tasks = [];
+    }
     
     currentTodoProject = project;
     currentTodoFilter = filter;
@@ -1050,6 +1062,11 @@ function showProjectTodo(projectId, filter = 'all') {
     const title = document.getElementById('todo-modal-title');
     const body = document.getElementById('todo-modal-body');
     
+    if (!modal || !title || !body) {
+        console.error('showProjectTodo: modal elements not found');
+        return;
+    }
+    
     const filterText = filter === 'incomplete' ? '（待辦事項）' : '（全部事項）';
     title.innerHTML = `📝 ${project.name} - ${filterText}`;
     
@@ -1057,7 +1074,13 @@ function showProjectTodo(projectId, filter = 'all') {
     updateProjectProgress(project);
     
     // 使用統一的渲染函數
-    renderTodoList(body, project, filter);
+    try {
+        renderTodoList(body, project, filter);
+        console.log('renderTodoList completed successfully');
+    } catch (error) {
+        console.error('renderTodoList error:', error);
+        body.innerHTML = `<div class="todo-empty">❌ 渲染失敗: ${error.message}</div>`;
+    }
     
     modal.classList.add('active');
 }
@@ -1562,6 +1585,19 @@ let ganttShowOverdue = false;
 
 // 渲染待辦事項列表
 function renderTodoList(container, project, filter) {
+    // 防禦性檢查
+    if (!project) {
+        console.error('renderTodoList: project is null/undefined');
+        container.innerHTML = '<div class="todo-empty">❌ 專案資料錯誤</div>';
+        return;
+    }
+    
+    // 確保 tasks 存在
+    if (!project.tasks || !Array.isArray(project.tasks)) {
+        console.warn('renderTodoList: project.tasks is missing, creating empty array');
+        project.tasks = [];
+    }
+    
     // 根據篩選條件過濾任務
     let filteredTasks = project.tasks.map((task, index) => ({ ...task, originalIndex: index }));
     
@@ -1643,7 +1679,8 @@ function renderTodoList(container, project, filter) {
           </div>` 
         : '';
     
-    container.innerHTML = `
+    // 渲染 HTML - 確保 todo-controls 始終顯示
+    const html = `
         <div class="todo-controls">
             <div class="todo-filters">
                 <label class="todo-toggle-label">
@@ -1662,21 +1699,31 @@ function renderTodoList(container, project, filter) {
         <div class="todo-project-info">
             <div class="todo-info-item">
                 <span class="todo-info-label">專案編號</span>
-                <span class="todo-info-value">${project.id}</span>
+                <span class="todo-info-value">${project.id || 'N/A'}</span>
             </div>
             <div class="todo-info-item">
                 <span class="todo-info-label">客戶</span>
-                <span class="todo-info-value">${project.client} / ${project.contact}</span>
+                <span class="todo-info-value">${project.client || 'N/A'} / ${project.contact || 'N/A'}</span>
             </div>
             <div class="todo-info-item">
                 <span class="todo-info-label">截止日</span>
-                <span class="todo-info-value">${project.deadline}</span>
+                <span class="todo-info-value">${project.deadline || 'N/A'}</span>
             </div>
         </div>
         <h3>任務清單 (${filteredTasks.length} 項)</h3>
         ${emptyMessage}
         <ul class="todo-list">${tasksHtml}</ul>
     `;
+    
+    container.innerHTML = html;
+    
+    // 調試訊息
+    console.log('renderTodoList completed:', {
+        projectId: project.id,
+        totalTasks: totalCount,
+        filteredTasks: filteredTasks.length,
+        hasTodoControls: container.querySelector('.todo-controls') !== null
+    });
 }
 
 // 切換任務完成狀態
