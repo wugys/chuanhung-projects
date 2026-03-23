@@ -1072,24 +1072,31 @@ function showProjectTodo(projectId, filter = 'all') {
     // 計算並更新專案進度
     updateProjectProgress(project);
     
-    // 更新固定控制區域的統計數字
-    updateTodoStats(project);
-    
-    // 更新專案資訊顯示
-    document.getElementById('todo-project-id-display').textContent = project.id || 'N/A';
-    document.getElementById('todo-project-client-display').textContent = 
-        `${project.client || 'N/A'} / ${project.contact || 'N/A'}`;
-    document.getElementById('todo-project-deadline-display').textContent = project.deadline || 'N/A';
-    document.getElementById('todo-project-sales-display').textContent = project.sales_rep || '未分配';
-    document.getElementById('todo-progress-display').textContent = `${project.progress}%`;
-    // 渲染任務清單
-    const body = document.getElementById('todo-modal-body');
-    if (body) {
-        renderTaskListOnly(body, project, filter);
+    try {
+        // 更新固定控制區域的統計數字
+        updateTodoStats(project);
+        
+        // 更新專案資訊顯示
+        document.getElementById('todo-project-id-display').textContent = project.id || 'N/A';
+        document.getElementById('todo-project-client-display').textContent = 
+            `${project.client || 'N/A'} / ${project.contact || 'N/A'}`;
+        document.getElementById('todo-project-deadline-display').textContent = project.deadline || 'N/A';
+        document.getElementById('todo-project-sales-display').textContent = project.sales_rep || '未分配';
+        document.getElementById('todo-progress-display').textContent = `${project.progress}%`;
+        
+        // 渲染任務清單
+        const body = document.getElementById('todo-modal-body');
+        if (body) {
+            renderTaskListOnly(body, project, filter);
+        }
+        
+        isTodoModalOpen = true;
+        modal.classList.add('active');
+        console.log('✅ Modal opened successfully');
+    } catch (error) {
+        console.error('❌ Error in showProjectTodo:', error);
+        alert('Error: ' + error.message);
     }
-    
-    isTodoModalOpen = true;
-    modal.classList.add('active');
 }
 
 // 更新待辦事項統計數字
