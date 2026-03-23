@@ -868,10 +868,10 @@ function createProjectCard(project) {
         ${buttonsHtml}
     `;
     
-    // 點擊卡片直接顯示全部事項（按鈕除外）
+    // 點擊卡片直接顯示待辦事項（按鈕除外）
     card.onclick = (e) => {
         if (!e.target.closest('.card-buttons')) {
-            showProjectTodo(project.id, 'all');
+            showProjectTodo(project.id, 'incomplete');
         }
     };
     
