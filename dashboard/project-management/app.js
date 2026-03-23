@@ -598,6 +598,9 @@ const projects = [
         statusText: "🔵 報價中",
         phase: "quoting",
         sales_rep: "Kevin",
+        clientMaterials: [
+            { date: "2026-03-24", description: "客戶提供參考照片", notes: "蠟筆小新提袋、Lulu豬系列共3張" }
+        ],
         tasks: [
             { name: "已傳資料給廠商報價（新羽-吳生）", start: "2026-03-24", end: "2026-03-24", progress: 100 },
             { name: "等待廠商報價回覆", start: "2026-03-24", end: "", progress: 0 },
@@ -1417,6 +1420,9 @@ function showProjectTodo(projectId, filter = 'all') {
         document.getElementById('todo-project-sales-display').textContent = project.sales_rep || '未分配';
         document.getElementById('todo-progress-display').textContent = `${project.progress}%`;
         
+        // 渲染客戶提供資料
+        renderClientMaterials(project);
+        
         // 渲染任務清單
         const body = document.getElementById('todo-modal-body');
         if (body) {
@@ -1429,6 +1435,135 @@ function showProjectTodo(projectId, filter = 'all') {
     } catch (error) {
         console.error('❌ Error in showProjectTodo:', error);
         alert('Error: ' + error.message);
+    }
+}
+
+// 渲染客戶提供資料
+function renderClientMaterials(project) {
+    const container = document.getElementById('client-materials-list');
+    if (!container) return;
+    
+    // 確保專案有 clientMaterials 陣列
+    if (!project.clientMaterials || project.clientMaterials.length === 0) {
+        container.innerHTML = '<div style="color: #a8a29e; font-style: italic;">尚無客戶提供資料</div>';
+        return;
+    }
+    
+    // 按日期排序（最新的在前）
+    const sortedMaterials = [...project.clientMaterials].sort((a, b) => {
+        return new Date(b.date) - new Date(a.date);
+    });
+    
+    const materialsHtml = sortedMaterials.map((material, index) => {
+        const originalIndex = project.clientMaterials.indexOf(material);
+        return `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px dashed #fcd34d;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 500; margin-bottom: 2px;">
+                        ${formatDateShort(material.date)} - ${material.description}
+                    </div>
+                    ${material.notes ? `<div style="font-size: 12px; color: #92400e; opacity: 0.8;">${material.notes}</div>` : ''}
+                </div>
+                <button onclick="deleteMaterial('${project.id}', ${originalIndex})" style="margin-left: 8px; padding: 2px 6px; background: transparent; border: none; color: #92400e; cursor: pointer; font-size: 12px; opacity: 0.6;" title="刪除">×</button>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = materialsHtml;
+}
+
+// 格式化日期（MM/DD）
+function formatDateShort(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}/${day}`;
+}
+
+// 開啟新增資料彈窗
+let currentMaterialProjectId = null;
+
+function openAddMaterialModal() {
+    const modal = document.getElementById('add-material-modal');
+    const dateInput = document.getElementById('new-material-date');
+    
+    // 預設今天日期
+    const today = new Date();
+    dateInput.value = today.toISOString().split('T')[0];
+    
+    // 記錄當前專案 ID
+    currentMaterialProjectId = currentTodoProject ? currentTodoProject.id : null;
+    
+    modal.classList.add('active');
+}
+
+// 關閉新增資料彈窗
+function closeAddMaterialModal() {
+    const modal = document.getElementById('add-material-modal');
+    modal.classList.remove('active');
+    document.getElementById('add-material-form').reset();
+    currentMaterialProjectId = null;
+}
+
+// 提交新增資料
+function submitNewMaterial(event) {
+    event.preventDefault();
+    
+    if (!currentMaterialProjectId) {
+        alert('❌ 無法取得專案資訊');
+        return;
+    }
+    
+    const project = projects.find(p => p.id === currentMaterialProjectId);
+    if (!project) {
+        alert('❌ 找不到專案');
+        return;
+    }
+    
+    const date = document.getElementById('new-material-date').value;
+    const description = document.getElementById('new-material-desc').value.trim();
+    const notes = document.getElementById('new-material-notes').value.trim();
+    
+    if (!date || !description) {
+        alert('請填寫日期和資料說明');
+        return;
+    }
+    
+    // 確保 clientMaterials 陣列存在
+    if (!project.clientMaterials) {
+        project.clientMaterials = [];
+    }
+    
+    // 新增資料
+    project.clientMaterials.push({
+        date: date,
+        description: description,
+        notes: notes,
+        created_at: new Date().toISOString()
+    });
+    
+    // 儲存到 LocalStorage
+    saveProjectsToLocalStorage();
+    
+    // 重新渲染
+    renderClientMaterials(project);
+    
+    // 關閉彈窗
+    closeAddMaterialModal();
+    
+    alert('✅ 資料已新增');
+}
+
+// 刪除資料
+function deleteMaterial(projectId, materialIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.clientMaterials || !project.clientMaterials[materialIndex]) return;
+    
+    if (confirm('確定要刪除此資料記錄嗎？')) {
+        project.clientMaterials.splice(materialIndex, 1);
+        saveProjectsToLocalStorage();
+        renderClientMaterials(project);
     }
 }
 

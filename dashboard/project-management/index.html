@@ -214,7 +214,7 @@
                 </div>
                 
                 <!-- 專案資訊區域 -->
-                <div id="todo-project-info-fixed" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <div id="todo-project-info-fixed" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
                     <div>
                         <span style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">專案編號</span>
                         <span id="todo-project-id-display" style="font-size: 14px; color: #111827; font-weight: 500;">-</span>
@@ -233,8 +233,19 @@
                     </div>
                 </div>
                 
+                <!-- 客戶提供資料區域 -->
+                <div id="client-materials-section" style="margin-bottom: 20px; padding: 15px; background: #fef3c7; border-radius: 8px; border: 1px solid #f59e0b;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="margin: 0; font-size: 15px; color: #92400e;">📎 客戶提供資料</h3>
+                        <button onclick="openAddMaterialModal()" style="padding: 4px 12px; background: #f59e0b; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">+ 新增</button>
+                    </div>
+                    <div id="client-materials-list" style="font-size: 13px; color: #78350f;">
+                        <!-- 由 JS 渲染 -->
+                    </div>
+                </div>
+                
                 <!-- 任務清單（由 JS 渲染） -->
-                <h3 id="todo-task-count">任務清單 (0 項)</h3>
+                <h3 id="todo-task-count" style="margin-top: 0;">任務清單 (0 項)</h3>
                 <div id="todo-modal-body"></div>
             </div>
         </div>
@@ -343,6 +354,32 @@
             </div>
         </div>
         
+        <!-- 新增客戶資料彈窗 -->
+        <div id="add-material-modal" class="modal">
+            <div class="modal-content" style="max-width: 450px;">
+                <span class="close-btn" onclick="closeAddMaterialModal()">×</span>
+                <h3>📎 新增客戶提供資料</h3>
+                <form id="add-material-form" onsubmit="submitNewMaterial(event)">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">日期 <span style="color: #ef4444;">*</span></label>
+                        <input type="date" id="new-material-date" required style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">資料說明 <span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="new-material-desc" placeholder="例如：客戶提供報價資料、參考照片..." required style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">備註（選填）</label>
+                        <textarea id="new-material-notes" rows="2" placeholder="檔案名稱、連結或其他備註..." style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" onclick="closeAddMaterialModal()" style="padding: 8px 16px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; cursor: pointer;">取消</button>
+                        <button type="submit" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">✅ 新增</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
         <!-- 新增客戶/聯絡人提示彈窗 -->
         <div id="client-prompt-modal" class="modal client-prompt-modal">
             <div class="modal-content">
@@ -362,7 +399,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=56"></script>
+    <script src="app.js?v=57"></script>
     <script>
         window.onload = function() {
             console.log('✅ Page loaded successfully');
