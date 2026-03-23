@@ -47,16 +47,19 @@
             
             <!-- 全局搜尋列 -->
             <div class="global-search-bar">
-                <div class="search-input-wrapper">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="global-search" placeholder="🔍 搜尋客戶或產品..." oninput="filterGlobalProjects()">
+                <div class="search-inputs-wrapper">
+                    <div class="search-input-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="search-box-1" placeholder="🔍 搜尋客戶、產品或聯絡人..." oninput="filterGlobalProjects()">
+                    </div>
+                    <div class="search-input-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="search-box-2" placeholder="🔍 進一步篩選（可留空）..." oninput="filterGlobalProjects()">
+                    </div>
                 </div>
-                <div class="quick-filters">
-                    <button class="quick-filter-btn active" onclick="clearGlobalFilter()">全部</button>
-                    <button class="quick-filter-btn" onclick="filterByRep('姿姿')">姿姿</button>
-                    <button class="quick-filter-btn" onclick="filterByRep('Betty')">Betty</button>
-                    <button class="quick-filter-btn" onclick="filterByRep('Kevin')">Kevin</button>
-                </div>
+                <button class="clear-search-btn" onclick="clearGlobalFilter()">
+                    <i class="fas fa-times"></i> 清除搜尋
+                </button>
             </div>
         </header>
 
@@ -329,7 +332,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=51"></script>
+    <script src="app.js?v=52"></script>
     <script>
         window.onload = function() {
             console.log('✅ Page loaded successfully');

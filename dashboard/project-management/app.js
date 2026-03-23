@@ -56,8 +56,8 @@ let currentUser = {
 // 篩選狀態
 let filterState = {
     phase: 'all',
-    salesRep: 'all',
-    searchQuery: ''
+    searchQuery1: '',  // 第一個搜尋框
+    searchQuery2: ''   // 第二個搜尋框（可選）
 };
 
 // 模擬資料（實際使用時會讀取 YAML 檔案）
@@ -2280,7 +2280,13 @@ function initSalesRepFilter() {
 
 // 依業務篩選
 function filterBySalesRep(salesRep) {
-    filterState.salesRep = salesRep;
+    if (salesRep === 'all') {
+        filterState.searchQuery1 = '';
+        document.getElementById('search-box-1').value = '';
+    } else {
+        filterState.searchQuery1 = salesRep.toLowerCase();
+        document.getElementById('search-box-1').value = salesRep;
+    }
     renderAllViews();
     
     // 顯示篩選提示
@@ -2293,8 +2299,8 @@ function filterBySalesRep(salesRep) {
 function showMyProjects() {
     // 暫時使用「姿姿」作為範例（待登入系統完成後使用目前登入者）
     const myName = '姿姿';
-    filterState.salesRep = myName;
-    document.getElementById('sales-rep-filter').value = myName;
+    filterState.searchQuery1 = myName.toLowerCase();
+    document.getElementById('search-box-1').value = myName;
     renderAllViews();
     showToast(`👤 顯示 ${myName} 的專案`);
 }
@@ -2306,20 +2312,30 @@ function getFilteredProjects() {
         if (filterState.phase !== 'all' && project.phase !== filterState.phase) {
             return false;
         }
-        // 人員篩選
-        if (filterState.salesRep !== 'all' && project.sales_rep !== filterState.salesRep) {
-            return false;
+        
+        // 搜尋關鍵詞（支援兩個搜尋框，AND 邏輯）
+        const searchFields = [
+            project.client || '',
+            project.name || '',
+            project.contact || '',
+            project.sales_rep || '',
+            project.id || ''
+        ].map(f => f.toLowerCase());
+        
+        // 第一個搜尋框
+        if (filterState.searchQuery1) {
+            const query1 = filterState.searchQuery1.toLowerCase().trim();
+            const match1 = searchFields.some(field => field.includes(query1));
+            if (!match1) return false;
         }
-        // 搜尋關鍵詞
-        if (filterState.searchQuery) {
-            const query = filterState.searchQuery.toLowerCase();
-            const matchClient = project.client.toLowerCase().includes(query);
-            const matchName = project.name.toLowerCase().includes(query);
-            const matchId = project.id.toLowerCase().includes(query);
-            if (!matchClient && !matchName && !matchId) {
-                return false;
-            }
+        
+        // 第二個搜尋框（AND 邏輯）
+        if (filterState.searchQuery2) {
+            const query2 = filterState.searchQuery2.toLowerCase().trim();
+            const match2 = searchFields.some(field => field.includes(query2));
+            if (!match2) return false;
         }
+        
         return true;
     });
 }
@@ -2500,39 +2516,21 @@ function getProjectsForView(phase) {
 // ==================== 全局搜尋功能 ====================
 
 function filterGlobalProjects() {
-    const query = document.getElementById('global-search').value.toLowerCase().trim();
-    filterState.searchQuery = query;
-    renderAllViews();
+    const query1 = document.getElementById('search-box-1').value.toLowerCase().trim();
+    const query2 = document.getElementById('search-box-2').value.toLowerCase().trim();
     
-    // 更新快速篩選按鈕狀態
-    updateQuickFilterButtons();
-}
-
-function filterByRep(repName) {
-    filterState.salesRep = repName;
-    filterState.searchQuery = '';
-    document.getElementById('global-search').value = '';
+    filterState.searchQuery1 = query1;
+    filterState.searchQuery2 = query2;
+    
     renderAllViews();
-    updateQuickFilterButtons(repName);
 }
 
 function clearGlobalFilter() {
-    filterState.salesRep = 'all';
-    filterState.searchQuery = '';
-    document.getElementById('global-search').value = '';
+    filterState.searchQuery1 = '';
+    filterState.searchQuery2 = '';
+    document.getElementById('search-box-1').value = '';
+    document.getElementById('search-box-2').value = '';
     renderAllViews();
-    updateQuickFilterButtons('全部');
-}
-
-function updateQuickFilterButtons(activeBtn) {
-    const buttons = document.querySelectorAll('.quick-filter-btn');
-    buttons.forEach(btn => {
-        if (btn.textContent === activeBtn) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
 }
 
 // 點擊彈窗外關閉

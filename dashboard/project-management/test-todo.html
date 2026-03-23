@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>待辦事項功能測試</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 待辦事項功能測試頁面</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        // 測試 1: 載入 app.js
+        log('測試 1: 嘗試載入 app.js...', 'info');
+        
+        const script = document.createElement('script');
+        script.src = 'app.js?v=31';
+        script.onload = () => {
+            log('✅ app.js 載入成功', 'pass');
+            
+            // 測試 2: 檢查關鍵函數
+            log('測試 2: 檢查關鍵函數...', 'info');
+            
+            if (typeof renderTodoList === 'function') {
+                log('✅ renderTodoList 函數存在', 'pass');
+            } else {
+                log('❌ renderTodoList 函數不存在', 'fail');
+            }
+            
+            if (typeof showProjectTodo === 'function') {
+                log('✅ showProjectTodo 函數存在', 'pass');
+            } else {
+                log('❌ showProjectTodo 函數不存在', 'fail');
+            }
+            
+            if (typeof toggleHideCompleted === 'function') {
+                log('✅ toggleHideCompleted 函數存在', 'pass');
+            } else {
+                log('❌ toggleHideCompleted 函數不存在', 'fail');
+            }
+            
+            // 測試 3: 檢查全局變量
+            log('測試 3: 檢查全局變量...', 'info');
+            
+            if (typeof hideCompleted !== 'undefined') {
+                log(`✅ hideCompleted = ${hideCompleted}`, 'pass');
+            } else {
+                log('❌ hideCompleted 未定義', 'fail');
+            }
+            
+            if (typeof showOverdueOnly !== 'undefined') {
+                log(`✅ showOverdueOnly = ${showOverdueOnly}`, 'pass');
+            } else {
+                log('❌ showOverdueOnly 未定義', 'fail');
+            }
+            
+            // 測試 4: 模擬渲染
+            log('測試 4: 模擬渲染 renderTodoList...', 'info');
+            
+            try {
+                const mockProject = {
+                    id: 'TEST-001',
+                    name: '測試專案',
+                    client: '測試客戶',
+                    contact: '測試聯絡人',
+                    deadline: '2026-03-30',
+                    progress: 50,
+                    sales_rep: '測試業務',
+                    tasks: [
+                        { name: '任務1', start: '2026-03-20', end: '2026-03-25', progress: 100 },
+                        { name: '任務2', start: '2026-03-26', end: '2026-03-30', progress: 0 }
+                    ]
+                };
+                
+                const testContainer = document.createElement('div');
+                renderTodoList(testContainer, mockProject, 'all');
+                
+                const hasTodoControls = testContainer.querySelector('.todo-controls') !== null;
+                const hasHideCompleted = testContainer.querySelector('#hide-completed-toggle') !== null;
+                const hasShowOverdue = testContainer.querySelector('#show-overdue-toggle') !== null;
+                
+                if (hasTodoControls) {
+                    log('✅ .todo-controls 元素已渲染', 'pass');
+                } else {
+                    log('❌ .todo-controls 元素未渲染', 'fail');
+                }
+                
+                if (hasHideCompleted) {
+                    log('✅ #hide-completed-toggle 勾選框已渲染', 'pass');
+                } else {
+                    log('❌ #hide-completed-toggle 勾選框未渲染', 'fail');
+                }
+                
+                if (hasShowOverdue) {
+                    log('✅ #show-overdue-toggle 勾選框已渲染', 'pass');
+                } else {
+                    log('❌ #show-overdue-toggle 勾選框未渲染', 'fail');
+                }
+                
+                // 顯示渲染的 HTML
+                log('渲染的 HTML 結構:', 'info');
+                const htmlPreview = document.createElement('pre');
+                htmlPreview.style.background = '#f5f5f5';
+                htmlPreview.style.padding = '10px';
+                htmlPreview.style.overflow = 'auto';
+                htmlPreview.style.maxHeight = '300px';
+                htmlPreview.textContent = testContainer.innerHTML.substring(0, 2000) + '...';
+                results.appendChild(htmlPreview);
+                
+            } catch (error) {
+                log(`❌ 渲染失敗: ${error.message}`, 'fail');
+                console.error(error);
+            }
+        };
+        
+        script.onerror = () => {
+            log('❌ app.js 載入失敗', 'fail');
+        };
+        
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>
