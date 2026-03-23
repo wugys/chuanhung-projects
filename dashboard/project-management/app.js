@@ -1039,7 +1039,6 @@ function closeGanttModal() {
 
 // 顯示單一專案待辦事項（使用固定 HTML 元素）
 function showProjectTodo(projectId, filter = 'all') {
-    alert('showProjectTodo called: ' + projectId);
     console.log('showProjectTodo called:', { projectId, filter });
     
     const project = projects.find(p => p.id === projectId);
@@ -1169,11 +1168,16 @@ function renderTaskListOnly(container, project, filter) {
                         <span class="todo-checkbox-custom"></span>
                     </label>
                     <div class="todo-content">
-                        <div class="todo-name ${isCompleted ? 'strikethrough' : ''}" onclick="editTaskNameInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">${task.name}</div>
+                        <div class="todo-name ${isCompleted ? 'strikethrough' : ''}" onclick="editTaskName('${project.id}', ${task.originalIndex})" style="cursor:pointer;">${task.name}</div>
                         <div class="todo-assignees">
                             <span class="assignee-badge assignee-primary" onclick="editTaskAssigneeInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">👤 ${assignedTo}</span>
                             <span class="assignee-badge assignee-followup" onclick="editTaskFollowUpInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">🔔 ${followUpBy}</span>
                         </div>
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                        <button onclick="editTaskDates('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">📅 日期</button>
+                        <button onclick="editTaskProgress('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">📊 進度</button>
+                        <button onclick="deleteTask('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #fef2f2; border: 1px solid #ef4444; border-radius: 4px; color: #ef4444; cursor: pointer;">🗑️ 刪除</button>
                     </div>
                     ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
                 </div>
@@ -1193,7 +1197,167 @@ function renderTaskListOnly(container, project, filter) {
         `;
     }).join('');
     
-    container.innerHTML = `<ul class="todo-list">${tasksHtml}</ul>`;
+    container.innerHTML = `<ul class="todo-list">${tasksHtml}</ul>
+        <div style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 2px dashed #cbd5e1;">
+            <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">➕ 新增任務</h4>
+            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <input type="text" id="new-task-name" placeholder="任務名稱..." style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <input type="date" id="new-task-start" style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                <span style="display: flex; align-items: center; color: #6b7280;">→</span>
+                <input type="date" id="new-task-end" style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="new-task-assignee" placeholder="負責人（預設：${project.sales_rep || '未分配'}）" style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                <button onclick="addNewTask('${project.id}')" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">新增</button>
+            </div>
+        </div>`;
+}
+}
+
+// 新增任務
+function addNewTask(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    const nameInput = document.getElementById('new-task-name');
+    const startInput = document.getElementById('new-task-start');
+    const endInput = document.getElementById('new-task-end');
+    const assigneeInput = document.getElementById('new-task-assignee');
+    
+    const name = nameInput.value.trim();
+    const start = startInput.value;
+    const end = endInput.value;
+    const assignee = assigneeInput.value.trim() || project.sales_rep || '未分配';
+    
+    if (!name || !start || !end) {
+        alert('請填寫任務名稱、開始日期和結束日期');
+        return;
+    }
+    
+    const newTask = {
+        name: name,
+        start: start,
+        end: end,
+        progress: 0,
+        assigned_to: assignee,
+        follow_up_by: 'Kevin',
+        created_at: new Date().toISOString()
+    };
+    
+    if (!project.tasks) project.tasks = [];
+    project.tasks.push(newTask);
+    
+    // 儲存到 LocalStorage
+    saveProjectsToLocalStorage();
+    
+    // 清空輸入框
+    nameInput.value = '';
+    startInput.value = '';
+    endInput.value = '';
+    assigneeInput.value = '';
+    
+    // 重新渲染
+    const body = document.getElementById('todo-modal-body');
+    if (body) renderTaskListOnly(body, project, currentTodoFilter);
+    
+    // 更新統計
+    updateTodoStats(project);
+    
+    alert('✅ 任務已新增');
+}
+
+// 編輯任務名稱
+function editTaskName(projectId, taskIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    const task = project.tasks[taskIndex];
+    const newName = prompt('編輯任務名稱：', task.name);
+    
+    if (newName !== null && newName.trim() !== '') {
+        task.name = newName.trim();
+        task.updated_at = new Date().toISOString();
+        
+        saveProjectsToLocalStorage();
+        
+        const body = document.getElementById('todo-modal-body');
+        if (body) renderTaskListOnly(body, project, currentTodoFilter);
+        
+        alert('✅ 任務已更新');
+    }
+}
+
+// 編輯任務日期
+function editTaskDates(projectId, taskIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    const task = project.tasks[taskIndex];
+    const newStart = prompt('開始日期（YYYY-MM-DD）：', task.start);
+    const newEnd = prompt('結束日期（YYYY-MM-DD）：', task.end);
+    
+    if (newStart && newEnd) {
+        task.start = newStart;
+        task.end = newEnd;
+        task.updated_at = new Date().toISOString();
+        
+        saveProjectsToLocalStorage();
+        
+        const body = document.getElementById('todo-modal-body');
+        if (body) renderTaskListOnly(body, project, currentTodoFilter);
+        
+        alert('✅ 日期已更新');
+    }
+}
+
+// 編輯任務進度
+function editTaskProgress(projectId, taskIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    const task = project.tasks[taskIndex];
+    const newProgress = prompt('進度百分比（0-100）：', task.progress);
+    
+    if (newProgress !== null) {
+        const progress = parseInt(newProgress);
+        if (progress >= 0 && progress <= 100) {
+            task.progress = progress;
+            task.updated_at = new Date().toISOString();
+            
+            // 如果進度 100%，標記為已完成
+            if (progress === 100) {
+                task.completed_at = new Date().toISOString();
+            }
+            
+            saveProjectsToLocalStorage();
+            
+            const body = document.getElementById('todo-modal-body');
+            if (body) renderTaskListOnly(body, project, currentTodoFilter);
+            
+            alert('✅ 進度已更新');
+        }
+    }
+}
+
+// 刪除任務
+function deleteTask(projectId, taskIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    if (confirm('確定要刪除此任務嗎？')) {
+        project.tasks.splice(taskIndex, 1);
+        
+        saveProjectsToLocalStorage();
+        
+        const body = document.getElementById('todo-modal-body');
+        if (body) renderTaskListOnly(body, project, currentTodoFilter);
+        
+        updateTodoStats(project);
+        
+        alert('✅ 任務已刪除');
+    }
 }
 
 // 固定控制區域的切換函數
