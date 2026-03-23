@@ -585,6 +585,24 @@ const projects = [
             { name: "確認織帶款式及定染顏色", start: "2026-03-22", end: "2026-03-24", progress: 0 },
             { name: "安排打樣", start: "2026-03-24", end: "2026-03-27", progress: 0 }
         ]
+    },
+    {
+        id: "A0014-260324",
+        name: "飲料提袋",
+        client: "易集",
+        contact: "Julie",
+        quantity: "3000 pcs（初估，待確認）",
+        deadline: "待確認",
+        progress: 10,
+        status: "active",
+        statusText: "🔵 報價中",
+        phase: "quoting",
+        sales_rep: "Kevin",
+        tasks: [
+            { name: "已傳資料給廠商報價（新羽-吳生）", start: "2026-03-24", end: "2026-03-24", progress: 100 },
+            { name: "等待廠商報價回覆", start: "2026-03-24", end: "", progress: 0 },
+            { name: "提供客戶正式報價", start: "", end: "", progress: 0 }
+        ]
     }
 ];
 
