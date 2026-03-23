@@ -776,6 +776,17 @@ h2 {
     z-index: 1000;
 }
 
+/* 搜尋結果彈窗 - 基礎層級 */
+#search-results-modal {
+    z-index: 1000;
+}
+
+/* 甘特圖和待辦事項彈窗 - 更高層級，確保顯示在搜尋結果之上 */
+#gantt-modal,
+#todo-modal {
+    z-index: 1100;
+}
+
 .modal.active {
     display: flex;
     align-items: center;
