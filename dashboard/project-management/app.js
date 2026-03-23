@@ -44,6 +44,279 @@ function initProjects() {
 }
 // ==================== LocalStorage 結束 ====================
 
+// ==================== 客戶資料庫功能 ====================
+const CLIENTS_STORAGE_KEY = 'chuanhung_clients_v1';
+
+// 客戶資料結構: { name: string, contacts: string[] }
+let clientsDB = [];
+
+// 從現有專案資料初始化客戶資料庫
+function initClientsDB() {
+    const stored = localStorage.getItem(CLIENTS_STORAGE_KEY);
+    if (stored) {
+        clientsDB = JSON.parse(stored);
+        console.log('📦 從 LocalStorage 載入', clientsDB.length, '個客戶');
+    } else {
+        // 從現有專案資料建立客戶庫
+        const clientMap = new Map();
+        projects.forEach(p => {
+            if (p.client) {
+                if (!clientMap.has(p.client)) {
+                    clientMap.set(p.client, new Set());
+                }
+                if (p.contact) {
+                    clientMap.get(p.client).add(p.contact);
+                }
+            }
+        });
+        
+        clientsDB = Array.from(clientMap.entries()).map(([name, contacts]) => ({
+            name,
+            contacts: Array.from(contacts)
+        }));
+        
+        saveClientsDB();
+        console.log('✅ 從專案資料建立客戶庫，共', clientsDB.length, '個客戶');
+    }
+}
+
+// 儲存客戶資料庫
+function saveClientsDB() {
+    try {
+        localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(clientsDB));
+    } catch (e) {
+        console.error('客戶資料庫儲存失敗:', e);
+    }
+}
+
+// 搜尋客戶
+function searchClients(query) {
+    if (!query) return clientsDB;
+    const lowerQuery = query.toLowerCase();
+    return clientsDB.filter(c => c.name.toLowerCase().includes(lowerQuery));
+}
+
+// 取得客戶聯絡人
+function getClientContacts(clientName) {
+    const client = clientsDB.find(c => c.name === clientName);
+    return client ? client.contacts : [];
+}
+
+// 新增客戶
+function addClient(clientName, contactName = null) {
+    const existing = clientsDB.find(c => c.name === clientName);
+    if (existing) {
+        if (contactName && !existing.contacts.includes(contactName)) {
+            existing.contacts.push(contactName);
+            saveClientsDB();
+        }
+        return existing;
+    }
+    
+    const newClient = {
+        name: clientName,
+        contacts: contactName ? [contactName] : []
+    };
+    clientsDB.push(newClient);
+    saveClientsDB();
+    return newClient;
+}
+
+// 檢查客戶是否存在
+function clientExists(clientName) {
+    return clientsDB.some(c => c.name === clientName);
+}
+
+// 檢查聯絡人是否存在於客戶
+function contactExists(clientName, contactName) {
+    const client = clientsDB.find(c => c.name === clientName);
+    return client && client.contacts.includes(contactName);
+}
+
+// 新增專案表單相關變數
+let pendingClientData = null; // 暫存新客戶/聯絡人資料
+
+// 顯示客戶搜尋建議
+function showClientSuggestions(query) {
+    const dropdown = document.getElementById('client-suggestions');
+    const matches = searchClients(query);
+    
+    if (matches.length === 0 || !query) {
+        dropdown.classList.remove('active');
+        return;
+    }
+    
+    dropdown.innerHTML = matches.map(client => `
+        <div class="client-suggestion-item" onclick="selectClient('${client.name}')">
+            <div class="client-name">${client.name}</div>
+            <div class="contact-hint">聯絡人: ${client.contacts.join(', ') || '無'}</div>
+        </div>
+    `).join('');
+    
+    dropdown.classList.add('active');
+}
+
+// 選擇客戶
+function selectClient(clientName) {
+    document.getElementById('new-project-client').value = clientName;
+    document.getElementById('client-suggestions').classList.remove('active');
+    updateContactSelect(clientName);
+}
+
+// 更新聯絡人選擇器
+function updateContactSelect(clientName) {
+    const select = document.getElementById('new-project-contact');
+    const contacts = getClientContacts(clientName);
+    
+    select.innerHTML = '<option value="">選擇聯絡人</option>';
+    
+    if (contacts.length === 0) {
+        select.innerHTML += '<option value="new">+ 新增聯絡人</option>';
+        select.value = 'new';
+        toggleNewContactInput();
+    } else {
+        contacts.forEach(contact => {
+            select.innerHTML += `<option value="${contact}">${contact}</option>`;
+        });
+        select.innerHTML += '<option value="new">+ 新增聯絡人</option>';
+    }
+    
+    select.disabled = false;
+}
+
+// 切換新增聯絡人輸入框
+function toggleNewContactInput() {
+    const select = document.getElementById('new-project-contact');
+    const input = document.getElementById('new-contact-input');
+    const btn = document.getElementById('btn-add-new-contact');
+    
+    if (select.value === 'new' || input.classList.contains('hidden')) {
+        // 顯示輸入框
+        select.classList.add('hidden');
+        input.classList.remove('hidden');
+        input.focus();
+        btn.textContent = '✓';
+        btn.title = '確認';
+        btn.onclick = confirmNewContact;
+    } else {
+        // 返回選擇框
+        select.classList.remove('hidden');
+        input.classList.add('hidden');
+        input.value = '';
+        btn.textContent = '+';
+        btn.title = '新增聯絡人';
+        btn.onclick = toggleNewContactInput;
+    }
+}
+
+// 確認新聯絡人
+function confirmNewContact() {
+    const input = document.getElementById('new-contact-input');
+    const contactName = input.value.trim();
+    
+    if (!contactName) {
+        alert('請輸入聯絡人姓名');
+        return;
+    }
+    
+    // 返回選擇狀態但保留值
+    const select = document.getElementById('new-project-contact');
+    select.innerHTML += `<option value="${contactName}" selected>${contactName} (新)</option>`;
+    select.classList.remove('hidden');
+    input.classList.add('hidden');
+    
+    const btn = document.getElementById('btn-add-new-contact');
+    btn.textContent = '+';
+    btn.title = '新增聯絡人';
+    btn.onclick = toggleNewContactInput;
+}
+
+// 顯示新增客戶/聯絡人提示
+function showClientPrompt(type, name, clientName = null) {
+    const modal = document.getElementById('client-prompt-modal');
+    const title = document.getElementById('client-prompt-title');
+    const message = document.getElementById('client-prompt-message');
+    
+    pendingClientData = { type, name, clientName };
+    
+    if (type === 'client') {
+        title.textContent = '🏢 新客戶';
+        message.innerHTML = `"<strong>${name}</strong>" 不在客戶資料庫中。<br>是否將此客戶加入資料庫？`;
+    } else {
+        title.textContent = '👤 新聯絡人';
+        message.innerHTML = `"<strong>${name}</strong>" 不在 "${clientName}" 的聯絡人列表中。<br>是否加入此聯絡人？`;
+    }
+    
+    modal.classList.add('active');
+}
+
+// 確認加入客戶資料庫
+function confirmAddToClientDB() {
+    if (!pendingClientData) return;
+    
+    const { type, name, clientName } = pendingClientData;
+    
+    if (type === 'client') {
+        addClient(name);
+    } else {
+        addClient(clientName, name);
+    }
+    
+    closeClientPrompt();
+}
+
+// 取消加入（僅用於此專案）
+function cancelAddToClientDB() {
+    closeClientPrompt();
+}
+
+// 關閉提示彈窗
+function closeClientPrompt() {
+    document.getElementById('client-prompt-modal').classList.remove('active');
+    pendingClientData = null;
+}
+
+// 初始化新增專案表單
+function initAddProjectForm() {
+    // 客戶輸入框事件
+    const clientInput = document.getElementById('new-project-client');
+    if (clientInput) {
+        clientInput.addEventListener('input', (e) => {
+            showClientSuggestions(e.target.value);
+        });
+        
+        clientInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                document.getElementById('client-suggestions').classList.remove('active');
+            }, 200);
+        });
+        
+        clientInput.addEventListener('focus', (e) => {
+            showClientSuggestions(e.target.value);
+        });
+        
+        clientInput.addEventListener('change', (e) => {
+            const clientName = e.target.value.trim();
+            if (clientName && !clientExists(clientName)) {
+                showClientPrompt('client', clientName);
+            }
+            updateContactSelect(clientName);
+        });
+    }
+    
+    // 聯絡人選擇事件
+    const contactSelect = document.getElementById('new-project-contact');
+    if (contactSelect) {
+        contactSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'new') {
+                toggleNewContactInput();
+            }
+        });
+    }
+}
+
+// ==================== 客戶資料庫功能結束 ====================
+
 // 業務人員列表
 const SALES_REPS = ['姿姿', 'Betty', 'Mia', 'Kevin'];
 
@@ -319,6 +592,12 @@ const projects = [
 function init() {
     // 載入 LocalStorage 儲存的專案
     initProjects();
+    
+    // 初始化客戶資料庫
+    initClientsDB();
+    
+    // 初始化新增專案表單
+    initAddProjectForm();
     
     updateStatusBar();
     renderProposalView();
@@ -1474,6 +1753,19 @@ function openAddProjectModal() {
 function closeAddProjectModal() {
     document.getElementById('add-project-modal').classList.remove('active');
     document.getElementById('add-project-form').reset();
+    
+    // 重置聯絡人選擇器
+    const contactSelect = document.getElementById('new-project-contact');
+    const contactInput = document.getElementById('new-contact-input');
+    if (contactSelect) {
+        contactSelect.innerHTML = '<option value="">先選擇客戶</option>';
+        contactSelect.disabled = true;
+        contactSelect.classList.remove('hidden');
+    }
+    if (contactInput) {
+        contactInput.value = '';
+        contactInput.classList.add('hidden');
+    }
 }
 
 // 生成專案編號（格式：A0001-YYMMDD）
@@ -1501,17 +1793,43 @@ function generateProjectId() {
 async function submitNewProject(event) {
     event.preventDefault();
     
+    const clientName = document.getElementById('new-project-client').value.trim();
+    const contactSelect = document.getElementById('new-project-contact');
+    const contactInput = document.getElementById('new-contact-input');
+    
+    // 取得聯絡人（從選擇框或輸入框）
+    let contactName = '';
+    if (!contactInput.classList.contains('hidden') && contactInput.value.trim()) {
+        contactName = contactInput.value.trim();
+    } else if (contactSelect.value && contactSelect.value !== 'new') {
+        contactName = contactSelect.value;
+    }
+    
+    // 檢查新客戶
+    if (clientName && !clientExists(clientName)) {
+        showClientPrompt('client', clientName);
+        // 等待用戶選擇
+        return;
+    }
+    
+    // 檢查新聯絡人
+    if (clientName && contactName && !contactExists(clientName, contactName)) {
+        showClientPrompt('contact', contactName, clientName);
+        // 等待用戶選擇
+        return;
+    }
+    
     const formData = {
         id: document.getElementById('new-project-id').value,
         name: document.getElementById('new-project-name').value,
-        client: document.getElementById('new-project-client').value,
+        client: clientName,
+        contact: contactName,
         product_type: document.getElementById('new-project-type').value,
         quantity: document.getElementById('new-project-quantity').value + '個',
         deadline: document.getElementById('new-project-deadline').value,
         phase: document.getElementById('new-project-phase').value,
         sales_rep: document.getElementById('new-project-sales').value,
         notes: document.getElementById('new-project-notes').value,
-        contact: '',
         progress: 0,
         status: 'active',
         status_text: getStatusText(document.getElementById('new-project-phase').value),
@@ -1527,23 +1845,30 @@ async function submitNewProject(event) {
         
         if (error) {
             console.error('Supabase 寫入錯誤:', error);
-            alert('❌ 專案建立失敗: ' + error.message);
-            return;
+            // 離線模式：僅儲存到本地
+            projects.push(formData);
+            saveProjectsToLocalStorage();
+            console.log('💾 離線模式：專案已儲存到 LocalStorage');
+        } else {
+            // 添加到本地陣列（即時顯示）
+            projects.push(formData);
         }
-        
-        // 添加到本地陣列（即時顯示）
-        projects.push(formData);
         
         // 關閉彈窗並重新整理顯示
         closeAddProjectModal();
         renderAllViews();
         
         // 顯示成功提示
-        alert('✅ 專案建立成功！已儲存至資料庫');
+        alert('✅ 專案建立成功！');
         
     } catch (error) {
         console.error('寫入錯誤:', error);
-        alert('❌ 專案建立失敗: ' + error.message);
+        // 離線模式
+        projects.push(formData);
+        saveProjectsToLocalStorage();
+        closeAddProjectModal();
+        renderAllViews();
+        alert('✅ 專案已建立（離線模式）');
     }
 }
 

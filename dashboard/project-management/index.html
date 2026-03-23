@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>銓宏國際 - 專案管理系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=12">
+    <link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
     <div class="container">
@@ -251,22 +251,28 @@
                         </div>
                         <div class="form-group">
                             <label>客戶名稱 <span class="required">*</span></label>
-                            <select id="new-project-client" required>
-                                <option value="">選擇客戶</option>
-                                <option value="客主創意">客主創意</option>
-                                <option value="易集">易集</option>
-                                <option value="葉林傳">葉林傳</option>
-                                <option value="new">+ 新增客戶</option>
-                            </select>
+                            <div class="client-search-container">
+                                <input type="text" id="new-project-client" placeholder="輸入客戶名稱搜尋..." required autocomplete="off">
+                                <div id="client-suggestions" class="client-suggestions-dropdown"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
+                            <label>聯絡人 <span class="required">*</span></label>
+                            <div class="contact-select-container">
+                                <select id="new-project-contact" required disabled>
+                                    <option value="">先選擇客戶</option>
+                                </select>
+                                <input type="text" id="new-contact-input" class="hidden" placeholder="輸入新聯絡人姓名">
+                                <button type="button" id="btn-add-new-contact" class="btn-icon" onclick="toggleNewContactInput()" title="新增聯絡人">+</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label>產品名稱 <span class="required">*</span></label>
                             <input type="text" id="new-project-name" placeholder="例如：NFC 鑰匙圈" required>
                         </div>
-                        <div class="form-group">
-                            <label>產品類型 <span class="required">*</span></label>
+                    </div>
                             <select id="new-project-type" required>
                                 <option value="">選擇類型</option>
                                 <option value="印刷類">印刷類</option>
@@ -336,6 +342,18 @@
                 <div id="search-results-body" class="search-results-grid"></div>
             </div>
         </div>
+        
+        <!-- 新增客戶/聯絡人提示彈窗 -->
+        <div id="client-prompt-modal" class="modal client-prompt-modal">
+            <div class="modal-content">
+                <h3 id="client-prompt-title">📝 提示</h3>
+                <p id="client-prompt-message"></p>
+                <div class="prompt-buttons">
+                    <button class="btn-prompt btn-prompt-primary" onclick="confirmAddToClientDB()">加入資料庫</button>
+                    <button class="btn-prompt btn-prompt-secondary" onclick="cancelAddToClientDB()">僅用於此專案</button>
+                </div>
+            </div>
+        </div>
 
     </div>
     
@@ -344,7 +362,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=55"></script>
+    <script src="app.js?v=56"></script>
     <script>
         window.onload = function() {
             console.log('✅ Page loaded successfully');
