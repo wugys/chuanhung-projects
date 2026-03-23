@@ -504,12 +504,11 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 所有階段都顯示 3 個按鈕（移除待辦事項）
+    // 所有階段都顯示 2 個按鈕（移除待辦事項和新增進度）
     const buttonsHtml = `
         <div class="card-buttons">
             <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
             <button class="btn-all" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'all')">📋 全部事項</button>
-            <button class="btn-progress" onclick="event.stopPropagation(); openAddProgressModal('${project.id}')">📈 新增進度</button>
         </div>
     `;
     
@@ -1040,7 +1039,7 @@ function closeGanttModal() {
 
 // 顯示單一專案待辦事項（使用固定 HTML 元素）
 function showProjectTodo(projectId, filter = 'all') {
-    alert('DEBUG: showProjectTodo called with ' + projectId);
+    // DEBUG removed
     console.log('showProjectTodo called:', { projectId, filter });
     
     const project = projects.find(p => p.id === projectId);
@@ -1372,7 +1371,7 @@ function renderAllViews() {
 let currentProgressProjectId = null;
 
 // 開啟新增進度彈窗
-function openAddProgressModal(projectId) {
+function openAddProgressModal(projectId) { return; // 已停用 
     currentProgressProjectId = projectId;
     const modal = document.getElementById('add-progress-modal');
     const input = document.getElementById('progress-description');
@@ -1387,7 +1386,7 @@ function openAddProgressModal(projectId) {
 }
 
 // 關閉新增進度彈窗
-function closeAddProgressModal() {
+function closeAddProgressModal() { return; // 已停用 
     document.getElementById('add-progress-modal').classList.remove('active');
     currentProgressProjectId = null;
 }
@@ -1404,7 +1403,7 @@ const AI_CONFIG = {
 };
 
 // 分析進度（使用真正 AI）
-async function analyzeProgressWithAI() {
+async function analyzeProgressWithAI() { alert("此功能已停用"); return; // 已停用 
     const input = document.getElementById('progress-description');
     const resultDiv = document.getElementById('progress-analysis-result');
     const analyzeBtn = document.getElementById('analyze-btn');
