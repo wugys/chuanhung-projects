@@ -1418,7 +1418,12 @@ function showProjectTodo(projectId, filter = 'incomplete') {
             `${project.client || 'N/A'} / ${project.contact || 'N/A'}`;
         document.getElementById('todo-project-deadline-display').textContent = project.deadline || 'N/A';
         document.getElementById('todo-project-sales-display').textContent = project.sales_rep || '未分配';
-        document.getElementById('todo-progress-display').textContent = `${project.progress}%`;
+        
+        // 更新專案進度（如果元素存在）
+        const progressDisplay = document.getElementById('todo-progress-display');
+        if (progressDisplay) {
+            progressDisplay.textContent = `${project.progress}%`;
+        }
         
         // 渲染客戶提供資料
         renderClientMaterials(project);
@@ -1979,7 +1984,10 @@ function toggleTaskComplete(projectId, taskIndex, isChecked) {
     
     // 更新固定區域的統計數字
     updateTodoStats(project);
-    document.getElementById('todo-progress-display').textContent = `${project.progress}%`;
+    const progressDisplay = document.getElementById('todo-progress-display');
+    if (progressDisplay) {
+        progressDisplay.textContent = `${project.progress}%`;
+    }
     
     // 重新渲染任務清單
     const body = document.getElementById('todo-modal-body');
