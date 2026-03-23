@@ -542,11 +542,10 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 所有階段都顯示 2 個按鈕（移除待辦事項和新增進度）
+    // 只保留甘特圖按鈕（點擊卡片直接開啟全部事項）
     const buttonsHtml = `
         <div class="card-buttons">
             <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
-            <button class="btn-all" onclick="event.stopPropagation(); showProjectTodo('${project.id}', 'all')">📋 全部事項</button>
         </div>
     `;
     
@@ -569,10 +568,10 @@ function createProjectCard(project) {
         ${buttonsHtml}
     `;
     
-    // 點擊卡片顯示詳情（按鈕除外）
+    // 點擊卡片直接顯示全部事項（按鈕除外）
     card.onclick = (e) => {
         if (!e.target.closest('.card-buttons')) {
-            showProjectDetail(project);
+            showProjectTodo(project.id, 'all');
         }
     };
     
