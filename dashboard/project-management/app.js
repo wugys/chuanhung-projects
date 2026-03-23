@@ -1,5 +1,49 @@
 // 銓宏國際專案管理系統 - 功能邏輯
 
+// ==================== LocalStorage 儲存功能 ====================
+const STORAGE_KEY = 'chuanhung_projects_v1';
+
+// 儲存專案資料到 LocalStorage
+function saveProjectsToLocalStorage() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+        console.log('💾 已儲存', projects.length, '個專案到 LocalStorage');
+    } catch (e) {
+        console.error('LocalStorage 儲存失敗:', e);
+    }
+}
+
+// 從 LocalStorage 載入專案資料
+function loadProjectsFromLocalStorage() {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            console.log('📦 從 LocalStorage 載入', parsed.length, '個專案');
+            return parsed;
+        }
+    } catch (e) {
+        console.error('LocalStorage 載入失敗:', e);
+    }
+    return null;
+}
+
+// 初始化時載入資料
+function initProjects() {
+    const stored = loadProjectsFromLocalStorage();
+    if (stored && stored.length > 0) {
+        // 合併預設資料和儲存資料（去除重複）
+        const existingIds = new Set(projects.map(p => p.id));
+        stored.forEach(p => {
+            if (!existingIds.has(p.id)) {
+                projects.push(p);
+            }
+        });
+        console.log('✅ 專案資料初始化完成，共', projects.length, '個');
+    }
+}
+// ==================== LocalStorage 結束 ====================
+
 // 業務人員列表
 const SALES_REPS = ['姿姿', 'Betty', 'Mia', 'Kevin'];
 
@@ -273,6 +317,9 @@ const projects = [
 
 // 初始化
 function init() {
+    // 載入 LocalStorage 儲存的專案
+    initProjects();
+    
     updateStatusBar();
     renderProposalView();
     renderQuoteView();
