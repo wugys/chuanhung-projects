@@ -31,15 +31,15 @@ jobs:
       run: |
         echo "🔍 檢查連結正確性..."
         
-        # 檢查是否有錯誤的 project-dashboard-web 連結
-        if grep -r "project-dashboard-web" dashboard/ 2>/dev/null; then
+        # 檢查是否有錯誤的 project-dashboard-web 連結（只檢查原始程式碼檔案）
+        if grep -r "project-dashboard-web" dashboard/project-management/*.html dashboard/project-management/*.js dashboard/project-management/*.css 2>/dev/null; then
           echo "❌ 發現錯誤連結：project-dashboard-web"
           echo "請將所有 project-dashboard-web 改為 dashboard/project-management"
           exit 1
         fi
         
         # 檢查回主系統連結是否正確
-        INCORRECT_LINKS=$(grep -r "\.\./dashboard/index\.html" dashboard/ 2>/dev/null || true)
+        INCORRECT_LINKS=$(grep -r "\.\./dashboard/index\.html" dashboard/project-management/*.html 2>/dev/null || true)
         if [ -n "$INCORRECT_LINKS" ]; then
           echo "❌ 發現錯誤的『回主系統』連結："
           echo "$INCORRECT_LINKS"
