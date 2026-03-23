@@ -355,35 +355,28 @@ function updateTime() {
 
 // 切換視圖
 function showView(viewName) {
+    console.log('showView called:', viewName);
+    
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     
-    document.getElementById(viewName + '-view').classList.add('active');
-    event.target.classList.add('active');
+    const viewEl = document.getElementById(viewName + '-view');
+    if (viewEl) {
+        viewEl.classList.add('active');
+    } else {
+        console.error('View not found:', viewName + '-view');
+    }
     
-    // 切換到全部視圖時重新渲染
-    if (viewName === 'list') {
-        renderList();
+    // 渲染對應視圖
+    switch(viewName) {
+        case 'list': renderList(); break;
+        case 'proposal': renderProposalView(); break;
+        case 'quote': renderQuoteView(); break;
+        case 'sample': renderSampleView(); break;
+        case 'production': renderProductionView(); break;
+        case 'pending-confirm': renderPendingConfirmView(); break;
     }
-    // 切換到提案階段時渲染
-    if (viewName === 'proposal') {
-        renderProposalView();
-    }
-    // 切換到報價階段時渲染
-    if (viewName === 'quote') {
-        renderQuoteView();
-    }
-    // 切換到打樣階段時渲染
-    if (viewName === 'sample') {
-        renderSampleView();
-    }
-    // 切換到生產階段時渲染
-    if (viewName === 'production') {
-        renderProductionView();
-    }
-    // 切換到待確認專案時渲染
-    if (viewName === 'pending-confirm') {
-        renderPendingConfirmView();
+}
     }
 }
 
@@ -2175,7 +2168,13 @@ closeTodoModal = function() {
 
 // 分頁式篩選切換（新設計）
 function switchTodoFilter(filter) {
-    if (!currentTodoProject) return;
+    console.log('switchTodoFilter called:', filter);
+    alert('切換到: ' + filter);
+    
+    if (!currentTodoProject) {
+        console.error('switchTodoFilter: currentTodoProject is null');
+        return;
+    }
     
     currentTodoFilter = filter;
     
