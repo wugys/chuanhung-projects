@@ -2243,18 +2243,10 @@ function toggleAddTaskForm() {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('new-task-start').value = today;
         document.getElementById('new-task-end').value = today;
-        
         // 預設填入專案負責人
-        const assigneeInput = document.getElementById('new-task-assignee-input');
-        const assigneeSelect = document.getElementById('new-task-assignee-select');
         if (currentTodoProject && currentTodoProject.sales_rep) {
-            assigneeInput.value = currentTodoProject.sales_rep;
-            assigneeSelect.value = currentTodoProject.sales_rep;
-        } else {
-            assigneeInput.value = '';
-            assigneeSelect.value = '';
+            document.getElementById('new-task-assignee').value = currentTodoProject.sales_rep;
         }
-        
         // 聚焦到任務名稱輸入框
         document.getElementById('new-task-name').focus();
     }
@@ -2262,26 +2254,11 @@ function toggleAddTaskForm() {
 
 // 負責人下拉選擇事件
 document.addEventListener('DOMContentLoaded', function() {
-    const assigneeSelect = document.getElementById('new-task-assignee-select');
-    const assigneeInput = document.getElementById('new-task-assignee-input');
-    const arrowIcon = document.querySelector('.assignee-select-wrapper .fa-chevron-down');
-    
-    if (assigneeSelect && assigneeInput) {
-        // 下拉選單改變時更新輸入框
-        assigneeSelect.addEventListener('change', function() {
-            if (this.value) {
-                assigneeInput.value = this.value;
-            }
+    const assigneeInput = document.getElementById('new-task-assignee');
+    if (assigneeInput) {
+        assigneeInput.addEventListener('change', function() {
+            console.log('負責人已選擇:', this.value);
         });
-        
-        // 箭頭點擊時開啟下拉選單
-        if (arrowIcon) {
-            arrowIcon.addEventListener('click', function(e) {
-                e.preventDefault();
-                assigneeSelect.click();
-                assigneeSelect.focus();
-            });
-        }
     }
 });
 
@@ -2293,7 +2270,7 @@ function submitNewTaskFromTodo() {
     }
     
     const taskName = document.getElementById('new-task-name').value.trim();
-    const assignee = document.getElementById('new-task-assignee-input').value.trim();
+    const assignee = document.getElementById('new-task-assignee').value.trim();
     const startDate = document.getElementById('new-task-start').value;
     const endDate = document.getElementById('new-task-end').value;
     
