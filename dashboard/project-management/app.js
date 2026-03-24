@@ -516,14 +516,14 @@ const projects = [
         status: "active",
         statusText: "🟡 議價中",
         phase: "quoting",
-        sales_rep: "Betty",
+        sales_rep: "姿姿",
         tasks: [
-            { name: "3/17 Joanne來電議價", start: "2026-03-17", end: "2026-03-17", progress: 100 },
-            { name: "Kevin回覆依照原價送審", start: "2026-03-17", end: "2026-03-17", progress: 100 },
-            { name: "等待送審結果", start: "2026-03-17", end: "2026-03-19", progress: 50 },
-            { name: "客戶確認下單", start: "2026-03-19", end: "2026-03-20", progress: 0 },
-            { name: "姿姿下採購單給大陸廠商", start: "2026-03-20", end: "2026-03-21", progress: 0 },
-            { name: "大陸廠商安排定制", start: "2026-03-21", end: "2026-04-15", progress: 0 }
+            { name: "3/17 Joanne來電議價", start: "2026-03-17", end: "2026-03-17", progress: 100, assigned_to: "姿姿" },
+            { name: "回覆依照原價送審", start: "2026-03-17", end: "2026-03-17", progress: 100, assigned_to: "姿姿" },
+            { name: "等待送審結果", start: "2026-03-17", end: "2026-03-19", progress: 50, assigned_to: "姿姿" },
+            { name: "客戶確認下單", start: "2026-03-19", end: "2026-03-20", progress: 0, assigned_to: "姿姿" },
+            { name: "下採購單給大陸廠商", start: "2026-03-20", end: "2026-03-21", progress: 0, assigned_to: "姿姿" },
+            { name: "大陸廠商安排定制", start: "2026-03-21", end: "2026-04-15", progress: 0, assigned_to: "姿姿" }
         ]
     },
     {
