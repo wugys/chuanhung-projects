@@ -1740,8 +1740,9 @@ function renderTaskListOnly(container, project, filter) {
                     </label>
                     
                     <div class="todo-name ${isCompleted ? 'strikethrough' : ''}" 
-                         onclick="editTaskName('${project.id}', ${task.originalIndex})" 
-                         style="cursor:pointer; flex: 1; font-size: 14px; font-weight: 500; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                         onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" 
+                         style="cursor:pointer; flex: 1; font-size: 14px; font-weight: 500; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"
+                         title="點擊編輯">
                         ${task.name}
                     </div>
                     
@@ -1751,7 +1752,7 @@ function renderTaskListOnly(container, project, filter) {
                 <!-- 第二行：负责人 + 日期 + 按钮 -->
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #f3f4f6;">
                     <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #6b7280; flex-wrap: wrap;">
-                        <span onclick="editTaskAssigneeInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer; display: flex; align-items: center; gap: 4px;">
+                        <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px;" title="點擊編輯">
                             👤 ${assignedTo}
                         </span>
                         
@@ -1766,8 +1767,8 @@ function renderTaskListOnly(container, project, filter) {
                                 style="padding: 3px 6px; font-size: 11px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; color: #92400e; cursor: pointer; white-space: nowrap;">📎 圖稿</button>
                         ` : ''}
                         
-                        <button onclick="editTaskDates('${project.id}', ${task.originalIndex})" 
-                                style="padding: 3px 6px; font-size: 11px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">📅</button>
+                        <button onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" 
+                                style="padding: 3px 6px; font-size: 11px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;" title="編輯事項">✏️</button>
                         
                         <button onclick="deleteTask('${project.id}', ${task.originalIndex})" 
                                 style="padding: 3px 6px; font-size: 11px; background: transparent; border: none; color: #9ca3af; cursor: pointer;">🗑️</button>
@@ -3898,6 +3899,19 @@ function toggleTaskCompleteFromQuery(projectId, taskIndex, isChecked) {
 let currentEditProjectId = null;
 let currentEditTaskIndex = null;
 
+// 通用函數：開啟任務編輯彈窗（用於待辦事項和查詢結果）
+function openTaskEditModal(projectId, taskIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    currentEditProjectId = projectId;
+    currentEditTaskIndex = taskIndex;
+    const task = project.tasks[taskIndex];
+    
+    // 使用與查詢結果相同的編輯彈窗代碼
+    editTaskProgressFromQuery(projectId, taskIndex);
+}
+
 function editTaskProgressFromQuery(projectId, taskIndex) {
     const project = projects.find(p => p.id === projectId);
     if (!project || !project.tasks[taskIndex]) return;
@@ -4056,6 +4070,13 @@ function saveTaskEditFromQuery() {
     
     // 強制重新渲染所有視圖以確保數據同步
     renderAllViews();
+    
+    // 重新渲染待辦事項彈窗的任務列表（如果開啟中）
+    const todoBody = document.getElementById('todo-modal-body');
+    if (todoBody && currentTodoProject && currentTodoProject.id === currentEditProjectId) {
+        renderTaskListOnly(todoBody, currentTodoProject, currentTodoFilter);
+        updateTodoStats(currentTodoProject);
+    }
     
     // 重新渲染查詢結果（確保使用最新數據）
     refreshQueryResults();
