@@ -2983,7 +2983,6 @@ closeTodoModal = function() {
 // 分頁式篩選切換（新設計）
 function switchTodoFilter(filter) {
     console.log('switchTodoFilter called:', filter);
-    alert('切換到: ' + filter);
     
     if (!currentTodoProject) {
         console.error('switchTodoFilter: currentTodoProject is null');
