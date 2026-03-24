@@ -909,10 +909,14 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 只保留甘特圖按鈕（點擊卡片直接開啟全部事項）
+    // 報價待確認階段顯示甘特圖 + 結案按鈕
+    const isPending = project.phase === 'pending';
+    const closeCaseBtn = isPending ? `<button class="btn-close-case" onclick="event.stopPropagation(); closeProjectCase('${project.id}')">✅ 結案</button>` : '';
+    
     const buttonsHtml = `
         <div class="card-buttons">
             <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
+            ${closeCaseBtn}
         </div>
     `;
     
@@ -943,6 +947,40 @@ function createProjectCard(project) {
     };
     
     return card;
+}
+
+// 結案功能 - 將報價待確認專案標記為已結案
+function closeProjectCase(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    if (!confirm('確定要將此專案結案嗎？結案後將不再顯示在負責人待辦事項中。')) {
+        return;
+    }
+    
+    // 標記為已結案
+    project.isClosed = true;
+    project.closedAt = new Date().toISOString();
+    project.closedPhase = project.phase;
+    project.phase = 'completed';
+    project.statusText = '✅ 已結案';
+    project.progress = 100;
+    
+    // 將所有任務標記為完成
+    if (project.tasks && project.tasks.length > 0) {
+        project.tasks.forEach(task => {
+            task.progress = 100;
+            task.completed_at = new Date().toISOString();
+        });
+    }
+    
+    // 儲存
+    saveProjectsToLocalStorage();
+    
+    // 重新渲染所有視圖
+    renderAllViews();
+    
+    showTodoToast('✅ 專案已結案');
 }
 
 // 渲染甘特圖
@@ -3717,6 +3755,9 @@ function renderQueryResults() {
     let allTasks = [];
     
     projects.forEach(project => {
+        // 跳過已結案的專案
+        if (project.isClosed || project.phase === 'completed') return;
+        
         // 檢查任務負責人 - 同時考慮 assigned_to 和專案的 sales_rep
         if (project.tasks) {
             project.tasks.forEach((task, taskIndex) => {

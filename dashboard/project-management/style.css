@@ -1162,6 +1162,25 @@ h2 {
     background: #38a169;
 }
 
+/* 結案按鈕樣式 */
+.btn-close-case {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-close-case:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
 .btn-all {
     background: #ed8936;
     color: white;
