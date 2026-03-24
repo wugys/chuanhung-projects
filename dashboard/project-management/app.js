@@ -1800,9 +1800,17 @@ function renderTaskListOnly(container, project, filter) {
                     </div>
                     
                     <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                        ${task.files && task.files.length > 0 ? `
+                        <span style="padding: 3px 6px; font-size: 11px; background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 4px; color: #0369a1; cursor: pointer;" 
+                              onclick="viewTaskFiles('${project.id}', ${task.originalIndex})" title="查看檔案">📎 ${task.files.length}</span>
+                        ` : ''}
+                        
+                        <button onclick="uploadTaskFile('${project.id}', ${task.originalIndex})" 
+                                style="padding: 3px 6px; font-size: 11px; background: #f0fdf4; border: 1px solid #10b981; border-radius: 4px; color: #047857; cursor: pointer;" title="上傳檔案">📎+</button>
+                        
                         ${project.clientMaterials && project.clientMaterials.length > 0 ? `
                         <button onclick="showTaskMaterials('${project.id}', ${task.originalIndex})" 
-                                style="padding: 3px 6px; font-size: 11px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; color: #92400e; cursor: pointer; white-space: nowrap;">📎 圖稿</button>
+                                style="padding: 3px 6px; font-size: 11px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; color: #92400e; cursor: pointer; white-space: nowrap;">圖稿</button>
                         ` : ''}
                         
                         <button onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" 
@@ -1962,6 +1970,146 @@ function deleteTask(projectId, taskIndex) {
         alert('✅ 任務已刪除');
     }
 }
+
+// ==================== 任務檔案上傳功能 ====================
+
+// 上傳任務檔案
+function uploadTaskFile(projectId, taskIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    // 建立檔案選擇器
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.multiple = true;
+    fileInput.accept = '*/*';
+    
+    fileInput.onchange = function(e) {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        
+        const task = project.tasks[taskIndex];
+        if (!task.files) task.files = [];
+        
+        // 處理每個檔案
+        Array.from(files).forEach(file => {
+            // 讀取檔案為 Base64
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                task.files.push({
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    data: event.target.result,
+                    uploadedAt: new Date().toISOString()
+                });
+                
+                // 儲存
+                saveProjectsToLocalStorage();
+                
+                // 重新渲染
+                const body = document.getElementById('todo-modal-body');
+                if (body) renderTaskListOnly(body, project, currentTodoFilter);
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        alert(`✅ 正在上傳 ${files.length} 個檔案...`);
+    };
+    
+    fileInput.click();
+}
+
+// 查看任務檔案
+function viewTaskFiles(projectId, taskIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    const task = project.tasks[taskIndex];
+    if (!task.files || task.files.length === 0) {
+        alert('暫無檔案');
+        return;
+    }
+    
+    // 建立檔案列表彈窗
+    let filesHtml = task.files.map((file, index) => {
+        const isImage = file.type && file.type.startsWith('image/');
+        const fileIcon = isImage ? '🖼️' : '📄';
+        const fileSize = (file.size / 1024).toFixed(1) + ' KB';
+        
+        return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f9fafb; border-radius: 6px; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                    <span style="font-size: 20px;">${fileIcon}</span>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 14px; font-weight: 500; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</div>
+                        <div style="font-size: 12px; color: #6b7280;">${fileSize} · ${new Date(file.uploadedAt).toLocaleDateString('zh-TW')}</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    ${isImage && file.data ? `<a href="${file.data}" target="_blank" style="padding: 6px 12px; background: #3b82f6; color: white; border-radius: 4px; font-size: 12px; text-decoration: none;">查看</a>` : ''}
+                    <button onclick="deleteTaskFile('${projectId}', ${taskIndex}, ${index})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">刪除</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    let modalContent = `
+        <div id="task-files-modal" class="modal active" style="z-index: 10000;">
+            <div class="modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+                <span class="close-btn" onclick="closeTaskFilesModal()">×</span>
+                <h3>📎 任務檔案 (${task.files.length}個)</h3>
+                <div style="margin: 16px 0;">
+                    ${filesHtml}
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                    <button onclick="addMoreFiles('${projectId}', ${taskIndex})" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer;">➕ 新增檔案</button>
+                    <button onclick="closeTaskFilesModal()" style="padding: 8px 16px; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; cursor: pointer;">關閉</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 插入到頁面
+    const existingModal = document.getElementById('task-files-modal');
+    if (existingModal) existingModal.remove();
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+}
+
+// 關閉檔案彈窗
+function closeTaskFilesModal() {
+    const modal = document.getElementById('task-files-modal');
+    if (modal) modal.remove();
+}
+
+// 新增更多檔案
+function addMoreFiles(projectId, taskIndex) {
+    closeTaskFilesModal();
+    setTimeout(() => uploadTaskFile(projectId, taskIndex), 100);
+}
+
+// 刪除任務檔案
+function deleteTaskFile(projectId, taskIndex, fileIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex] || !project.tasks[taskIndex].files) return;
+    
+    const task = project.tasks[taskIndex];
+    const fileName = task.files[fileIndex].name;
+    
+    if (confirm(`確定要刪除檔案「${fileName}」嗎？`)) {
+        task.files.splice(fileIndex, 1);
+        saveProjectsToLocalStorage();
+        
+        // 重新顯示
+        viewTaskFiles(projectId, taskIndex);
+        
+        // 重新渲染任務列表
+        const body = document.getElementById('todo-modal-body');
+        if (body) renderTaskListOnly(body, project, currentTodoFilter);
+    }
+}
+
+// ==================== 任務檔案功能結束 ====================
 
 // 顯示任務相關的客戶圖稿
 let currentTaskMaterialsProjectId = null;
