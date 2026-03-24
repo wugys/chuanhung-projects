@@ -3688,6 +3688,7 @@ function renderQueryResults() {
             <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <thead>
                     <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                        <th style="padding: 10px 4px; text-align: center; font-weight: 600; color: #374151; width: 40px;">完成</th>
                         <th style="padding: 10px 8px; text-align: left; font-weight: 600; color: #374151;">時間</th>
                         <th style="padding: 10px 8px; text-align: left; font-weight: 600; color: #374151;">專案/客戶</th>
                         <th style="padding: 10px 8px; text-align: left; font-weight: 600; color: #374151;">事項</th>
@@ -3720,18 +3721,33 @@ function renderQueryResults() {
             }
             
             return `
-                <tr style="border-bottom: 1px solid #e5e7eb; background: ${isCompleted ? '#f0fdf4' : isOverdue ? '#fef2f2' : 'white'}; cursor: pointer;"
-                    onclick="editTaskProgressFromQuery('${item.project.id}', ${item.taskIndex})"
-                    title="點擊編輯進度"
-                >
-                    <td style="padding: 10px 8px; color: #6b7280; white-space: nowrap;">${dateDisplay}</td>
-                    <td style="padding: 10px 8px;">
+                <tr style="border-bottom: 1px solid #e5e7eb; background: ${isCompleted ? '#f0fdf4' : isOverdue ? '#fef2f2' : 'white'};">
+                    <td style="padding: 10px 4px; text-align: center;" onclick="event.stopPropagation();">
+                        <input type="checkbox" 
+                               ${isCompleted ? 'checked' : ''} 
+                               onchange="toggleTaskCompleteFromQuery('${item.project.id}', ${item.taskIndex}, this.checked)"
+                               style="width: 20px; height: 20px; cursor: pointer;"
+                               title="${isCompleted ? '標記為未完成' : '標記為已完成'}"
+                        >
+                    </td>
+                    <td style="padding: 10px 8px; color: #6b7280; white-space: nowrap; cursor: pointer;"
+                        onclick="editTaskProgressFromQuery('${item.project.id}', ${item.taskIndex})"
+                    >${dateDisplay}</td>
+                    <td style="padding: 10px 8px; cursor: pointer;"
+                        onclick="editTaskProgressFromQuery('${item.project.id}', ${item.taskIndex})"
+                    >
                         <div style="font-weight: 500; color: #111827;">${item.project.name}</div>
                         <div style="font-size: 11px; color: #6b7280;">${item.project.client || '-'}</div>
                     </td>
-                    <td style="padding: 10px 8px; color: #374151;">${item.task.name}</td>
-                    <td style="padding: 10px 8px; text-align: center; color: #6b7280;">${item.task.progress}%</td>
-                    <td style="padding: 10px 8px; text-align: center;">${statusBadge}</td>
+                    <td style="padding: 10px 8px; color: #374151; cursor: pointer;"
+                        onclick="editTaskProgressFromQuery('${item.project.id}', ${item.taskIndex})"
+                    >${item.task.name}</td>
+                    <td style="padding: 10px 8px; text-align: center; color: #6b7280; cursor: pointer;"
+                        onclick="editTaskProgressFromQuery('${item.project.id}', ${item.taskIndex})"
+                    >${item.task.progress}%</td>
+                    <td style="padding: 10px 8px; text-align: center; cursor: pointer;"
+                        onclick="editTaskProgressFromQuery('${item.project.id}', ${item.taskIndex})"
+                    >${statusBadge}</td>
                 </tr>
             `;
         }).join('');
@@ -3741,6 +3757,32 @@ function renderQueryResults() {
     }
     
     container.style.display = 'block';
+}
+
+// 從人員查詢清單切換任務完成狀態
+function toggleTaskCompleteFromQuery(projectId, taskIndex, isChecked) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    const task = project.tasks[taskIndex];
+    task.progress = isChecked ? 100 : 0;
+    task.updated_at = new Date().toISOString();
+    
+    if (isChecked) {
+        task.completed_at = new Date().toISOString();
+    } else {
+        delete task.completed_at;
+    }
+    
+    // 儲存
+    saveProjectsToLocalStorage();
+    
+    // 重新渲染查詢結果
+    renderQueryResults();
+    
+    // 顯示提示
+    const message = isChecked ? '✅ 已標記為完成' : '⏳ 已標記為未完成';
+    showTodoToast(message);
 }
 
 // 從人員查詢清單編輯任務（完整編輯視窗）
