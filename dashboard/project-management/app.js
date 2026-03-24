@@ -3655,7 +3655,7 @@ function renderQueryResults() {
     // 更新標題和數量
     const filterText = currentQueryFilter === 'all' ? '全部' : 
                        currentQueryFilter === 'incomplete' ? '待辦' : '逾期';
-    titleSpan.textContent = `${currentQueryPerson} 的${filterText}事項`;
+    titleSpan.innerHTML = `${currentQueryPerson} 的${filterText}事項 <span style="font-size: 12px; color: #6b7280; font-weight: normal;">(點擊事項可編輯進度)</span>`;
     countSpan.textContent = `(${filteredTasks.length} 項)`;
     
     // 渲染清單式任務列表
@@ -3703,7 +3703,10 @@ function renderQueryResults() {
             }
             
             return `
-                <tr style="border-bottom: 1px solid #e5e7eb; background: ${isCompleted ? '#f0fdf4' : isOverdue ? '#fef2f2' : 'white'};">
+                <tr style="border-bottom: 1px solid #e5e7eb; background: ${isCompleted ? '#f0fdf4' : isOverdue ? '#fef2f2' : 'white'}; cursor: pointer;"
+                    onclick="editTaskProgressFromQuery('${item.project.id}', ${item.taskIndex})"
+                    title="點擊編輯進度"
+                >
                     <td style="padding: 10px 8px; color: #6b7280; white-space: nowrap;">${dateDisplay}</td>
                     <td style="padding: 10px 8px;">
                         <div style="font-weight: 500; color: #111827;">${item.project.name}</div>
@@ -3721,6 +3724,40 @@ function renderQueryResults() {
     }
     
     container.style.display = 'block';
+}
+
+// 從人員查詢清單編輯任務進度
+function editTaskProgressFromQuery(projectId, taskIndex) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) return;
+    
+    const task = project.tasks[taskIndex];
+    const newProgress = prompt(`編輯進度：${task.name}\n\n目前進度：${task.progress}%\n請輸入新進度（0-100）：`, task.progress);
+    
+    if (newProgress !== null) {
+        const progress = parseInt(newProgress);
+        if (!isNaN(progress) && progress >= 0 && progress <= 100) {
+            task.progress = progress;
+            task.updated_at = new Date().toISOString();
+            
+            // 如果進度達到100%，標記為已完成
+            if (progress === 100) {
+                task.completed_at = new Date().toISOString();
+            }
+            
+            // 儲存
+            saveProjectsToLocalStorage();
+            
+            // 重新渲染查詢結果
+            renderQueryResults();
+            
+            // 顯示提示
+            const message = progress === 100 ? '✅ 已完成' : `📊 進度已更新為 ${progress}%`;
+            showTodoToast(message);
+        } else {
+            alert('請輸入有效的進度值（0-100）');
+        }
+    }
 }
 
 // ==================== 人員查詢功能結束 ====================
