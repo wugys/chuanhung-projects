@@ -673,6 +673,24 @@ const projects = [
             { name: "3/30台灣收到樣品", start: "2026-03-30", end: "2026-03-30", progress: 0, assigned_to: "Kevin" },
             { name: "姿姿安排叫寄貨運給客戶", start: "2026-03-30", end: "", progress: 0, assigned_to: "姿姿" }
         ]
+    },
+    {
+        id: "A0016-260324",
+        name: "BT21 壓克力SuperCard造型悠遊卡-Ribbon(悠遊卡)",
+        client: "台灣銘版",
+        contact: "名城",
+        quantity: "5000 pcs",
+        deadline: "待確認",
+        progress: 10,
+        status: "active",
+        statusText: "🔵 報價中",
+        phase: "quoting",
+        sales_rep: "Kevin",
+        tasks: [
+            { name: "客戶提供詢價資料", start: "2026-03-23", end: "2026-03-23", progress: 100, assigned_to: "Kevin" },
+            { name: "發給本道紙塑-陳先生估價", start: "2026-03-24", end: "2026-03-24", progress: 0, assigned_to: "Kevin" },
+            { name: "整理報價並傳給客戶", start: "2026-03-25", end: "2026-03-25", progress: 0, assigned_to: "Kevin" }
+        ]
     }
 ];
 
