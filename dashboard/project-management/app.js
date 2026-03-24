@@ -909,14 +909,16 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 報價待確認階段顯示甘特圖 + 結案按鈕
+    // 報價待確認階段顯示兩個結案按鈕
     const isPending = project.phase === 'pending';
-    const closeCaseBtn = isPending ? `<button class="btn-close-case" onclick="event.stopPropagation(); closeProjectCase('${project.id}')">✅ 結案</button>` : '';
+    const closeCaseBtns = isPending ? `
+        <button class="btn-close-case-complete" onclick="event.stopPropagation(); closeProjectCaseComplete('${project.id}')">✅ 完成結案</button>
+        <button class="btn-close-case-incomplete" onclick="event.stopPropagation(); closeProjectCaseIncomplete('${project.id}')">⏸️ 未完成結案</button>
+    ` : '';
     
     const buttonsHtml = `
         <div class="card-buttons">
-            <button class="btn-gantt" onclick="event.stopPropagation(); showProjectGantt('${project.id}')">📅 甘特圖</button>
-            ${closeCaseBtn}
+            ${closeCaseBtns}
         </div>
     `;
     
@@ -949,25 +951,30 @@ function createProjectCard(project) {
     return card;
 }
 
-// 結案功能 - 將報價待確認專案標記為已結案
-function closeProjectCase(projectId) {
+// 完成結案 - 進度設為100%，所有任務標記完成
+function closeProjectCaseComplete(projectId) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
     
-    if (!confirm('確定要將此專案結案嗎？結案後將不再顯示在負責人待辦事項中。')) {
+    if (!confirm('確定要完成結案嗎？這將把專案進度設為100%並標記所有任務為已完成。')) {
         return;
     }
     
-    // 標記為已結案 - 保留原進度
+    // 標記為已完成結案
     project.isClosed = true;
     project.closedAt = new Date().toISOString();
     project.closedPhase = project.phase;
     project.phase = 'completed';
-    project.statusText = '✅ 已結案';
-    // 注意：不修改 project.progress，保留原進度
+    project.statusText = '✅ 已完成結案';
+    project.progress = 100;
     
-    // 保留任務原有進度，不強制改為100%
-    // 僅標記結案時間，不修改任務進度
+    // 將所有任務標記為完成
+    if (project.tasks && project.tasks.length > 0) {
+        project.tasks.forEach(task => {
+            task.progress = 100;
+            task.completed_at = new Date().toISOString();
+        });
+    }
     
     // 儲存
     saveProjectsToLocalStorage();
@@ -975,7 +982,40 @@ function closeProjectCase(projectId) {
     // 重新渲染所有視圖
     renderAllViews();
     
-    showTodoToast('✅ 專案已結案');
+    showTodoToast('✅ 專案已完成結案');
+}
+
+// 未完成結案 - 保留進度，隱藏任務
+function closeProjectCaseIncomplete(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    if (!confirm('確定要未完成結案嗎？這將保留專案進度，但不再顯示在負責人待辦事項中。')) {
+        return;
+    }
+    
+    // 標記為未完成結案
+    project.isClosed = true;
+    project.closedAt = new Date().toISOString();
+    project.closedPhase = project.phase;
+    project.phase = 'completed';
+    project.statusText = '⏸️ 未完成結案';
+    // 保留原有進度
+    
+    // 隱藏任務 - 標記為隱藏
+    if (project.tasks && project.tasks.length > 0) {
+        project.tasks.forEach(task => {
+            task.isHidden = true;
+        });
+    }
+    
+    // 儲存
+    saveProjectsToLocalStorage();
+    
+    // 重新渲染所有視圖
+    renderAllViews();
+    
+    showTodoToast('⏸️ 專案已未完成結案');
 }
 
 // 渲染甘特圖
@@ -3941,6 +3981,9 @@ function renderQueryResults() {
                 
                 // 如果都沒有，跳過此任務
                 if (!taskAssignee) return;
+                
+                // 跳過隱藏的任務（未完成結案的任務）
+                if (task.isHidden) return;
                 
                 // 檢查是否匹配查詢的人員（不區分大小寫）
                 if (taskAssignee.toLowerCase() === currentQueryPerson.toLowerCase()) {

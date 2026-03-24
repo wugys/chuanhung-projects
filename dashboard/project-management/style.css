@@ -1162,8 +1162,8 @@ h2 {
     background: #38a169;
 }
 
-/* 結案按鈕樣式 */
-.btn-close-case {
+/* 完成結案按鈕樣式 */
+.btn-close-case-complete {
     background: #10b981;
     color: white;
     border: none;
@@ -1175,10 +1175,29 @@ h2 {
     transition: all 0.2s;
 }
 
-.btn-close-case:hover {
+.btn-close-case-complete:hover {
     background: #059669;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+/* 未完成結案按鈕樣式 */
+.btn-close-case-incomplete {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-close-case-incomplete:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }
 
 .btn-all {
