@@ -78,6 +78,31 @@ function initClientsDB() {
         saveClientsDB();
         console.log('✅ 從專案資料建立客戶庫，共', clientsDB.length, '個客戶');
     }
+    
+    // 確保銓宏國際公司存在
+    const chuanhungClient = clientsDB.find(c => c.name === '銓宏國際');
+    if (!chuanhungClient) {
+        clientsDB.push({
+            name: '銓宏國際',
+            contacts: ['姿姿', 'Mia', 'Kevin', 'Betty']
+        });
+        saveClientsDB();
+        console.log('✅ 已添加銓宏國際公司和人員');
+    } else {
+        // 確保所有人員都在
+        const requiredContacts = ['姿姿', 'Mia', 'Kevin', 'Betty'];
+        let updated = false;
+        requiredContacts.forEach(person => {
+            if (!chuanhungClient.contacts.includes(person)) {
+                chuanhungClient.contacts.push(person);
+                updated = true;
+            }
+        });
+        if (updated) {
+            saveClientsDB();
+            console.log('✅ 已更新銓宏國際公司人員');
+        }
+    }
 }
 
 // 儲存客戶資料庫
@@ -3571,25 +3596,35 @@ function renderQueryResults() {
     let allTasks = [];
     
     projects.forEach(project => {
-        // 檢查專案負責人
-        if (project.sales_rep === currentQueryPerson) {
-            // 專案層級的負責
-        }
-        
-        // 檢查任務負責人
+        // 檢查任務負責人 - 同時考慮 assigned_to 和專案的 sales_rep
         if (project.tasks) {
             project.tasks.forEach((task, taskIndex) => {
-                const assignedTo = task.assigned_to || project.sales_rep;
-                if (assignedTo === currentQueryPerson) {
+                // 檢查任務的 assigned_to 或繼承專案的 sales_rep
+                let taskAssignee = task.assigned_to;
+                if (!taskAssignee && project.sales_rep) {
+                    taskAssignee = project.sales_rep;
+                }
+                
+                // 如果都沒有，跳過此任務
+                if (!taskAssignee) return;
+                
+                // 檢查是否匹配查詢的人員（不區分大小寫）
+                if (taskAssignee.toLowerCase() === currentQueryPerson.toLowerCase()) {
                     // 檢查是否符合公司條件（如果有指定公司）
-                    if (currentQueryCompany && project.client !== currentQueryCompany) {
-                        return;
+                    // 注意：「銓宏國際」是內部公司，對應到專案負責人情況
+                    if (currentQueryCompany && currentQueryCompany !== '') {
+                        // 如果查詢的是銓宏國際，則匹配所有負責人符合的任務
+                        // 否則按客戶名稱匹配
+                        if (currentQueryCompany !== '銓宏國際' && project.client !== currentQueryCompany) {
+                            return;
+                        }
                     }
                     
                     allTasks.push({
                         project: project,
                         task: task,
-                        taskIndex: taskIndex
+                        taskIndex: taskIndex,
+                        assignee: taskAssignee
                     });
                 }
             });
@@ -3604,10 +3639,18 @@ function renderQueryResults() {
         filteredTasks = allTasks.filter(t => t.task.progress < 100);
     } else if (currentQueryFilter === 'overdue') {
         filteredTasks = allTasks.filter(t => {
+            if (!t.task.end || t.task.progress === 100) return false;
             const taskEnd = new Date(t.task.end);
-            return taskEnd < today && t.task.progress < 100;
+            return taskEnd < today;
         });
     }
+    
+    // 按時間排序（開始日期）
+    filteredTasks.sort((a, b) => {
+        const dateA = a.task.start ? new Date(a.task.start) : new Date(0);
+        const dateB = b.task.start ? new Date(b.task.start) : new Date(0);
+        return dateA - dateB;
+    });
     
     // 更新標題和數量
     const filterText = currentQueryFilter === 'all' ? '全部' : 
@@ -3615,39 +3658,66 @@ function renderQueryResults() {
     titleSpan.textContent = `${currentQueryPerson} 的${filterText}事項`;
     countSpan.textContent = `(${filteredTasks.length} 項)`;
     
-    // 渲染任務列表
+    // 渲染清單式任務列表
     if (filteredTasks.length === 0) {
         listDiv.innerHTML = `
-            <div style="text-align: center; padding: 30px; color: #9ca3af; background: #f9fafb; border-radius: 8px;"
-            >
+            <div style="text-align: center; padding: 30px; color: #9ca3af; background: #f9fafb; border-radius: 8px;">
                 <p>沒有找到符合條件的事項</p>
             </div>
         `;
     } else {
-        listDiv.innerHTML = filteredTasks.map(item => {
+        // 使用表格/清單格式顯示
+        let html = `
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                    <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                        <th style="padding: 10px 8px; text-align: left; font-weight: 600; color: #374151;">時間</th>
+                        <th style="padding: 10px 8px; text-align: left; font-weight: 600; color: #374151;">專案/客戶</th>
+                        <th style="padding: 10px 8px; text-align: left; font-weight: 600; color: #374151;">事項</th>
+                        <th style="padding: 10px 8px; text-align: center; font-weight: 600; color: #374151;">進度</th>
+                        <th style="padding: 10px 8px; text-align: center; font-weight: 600; color: #374151;">狀態</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        html += filteredTasks.map(item => {
             const isCompleted = item.task.progress === 100;
-            const taskEnd = new Date(item.task.end);
-            const isOverdue = taskEnd < today && item.task.progress < 100;
+            let isOverdue = false;
+            if (item.task.end && !isCompleted) {
+                const taskEnd = new Date(item.task.end);
+                isOverdue = taskEnd < today;
+            }
+            
+            const dateStr = item.task.start ? formatDateShort(item.task.start) : '-';
+            const endDateStr = item.task.end ? formatDateShort(item.task.end) : '';
+            const dateDisplay = endDateStr ? `${dateStr}~${endDateStr}` : dateStr;
+            
+            let statusBadge = '';
+            if (isCompleted) {
+                statusBadge = '<span style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">已完成</span>';
+            } else if (isOverdue) {
+                statusBadge = '<span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">逾期</span>';
+            } else {
+                statusBadge = '<span style="background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">進行中</span>';
+            }
             
             return `
-                <div style="padding: 12px; margin-bottom: 10px; background: ${isCompleted ? '#f0fdf4' : isOverdue ? '#fef2f2' : '#f8fafc'}; 
-                            border-radius: 8px; border: 1px solid ${isCompleted ? '#86efac' : isOverdue ? '#fecaca' : '#e5e7eb'};"
-                >
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;"
-                    >
-                        <div style="font-weight: 500; font-size: 14px; flex: 1;"
-                        >${item.task.name}</div>
-                        ${isCompleted ? '<span style="font-size: 11px; background: #22c55e; color: white; padding: 2px 6px; border-radius: 4px;">已完成</span>' : ''}
-                        ${isOverdue ? '<span style="font-size: 11px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px;">逾期</span>' : ''}
-                    </div>
-                    <div style="font-size: 12px; color: #6b7280;"
-                    >
-                        📁 ${item.project.name} · ${item.project.client} · ${item.task.progress}%
-                        ${item.task.start && item.task.end ? ` · 📅 ${formatDateShort(item.task.start)}-${formatDateShort(item.task.end)}` : ''}
-                    </div>
-                </div>
+                <tr style="border-bottom: 1px solid #e5e7eb; background: ${isCompleted ? '#f0fdf4' : isOverdue ? '#fef2f2' : 'white'};">
+                    <td style="padding: 10px 8px; color: #6b7280; white-space: nowrap;">${dateDisplay}</td>
+                    <td style="padding: 10px 8px;">
+                        <div style="font-weight: 500; color: #111827;">${item.project.name}</div>
+                        <div style="font-size: 11px; color: #6b7280;">${item.project.client || '-'}</div>
+                    </td>
+                    <td style="padding: 10px 8px; color: #374151;">${item.task.name}</td>
+                    <td style="padding: 10px 8px; text-align: center; color: #6b7280;">${item.task.progress}%</td>
+                    <td style="padding: 10px 8px; text-align: center;">${statusBadge}</td>
+                </tr>
             `;
         }).join('');
+        
+        html += '</tbody></table>';
+        listDiv.innerHTML = html;
     }
     
     container.style.display = 'block';
