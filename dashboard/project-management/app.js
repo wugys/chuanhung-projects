@@ -2243,14 +2243,36 @@ function toggleAddTaskForm() {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('new-task-start').value = today;
         document.getElementById('new-task-end').value = today;
-        // 預設選擇專案負責人
+        
+        // 預設填入專案負責人
+        const assigneeInput = document.getElementById('new-task-assignee-input');
+        const assigneeSelect = document.getElementById('new-task-assignee-select');
         if (currentTodoProject && currentTodoProject.sales_rep) {
-            document.getElementById('new-task-assignee').value = currentTodoProject.sales_rep;
+            assigneeInput.value = currentTodoProject.sales_rep;
+            assigneeSelect.value = currentTodoProject.sales_rep;
+        } else {
+            assigneeInput.value = '';
+            assigneeSelect.value = '';
         }
+        
         // 聚焦到任務名稱輸入框
         document.getElementById('new-task-name').focus();
     }
 }
+
+// 負責人下拉選擇事件
+document.addEventListener('DOMContentLoaded', function() {
+    const assigneeSelect = document.getElementById('new-task-assignee-select');
+    const assigneeInput = document.getElementById('new-task-assignee-input');
+    
+    if (assigneeSelect && assigneeInput) {
+        assigneeSelect.addEventListener('change', function() {
+            if (this.value) {
+                assigneeInput.value = this.value;
+            }
+        });
+    }
+});
 
 // 提交新任務（從待辦事項彈窗）
 function submitNewTaskFromTodo() {
@@ -2260,7 +2282,7 @@ function submitNewTaskFromTodo() {
     }
     
     const taskName = document.getElementById('new-task-name').value.trim();
-    const assignee = document.getElementById('new-task-assignee').value;
+    const assignee = document.getElementById('new-task-assignee-input').value.trim();
     const startDate = document.getElementById('new-task-start').value;
     const endDate = document.getElementById('new-task-end').value;
     

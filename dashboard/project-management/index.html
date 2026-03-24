@@ -218,13 +218,17 @@
                     <h4 style="margin: 0 0 12px 0; color: #374151; font-weight: 600; font-size: 14px;">➕ 新增任務</h4>
                     <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
                         <input type="text" id="new-task-name" placeholder="任務名稱..." style="flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-                        <select id="new-task-assignee" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; min-width: 100px;">
-                            <option value="">負責人</option>
-                            <option value="姿姿">姿姿</option>
-                            <option value="Betty">Betty</option>
-                            <option value="Mia">Mia</option>
-                            <option value="Kevin">Kevin</option>
-                        </select>
+                        <div class="assignee-select-wrapper" style="position: relative; min-width: 100px;">
+                            <input type="text" id="new-task-assignee-input" placeholder="負責人" style="width: 100%; padding: 10px 28px 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;" autocomplete="off">
+                            <select id="new-task-assignee-select" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                                <option value="">負責人</option>
+                                <option value="姿姿">姿姿</option>
+                                <option value="Betty">Betty</option>
+                                <option value="Mia">Mia</option>
+                                <option value="Kevin">Kevin</option>
+                            </select>
+                            <i class="fas fa-chevron-down" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #6b7280; font-size: 12px; pointer-events: none;"></i>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <input type="date" id="new-task-start" placeholder="年 /月/日" style="flex: 1; min-width: 120px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
@@ -490,7 +494,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=81"></script>
+    <script src="app.js?v=82"></script>
     <script>
         window.onload = function() {
             console.log('✅ Page loaded successfully');
