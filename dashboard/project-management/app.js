@@ -1940,21 +1940,31 @@ function showTaskMaterials(projectId, taskIndex) {
             const hasImages = material.images && material.images.length > 0;
             const imagePreview = hasImages ? `
                 <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                    ${material.images.map((img, imgIndex) => `
-                        <div style="position: relative; width: 80px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid #e5e7eb;">
-                            <img src="${img}" 
+                    ${material.images.map((img, imgIndex) => {
+                        // 轉換為完整的 GitHub Pages URL
+                        const fullImgUrl = img.startsWith('http') ? img : 
+                            (img.startsWith('/') ? `https://wugys.github.io/chuanhung-projects${img}` : 
+                             `https://wugys.github.io/chuanhung-projects/${img}`);
+                        // 取得檔案名稱
+                        const fileName = img.split('/').pop();
+                        return `
+                        <div style="position: relative; width: 100px; height: 100px; border-radius: 6px; overflow: hidden; border: 1px solid #e5e7eb; background: #f9fafb;"
+                             id="img-container-${index}-${imgIndex}">
+                            <img src="${fullImgUrl}" 
                                  style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
-                                 onclick="previewImage('${img}')"
+                                 onclick="previewImage('${fullImgUrl}')"
                                  title="點擊預覽大圖"
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                 onerror="showFileName(this, '${fileName}', '${fullImgUrl}')"
+                                 id="img-${index}-${imgIndex}"
                             >
-                            <div style="display: none; width: 100%; height: 100%; background: #f3f4f6; align-items: center; justify-content: center; font-size: 24px;">🖼️</div>
-                            <a href="${img}" download 
-                               style="position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; text-decoration: none;"
+                            <a href="${fullImgUrl}" download 
+                               style="position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; text-decoration: none;"
                                onclick="event.stopPropagation();"
+                               title="下載"
                             >⬇️</a>
                         </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             ` : '';
             
@@ -2014,6 +2024,23 @@ function showTaskMaterials(projectId, taskIndex) {
     document.body.insertAdjacentHTML('beforeend', modalContent);
 }
 
+// 圖片加載失敗時顯示檔案名稱
+function showFileName(imgElement, fileName, fullUrl) {
+    const container = imgElement.parentElement;
+    container.innerHTML = `
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; box-sizing: border-box;">
+            <div style="font-size: 28px; margin-bottom: 4px;">📄</div>
+            <div style="font-size: 10px; color: #6b7280; text-align: center; word-break: break-all; line-height: 1.2; max-height: 40px; overflow: hidden;">
+                ${fileName}
+            </div>
+            <a href="${fullUrl}" download 
+               style="margin-top: 4px; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; text-decoration: none;"
+               onclick="event.stopPropagation();"
+            >⬇️ 下載</a>
+        </div>
+    `;
+}
+
 // 預覽圖片
 function previewImage(imageSrc) {
     const previewModal = document.createElement('div');
@@ -2026,13 +2053,23 @@ function previewImage(imageSrc) {
         height: 100%;
         background: rgba(0,0,0,0.9);
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 20000;
         cursor: zoom-out;
     `;
     previewModal.innerHTML = `
-        <img src="${imageSrc}" style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px;" onclick="event.stopPropagation();">
+        <img src="${imageSrc}" 
+             style="max-width: 90%; max-height: 85%; object-fit: contain; border-radius: 8px;" 
+             onclick="event.stopPropagation();"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        >
+        <div style="display: none; color: white; font-size: 16px; padding: 20px; text-align: center;">
+            <div>📄 無法預覽圖片</div>
+            <a href="${imageSrc}" download style="color: #60a5fa; text-decoration: underline; margin-top: 10px; display: inline-block;">點擊下載檔案</a>
+        </div>
+        <div style="color: white; margin-top: 10px; font-size: 12px; opacity: 0.7;">點擊任意處關閉</div>
         <button onclick="closeImagePreview()" style="position: absolute; top: 20px; right: 20px; background: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer;">×</button>
     `;
     previewModal.onclick = () => closeImagePreview();
