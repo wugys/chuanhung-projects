@@ -3898,13 +3898,6 @@ function saveTaskEditFromQuery() {
     const message = newProgress === 100 ? '✅ 已完成並更新' : '📊 事項已更新';
     showTodoToast(message);
 }
-            const message = progress === 100 ? '✅ 已完成' : `📊 進度已更新為 ${progress}%`;
-            showTodoToast(message);
-        } else {
-            alert('請輸入有效的進度值（0-100）');
-        }
-    }
-}
 
 // ==================== 人員查詢功能結束 ====================
 
