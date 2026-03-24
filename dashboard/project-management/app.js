@@ -1057,6 +1057,9 @@ function reopenProjectCase(projectId) {
         });
     }
     
+    // 重新計算專案進度（根據任務平均進度）
+    updateProjectProgress(project);
+    
     // 儲存
     saveProjectsToLocalStorage();
     
