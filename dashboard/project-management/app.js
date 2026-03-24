@@ -1662,52 +1662,68 @@ function renderTaskListOnly(container, project, filter) {
         const followUpBy = task.follow_up_by || 'Kevin';
         
         return `
-            <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}">
-                <div class="todo-main">
-                    <label class="todo-checkbox-label">
+            <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid #e5e7eb;">
+                <!-- 第一行：复选框 + 任务名称 + 按钮 -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0;">
                         <input type="checkbox" class="todo-checkbox" 
                             ${isCompleted ? 'checked' : ''} 
-                            onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)">
+                            onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)"
+                            style="width: 18px; height: 18px; cursor: pointer;">
                         <span class="todo-checkbox-custom"></span>
                     </label>
-                    <div class="todo-content">
-                        <div class="todo-name ${isCompleted ? 'strikethrough' : ''}" onclick="editTaskName('${project.id}', ${task.originalIndex})" style="cursor:pointer;">${task.name}</div>
-                        <div class="todo-assignees">
-                            <span class="assignee-badge assignee-primary" onclick="editTaskAssigneeInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">👤 ${assignedTo}</span>
-                            <span class="assignee-badge assignee-followup" onclick="editTaskFollowUpInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">🔔 ${followUpBy}</span>
-                        </div>
+                    
+                    <div class="todo-name ${isCompleted ? 'strikethrough' : ''}" 
+                         onclick="editTaskName('${project.id}', ${task.originalIndex})" 
+                         style="cursor:pointer; flex: 1; font-size: 14px; font-weight: 500; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                        ${task.name}
                     </div>
-                    <div style="display: flex; gap: 4px;">
-                        <button onclick="showTaskMaterials('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; color: #92400e; cursor: pointer;" title="查看客戶圖稿">📎 圖稿</button>
-                        <button onclick="editTaskDates('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">📅 日期</button>
-                        <button onclick="deleteTask('${project.id}', ${task.originalIndex})" style="padding: 4px 8px; font-size: 12px; background: #fef2f2; border: 1px solid #ef4444; border-radius: 4px; color: #ef4444; cursor: pointer;">🗑️ 刪除</button>
-                    </div>
-                    ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
+                    
+                    ${isOverdue ? '<span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 11px; flex-shrink: 0;">逾期</span>' : ''}
                 </div>
-                <div class="todo-details">
-                    <div class="todo-dates">
-                        <span class="date-range">📅 ${task.start} → ${task.end}</span>
-                        <span class="work-days">⏱️ ${workDays} 天</span>
+                
+                <!-- 第二行：负责人 + 日期 + 按钮 -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #f3f4f6;">
+                    <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #6b7280; flex-wrap: wrap;">
+                        <span onclick="editTaskAssigneeInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer; display: flex; align-items: center; gap: 4px;">
+                            👤 ${assignedTo}
+                        </span>
+                        <span onclick="editTaskFollowUpInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer; display: flex; align-items: center; gap: 4px;">
+                            🔔 ${followUpBy}
+                        </span>
+                        
+                        ${task.start && task.end ? `<span style="display: flex; align-items: center; gap: 4px; color: #6b7280;">
+                            📅 ${formatDateShort(task.start)}-${formatDateShort(task.end)} · ${workDays}天
+                        </span>` : ''}
+                    </div>
+                    
+                    <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                        <button onclick="showTaskMaterials('${project.id}', ${task.originalIndex})" 
+                                style="padding: 3px 6px; font-size: 11px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; color: #92400e; cursor: pointer; white-space: nowrap;">📎 圖稿</button>
+                        
+                        <button onclick="editTaskDates('${project.id}', ${task.originalIndex})" 
+                                style="padding: 3px 6px; font-size: 11px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">📅</button>
+                        
+                        <button onclick="deleteTask('${project.id}', ${task.originalIndex})" 
+                                style="padding: 3px 6px; font-size: 11px; background: transparent; border: none; color: #9ca3af; cursor: pointer;">🗑️</button>
                     </div>
                 </div>
             </li>
         `;
     }).join('');
     
-    container.innerHTML = `<ul class="todo-list">${tasksHtml}</ul>
-        <div style="margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; border: 2px dashed #cbd5e1;">
-            <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">➕ 新增任務</h4>
-            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <input type="text" id="new-task-name" placeholder="任務名稱..." style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+    container.innerHTML = `<ul class="todo-list" style="list-style: none; padding: 0; margin: 0;">${tasksHtml}</ul>
+        <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 2px dashed #cbd5e1;">
+            <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #374151;">➕ 新增任務</h4>
+            <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                <input type="text" id="new-task-name" placeholder="任務名稱..." style="flex: 1; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
+                <input type="text" id="new-task-assignee" placeholder="負責人" style="width: 80px; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
             </div>
-            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <input type="date" id="new-task-start" style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-                <span style="display: flex; align-items: center; color: #6b7280;">→</span>
-                <input type="date" id="new-task-end" style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="new-task-assignee" placeholder="負責人（預設：${project.sales_rep || '未分配'}）" style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-                <button onclick="addNewTask('${project.id}')" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">新增</button>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <input type="date" id="new-task-start" style="flex: 1; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
+                <span style="color: #6b7280; font-size: 12px;">→</span>
+                <input type="date" id="new-task-end" style="flex: 1; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
+                <button onclick="addNewTask('${project.id}')" style="padding: 6px 14px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap;">新增</button>
             </div>
         </div>`;
 }
