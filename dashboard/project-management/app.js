@@ -1327,22 +1327,57 @@ function renderList() {
 
 // 渲染已結案視圖
 function renderClosedView() {
-    const container = document.getElementById('closed-projects');
-    if (!container) return;
+    const tbody = document.getElementById('closed-projects-list');
+    if (!tbody) return;
     
-    container.innerHTML = '';
+    tbody.innerHTML = '';
+    
+    // 取得篩選條件
+    const filter = document.getElementById('closed-filter')?.value || 'all';
     
     // 只顯示已結案的專案
-    const closedProjects = projects.filter(p => p.isClosed || p.phase === 'completed');
+    let closedProjects = projects.filter(p => p.isClosed || p.phase === 'completed');
+    
+    // 應用篩選
+    if (filter === 'complete') {
+        closedProjects = closedProjects.filter(p => p.progress === 100);
+    } else if (filter === 'incomplete') {
+        closedProjects = closedProjects.filter(p => p.progress < 100);
+    }
     
     if (closedProjects.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #9ca3af;">暫無已結案專案</div>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #9ca3af;">暫無已結案專案</td></tr>';
         return;
     }
     
     closedProjects.forEach(project => {
-        const card = createProjectCard(project);
-        container.appendChild(card);
+        const row = document.createElement('tr');
+        
+        // 判斷結案類型
+        const isCompleteClose = project.progress === 100;
+        const closeType = isCompleteClose ? 
+            '<span style="color: #10b981; font-weight: 500;">✅ 已完成結案</span>' : 
+            '<span style="color: #f59e0b; font-weight: 500;">⏸️ 未完成結案</span>';
+        
+        row.innerHTML = `
+            <td><strong>${project.id}</strong></td>
+            <td>${project.client}<br><small style="color:#888">${project.contact}</small></td>
+            <td>${project.name}</td>
+            <td>${project.quantity}</td>
+            <td>${project.deadline}</td>
+            <td>
+                <div class="progress-bar" style="width: 80px; display: inline-block;">
+                    <div class="progress-fill" style="width: ${project.progress}%"></div>
+                </div>
+                <span style="font-size: 12px; color: #666; margin-left: 5px;">${project.progress}%</span>
+            </td>
+            <td>${closeType}</td>
+            <td style="white-space: nowrap;">
+                <button onclick="event.stopPropagation(); reopenProjectCase('${project.id}')" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;" title="撤回結案"
+>↩️ 撤回結案</button>
+            </td>
+        `;
+        tbody.appendChild(row);
     });
 }
 
