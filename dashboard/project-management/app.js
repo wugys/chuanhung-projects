@@ -599,7 +599,16 @@ const projects = [
         phase: "quoting",
         sales_rep: "Kevin",
         clientMaterials: [
-            { date: "2026-03-24", description: "客戶提供參考照片", notes: "蠟筆小新提袋、Lulu豬系列共3張" }
+            { 
+                date: "2026-03-24", 
+                description: "客戶提供參考照片", 
+                notes: "蠟筆小新提袋、Lulu豬系列共3張",
+                images: [
+                    "projects/active/2026-0324-易集-飲料提袋/references/01-蠟筆小新提袋.jpg",
+                    "projects/active/2026-0324-易集-飲料提袋/references/02-Lulu豬-中秋燒烤.jpg",
+                    "projects/active/2026-0324-易集-飲料提袋/references/03-Lulu豬-CityCafe聯名系列.jpg"
+                ]
+            }
         ],
         tasks: [
             { name: "已傳資料給廠商報價（新羽-吳生）", start: "2026-03-24", end: "2026-03-24", progress: 100 },
@@ -1694,8 +1703,10 @@ function renderTaskListOnly(container, project, filter) {
                     </div>
                     
                     <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                        ${project.clientMaterials && project.clientMaterials.length > 0 ? `
                         <button onclick="showTaskMaterials('${project.id}', ${task.originalIndex})" 
                                 style="padding: 3px 6px; font-size: 11px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; color: #92400e; cursor: pointer; white-space: nowrap;">📎 圖稿</button>
+                        ` : ''}
                         
                         <button onclick="editTaskDates('${project.id}', ${task.originalIndex})" 
                                 style="padding: 3px 6px; font-size: 11px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">📅</button>
@@ -1885,16 +1896,16 @@ function showTaskMaterials(projectId, taskIndex) {
     // 取得已關聯的資料索引
     const linkedIndices = task.linkedMaterials || [];
     
-    // 建立彈窗內容
+    // 建立彈窗內容 - 使用更高的 z-index 確保在最前面
     let modalContent = `
-        <div id="task-materials-modal" class="modal active">
-            <div class="modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+        <div id="task-materials-modal" class="modal active" style="z-index: 10000;">
+            <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
                 <span class="close-btn" onclick="closeTaskMaterialsModal()">×</span>
                 <h3>📎 客戶圖稿 - ${task.name}</h3>
                 
                 <div style="margin: 15px 0; padding: 10px; background: #f8fafc; border-radius: 6px;">
                     <p style="margin: 0; font-size: 13px; color: #6b7280;">
-                        選擇要關聯到此任務的客戶提供資料
+                        選擇要關聯到此任務的客戶提供資料，點擊圖片可預覽大圖
                     </p>
                 </div>
     `;
@@ -1904,17 +1915,55 @@ function showTaskMaterials(projectId, taskIndex) {
         modalContent += '<div style="margin-top: 15px;">';
         project.clientMaterials.forEach((material, index) => {
             const isLinked = linkedIndices.includes(index);
+            
+            // 檢查是否有圖片檔案
+            const hasImages = material.images && material.images.length > 0;
+            const imagePreview = hasImages ? `
+                <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${material.images.map((img, imgIndex) => `
+                        <div style="position: relative; width: 80px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid #e5e7eb;">
+                            <img src="${img}" 
+                                 style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                                 onclick="previewImage('${img}')"
+                                 title="點擊預覽大圖"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            >
+                            <div style="display: none; width: 100%; height: 100%; background: #f3f4f6; align-items: center; justify-content: center; font-size: 24px;">🖼️</div>
+                            <a href="${img}" download 
+                               style="position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; text-decoration: none;"
+                               onclick="event.stopPropagation();"
+                            >⬇️</a>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '';
+            
+            // 如果有檔案路徑（非圖片），顯示下載連結
+            const fileLinks = material.files ? `
+                <div style="margin-top: 8px;">
+                    ${material.files.map((file, fileIndex) => `
+                        <a href="${file.path}" download 
+                           style="display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; padding: 4px 10px; background: #3b82f6; color: white; border-radius: 4px; font-size: 12px; text-decoration: none;"
+                        >
+                            📄 ${file.name} ⬇️
+                        </a>
+                    `).join('')}
+                </div>
+            ` : '';
+            
             modalContent += `
-                <div style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; margin-bottom: 8px; background: ${isLinked ? '#fef3c7' : '#f9fafb'}; border-radius: 8px; border: 1px solid ${isLinked ? '#f59e0b' : '#e5e7eb'};">
+                <div style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; margin-bottom: 12px; background: ${isLinked ? '#fef3c7' : '#f9fafb'}; border-radius: 8px; border: 1px solid ${isLinked ? '#f59e0b' : '#e5e7eb'};">
                     <input type="checkbox" id="material-link-${index}" 
                         ${isLinked ? 'checked' : ''} 
                         onchange="toggleMaterialLink('${projectId}', ${taskIndex}, ${index})"
-                        style="margin-top: 3px; cursor: pointer;">
-                    <div style="flex: 1;">
+                        style="margin-top: 3px; cursor: pointer; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
                         <div style="font-weight: 500; font-size: 14px; margin-bottom: 4px;">
                             ${formatDateShort(material.date)} - ${material.description}
                         </div>
-                        ${material.notes ? `<div style="font-size: 12px; color: #6b7280;">${material.notes}</div>` : ''}
+                        ${material.notes ? `<div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">${material.notes}</div>` : ''}
+                        ${imagePreview}
+                        ${fileLinks}
                     </div>
                 </div>
             `;
@@ -1943,6 +1992,39 @@ function showTaskMaterials(projectId, taskIndex) {
         existingModal.remove();
     }
     document.body.insertAdjacentHTML('beforeend', modalContent);
+}
+
+// 預覽圖片
+function previewImage(imageSrc) {
+    const previewModal = document.createElement('div');
+    previewModal.id = 'image-preview-modal';
+    previewModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 20000;
+        cursor: zoom-out;
+    `;
+    previewModal.innerHTML = `
+        <img src="${imageSrc}" style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px;" onclick="event.stopPropagation();">
+        <button onclick="closeImagePreview()" style="position: absolute; top: 20px; right: 20px; background: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer;">×</button>
+    `;
+    previewModal.onclick = () => closeImagePreview();
+    document.body.appendChild(previewModal);
+}
+
+// 關閉圖片預覽
+function closeImagePreview() {
+    const modal = document.getElementById('image-preview-modal');
+    if (modal) {
+        modal.remove();
+    }
 }
 
 // 切換資料關聯
