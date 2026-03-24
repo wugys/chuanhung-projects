@@ -2264,13 +2264,24 @@ function toggleAddTaskForm() {
 document.addEventListener('DOMContentLoaded', function() {
     const assigneeSelect = document.getElementById('new-task-assignee-select');
     const assigneeInput = document.getElementById('new-task-assignee-input');
+    const arrowIcon = document.querySelector('.assignee-select-wrapper .fa-chevron-down');
     
     if (assigneeSelect && assigneeInput) {
+        // 下拉選單改變時更新輸入框
         assigneeSelect.addEventListener('change', function() {
             if (this.value) {
                 assigneeInput.value = this.value;
             }
         });
+        
+        // 箭頭點擊時開啟下拉選單
+        if (arrowIcon) {
+            arrowIcon.addEventListener('click', function(e) {
+                e.preventDefault();
+                assigneeSelect.click();
+                assigneeSelect.focus();
+            });
+        }
     }
 });
 
