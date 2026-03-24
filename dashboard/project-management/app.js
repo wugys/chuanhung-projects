@@ -1205,6 +1205,12 @@ function renderList() {
             'proposal_pending': '提案待確認'
         };
         
+        const isCompleted = project.phase === 'completed' || project.isClosed;
+        const closeButtons = !isCompleted ? `
+            <button onclick="event.stopPropagation(); closeProjectCaseComplete('${project.id}')" style="padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 4px;" title="完成結案">✅</button>
+            <button onclick="event.stopPropagation(); closeProjectCaseIncomplete('${project.id}')" style="padding: 4px 8px; background: #f59e0b; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;" title="未完成結案">⏸️</button>
+        ` : '<span style="color: #9ca3af; font-size: 12px;">已結案</span>';
+        
         row.innerHTML = `
             <td><strong>${project.id}</strong></td>
             <td>${project.client}<br><small style="color:#888">${project.contact}</small></td>
@@ -1228,6 +1234,7 @@ function renderList() {
                     <option value="completed" ${project.phase === 'completed' ? 'selected' : ''}>✅ 已完成</option>
                 </select>
             </td>
+            <td style="white-space: nowrap;">${closeButtons}</td>
         `;
         tbody.appendChild(row);
     });
