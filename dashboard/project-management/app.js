@@ -3663,6 +3663,8 @@ function renderQueryResults() {
     
     // 根據篩選條件過濾
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // 設為當天開始時間
+    
     let filteredTasks = allTasks;
     
     if (currentQueryFilter === 'incomplete') {
@@ -3671,6 +3673,7 @@ function renderQueryResults() {
         filteredTasks = allTasks.filter(t => {
             if (!t.task.end || t.task.progress === 100) return false;
             const taskEnd = new Date(t.task.end);
+            taskEnd.setHours(0, 0, 0, 0); // 設為當天開始時間
             return taskEnd < today;
         });
     }
@@ -3717,7 +3720,10 @@ function renderQueryResults() {
             let isOverdue = false;
             if (item.task.end && !isCompleted) {
                 const taskEnd = new Date(item.task.end);
-                isOverdue = taskEnd < today;
+                taskEnd.setHours(0, 0, 0, 0);
+                const compareToday = new Date(today);
+                compareToday.setHours(0, 0, 0, 0);
+                isOverdue = taskEnd < compareToday;
             }
             
             const dateStr = item.task.start ? formatDateShort(item.task.start) : '-';
@@ -3942,6 +3948,9 @@ function saveTaskEditFromQuery() {
         delete task.completed_at;
     }
     
+    // 重新計算任務狀態（根據日期和進度）
+    updateTaskStatus(task);
+    
     // 同時更新專案整體進度
     updateProjectProgress(project);
     
@@ -3950,6 +3959,7 @@ function saveTaskEditFromQuery() {
     
     console.log('✅ 任務已更新:', task);
     console.log('📊 專案進度已更新:', project.progress + '%');
+    console.log('🏷️ 任務狀態:', task.status);
     
     // 關閉彈窗
     closeTaskEditModal();
@@ -3958,13 +3968,52 @@ function saveTaskEditFromQuery() {
     renderAllViews();
     
     // 重新渲染查詢結果（確保使用最新數據）
-    setTimeout(() => {
-        renderQueryResults();
-    }, 50);
+    refreshQueryResults();
     
     // 顯示提示
     const message = newProgress === 100 ? '✅ 已完成並更新' : '📊 事項已更新';
     showTodoToast(message);
+}
+
+// 更新任務狀態（根據日期和進度）
+function updateTaskStatus(task) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // 如果已完成
+    if (task.progress === 100) {
+        task.status = 'completed';
+        return;
+    }
+    
+    // 檢查是否逾期
+    if (task.end) {
+        const endDate = new Date(task.end);
+        endDate.setHours(0, 0, 0, 0);
+        
+        if (endDate < today) {
+            task.status = 'overdue';
+        } else {
+            task.status = 'in-progress';
+        }
+    } else {
+        task.status = 'in-progress';
+    }
+}
+
+// 強制重新整理查詢結果
+function refreshQueryResults() {
+    // 清除容器內容以強制重新渲染
+    const container = document.getElementById('query-results-container');
+    if (container) {
+        container.innerHTML = '';
+    }
+    
+    // 使用 setTimeout 確保 DOM 更新完成後再渲染
+    setTimeout(() => {
+        renderQueryResults();
+        console.log('🔄 查詢結果已重新整理');
+    }, 100);
 }
 
 // 更新專案整體進度
