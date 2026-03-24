@@ -2034,7 +2034,7 @@ function viewTaskFiles(projectId, taskIndex) {
         
         // 圖片預覽或檔案圖標
         const filePreview = isJpgOrPng && file.data 
-            ? `<img src="${file.data}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; cursor: pointer;" onclick="openImagePreview('${file.data}')" title="點擊預覽">`
+            ? `<img src="${file.data}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; cursor: pointer;" onclick="openImagePreview('${file.data}')" title="點擊預覽">`
             : `<span style="font-size: 40px;">📄</span>`;
         
         return `
