@@ -2029,20 +2029,25 @@ function viewTaskFiles(projectId, taskIndex) {
     // 建立檔案列表彈窗
     let filesHtml = task.files.map((file, index) => {
         const isImage = file.type && file.type.startsWith('image/');
-        const fileIcon = isImage ? '🖼️' : '📄';
+        const isJpgOrPng = isImage && (file.type.includes('jpeg') || file.type.includes('jpg') || file.type.includes('png'));
         const fileSize = (file.size / 1024).toFixed(1) + ' KB';
+        
+        // 圖片預覽或檔案圖標
+        const filePreview = isJpgOrPng && file.data 
+            ? `<img src="${file.data}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; cursor: pointer;" onclick="openImagePreview('${file.data}')" title="點擊預覽">`
+            : `<span style="font-size: 40px;">📄</span>`;
         
         return `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f9fafb; border-radius: 6px; margin-bottom: 8px;">
-                <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                    <span style="font-size: 20px;">${fileIcon}</span>
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                    ${filePreview}
                     <div style="flex: 1; min-width: 0;">
                         <div style="font-size: 14px; font-weight: 500; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</div>
                         <div style="font-size: 12px; color: #6b7280;">${fileSize} · ${new Date(file.uploadedAt).toLocaleDateString('zh-TW')}</div>
                     </div>
                 </div>
                 <div style="display: flex; gap: 6px;">
-                    ${isImage && file.data ? `<a href="${file.data}" target="_blank" style="padding: 6px 12px; background: #3b82f6; color: white; border-radius: 4px; font-size: 12px; text-decoration: none;">查看</a>` : ''}
+                    ${isImage && file.data ? `<button onclick="openImagePreview('${file.data}')" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">查看</button>` : ''}
                     <button onclick="deleteTaskFile('${projectId}', ${taskIndex}, ${index})" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">刪除</button>
                 </div>
             </div>
@@ -2081,6 +2086,30 @@ function closeTaskFilesModal() {
 function addMoreFiles(projectId, taskIndex) {
     closeTaskFilesModal();
     setTimeout(() => uploadTaskFile(projectId, taskIndex), 100);
+}
+
+// 圖片預覽功能
+function openImagePreview(imageData) {
+    // 建立圖片預覽彈窗
+    let previewModal = `
+        <div id="image-preview-modal" class="modal active" style="z-index: 11000;" onclick="closeImagePreview()">
+            <div class="modal-content" style="max-width: 90vw; max-height: 90vh; padding: 10px; background: rgba(0,0,0,0.9);" onclick="event.stopPropagation()">
+                <span class="close-btn" onclick="closeImagePreview()" style="color: white; font-size: 24px; top: 10px; right: 10px;">×</span>
+                <img src="${imageData}" style="max-width: 100%; max-height: 85vh; display: block; margin: 0 auto; border-radius: 4px;">
+            </div>
+        </div>
+    `;
+    
+    // 插入到頁面
+    const existingModal = document.getElementById('image-preview-modal');
+    if (existingModal) existingModal.remove();
+    document.body.insertAdjacentHTML('beforeend', previewModal);
+}
+
+// 關閉圖片預覽
+function closeImagePreview() {
+    const modal = document.getElementById('image-preview-modal');
+    if (modal) modal.remove();
 }
 
 // 刪除任務檔案
