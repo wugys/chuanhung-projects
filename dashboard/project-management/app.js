@@ -909,9 +909,9 @@ function createProjectCard(project) {
     
     const quoteInfo = project.quoteDate ? `<span class="quote-date">報價日: ${project.quoteDate}</span>` : '';
     
-    // 報價待確認階段顯示兩個結案按鈕
-    const isPending = project.phase === 'pending';
-    const closeCaseBtns = isPending ? `
+    // 所有未完成專案都顯示結案按鈕（除了已結案的）
+    const isCompleted = project.phase === 'completed' || project.isClosed;
+    const closeCaseBtns = !isCompleted ? `
         <button class="btn-close-case-complete" onclick="event.stopPropagation(); closeProjectCaseComplete('${project.id}')">✅ 完成結案</button>
         <button class="btn-close-case-incomplete" onclick="event.stopPropagation(); closeProjectCaseIncomplete('${project.id}')">⏸️ 未完成結案</button>
     ` : '';
