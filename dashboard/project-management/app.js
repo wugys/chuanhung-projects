@@ -970,9 +970,13 @@ function closeProjectCaseComplete(projectId) {
     project.statusText = '✅ 已完成結案';
     project.progress = 100;
     
-    // 將所有任務標記為完成
+    // 將所有任務標記為完成，並儲存原始進度
     if (project.tasks && project.tasks.length > 0) {
         project.tasks.forEach(task => {
+            // 儲存原始進度（用於撤回時還原）
+            if (task.progress < 100) {
+                task.originalProgress = task.progress;
+            }
             task.progress = 100;
             task.completed_at = new Date().toISOString();
         });
@@ -1025,7 +1029,7 @@ function reopenProjectCase(projectId) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
     
-    if (!confirm('確定要撤回結案嗎？這將恢復專案到結案前的狀態。')) {
+    if (!confirm('確定要撤回結案嗎？這將恢復專案到結案前的狀態，任務進度也會還原。')) {
         return;
     }
     
@@ -1036,10 +1040,20 @@ function reopenProjectCase(projectId) {
     delete project.closedAt;
     delete project.closedPhase;
     
-    // 恢復任務顯示（移除隱藏標記）
+    // 恢復任務顯示並還原進度
     if (project.tasks && project.tasks.length > 0) {
         project.tasks.forEach(task => {
+            // 移除隱藏標記
             delete task.isHidden;
+            // 還原任務進度（如果之前有儲存 originalProgress）
+            if (task.originalProgress !== undefined) {
+                task.progress = task.originalProgress;
+                delete task.originalProgress;
+            }
+            // 移除完成時間（如果是完成結案）
+            if (task.completed_at && task.progress < 100) {
+                delete task.completed_at;
+            }
         });
     }
     
