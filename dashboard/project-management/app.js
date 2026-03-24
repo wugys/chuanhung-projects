@@ -742,6 +742,7 @@ function showView(viewName) {
         case 'sample': renderSampleView(); break;
         case 'production': renderProductionView(); break;
         case 'pending-confirm': renderPendingConfirmView(); break;
+        case 'closed': renderClosedView(); break;
     }
 }
 
@@ -1252,9 +1253,11 @@ function renderList() {
     
     tbody.innerHTML = '';
     
-    let filtered = projects;
+    // 只顯示未完成的專案（排除已結案的）
+    let filtered = projects.filter(p => !p.isClosed && p.phase !== 'completed');
+    
     if (filter !== 'all') {
-        filtered = projects.filter(p => p.phase === filter);
+        filtered = filtered.filter(p => p.phase === filter);
     }
     
     filtered.forEach(project => {
@@ -1270,12 +1273,9 @@ function renderList() {
             'proposal_pending': '提案待確認'
         };
         
-        const isCompleted = project.phase === 'completed' || project.isClosed;
-        const closeButtons = !isCompleted ? `
+        const closeButtons = `
             <button onclick="event.stopPropagation(); closeProjectCaseComplete('${project.id}')" style="padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 4px;" title="完成結案">✅</button>
             <button onclick="event.stopPropagation(); closeProjectCaseIncomplete('${project.id}')" style="padding: 4px 8px; background: #f59e0b; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;" title="未完成結案">⏸️</button>
-        ` : `
-            <button onclick="event.stopPropagation(); reopenProjectCase('${project.id}')" style="padding: 4px 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;" title="撤回結案">↩️ 撤回</button>
         `;
         
         row.innerHTML = `
@@ -1304,6 +1304,27 @@ function renderList() {
             <td style="white-space: nowrap;">${closeButtons}</td>
         `;
         tbody.appendChild(row);
+    });
+}
+
+// 渲染已結案視圖
+function renderClosedView() {
+    const container = document.getElementById('closed-projects');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // 只顯示已結案的專案
+    const closedProjects = projects.filter(p => p.isClosed || p.phase === 'completed');
+    
+    if (closedProjects.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #9ca3af;">暫無已結案專案</div>';
+        return;
+    }
+    
+    closedProjects.forEach(project => {
+        const card = createProjectCard(project);
+        container.appendChild(card);
     });
 }
 
@@ -2802,6 +2823,7 @@ function renderAllViews() {
     renderProductionView();
     renderList();
     renderPendingConfirmView();
+    renderClosedView();
     updateStats();
 }
 
