@@ -2221,7 +2221,101 @@ function toggleTaskComplete(projectId, taskIndex, isChecked) {
 // 關閉待辦事項彈窗
 function closeTodoModal() {
     document.getElementById('todo-modal').classList.remove('active');
+    isTodoModalOpen = false;
+    currentTodoProject = null;
+    currentTodoFilter = 'all';
+    showOverdueOnly = false;
+    hideCompleted = false;
 }
+
+// ==================== 新增任務功能 ====================
+
+// 切換新增任務表單顯示
+function toggleAddTaskForm() {
+    const formContainer = document.getElementById('add-task-form-container');
+    const isVisible = formContainer.style.display !== 'none';
+    
+    if (isVisible) {
+        formContainer.style.display = 'none';
+    } else {
+        formContainer.style.display = 'block';
+        // 預設填入日期
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('new-task-start').value = today;
+        document.getElementById('new-task-end').value = today;
+        // 預設選擇專案負責人
+        if (currentTodoProject && currentTodoProject.sales_rep) {
+            document.getElementById('new-task-assignee').value = currentTodoProject.sales_rep;
+        }
+        // 聚焦到任務名稱輸入框
+        document.getElementById('new-task-name').focus();
+    }
+}
+
+// 提交新任務（從待辦事項彈窗）
+function submitNewTaskFromTodo() {
+    if (!currentTodoProject) {
+        alert('請先選擇專案');
+        return;
+    }
+    
+    const taskName = document.getElementById('new-task-name').value.trim();
+    const assignee = document.getElementById('new-task-assignee').value;
+    const startDate = document.getElementById('new-task-start').value;
+    const endDate = document.getElementById('new-task-end').value;
+    
+    if (!taskName) {
+        alert('請輸入任務名稱');
+        return;
+    }
+    if (!startDate || !endDate) {
+        alert('請選擇開始和結束日期');
+        return;
+    }
+    if (new Date(startDate) > new Date(endDate)) {
+        alert('開始日期不能晚於結束日期');
+        return;
+    }
+    
+    // 新增任務
+    const newTask = {
+        name: taskName,
+        start: startDate,
+        end: endDate,
+        progress: 0,
+        assigned_to: assignee || currentTodoProject.sales_rep || '未分配'
+    };
+    
+    // 初始化任務陣列（如果不存在）
+    if (!currentTodoProject.tasks) {
+        currentTodoProject.tasks = [];
+    }
+    currentTodoProject.tasks.push(newTask);
+    
+    // 更新專案進度
+    updateProjectProgress(currentTodoProject);
+    
+    // 儲存
+    saveProjectsToLocalStorage();
+    
+    // 清空表單並隱藏
+    document.getElementById('new-task-name').value = '';
+    document.getElementById('add-task-form-container').style.display = 'none';
+    
+    // 重新渲染任務清單
+    const body = document.getElementById('todo-modal-body');
+    if (body) {
+        renderTaskListOnly(body, currentTodoProject, currentTodoFilter);
+    }
+    
+    // 更新統計
+    updateTodoStats(currentTodoProject);
+    document.getElementById('todo-task-count').textContent = `任務清單 (${currentTodoProject.tasks.length} 項)`;
+    
+    showTodoToast(`✅ 任務「${taskName}」已新增`);
+}
+
+// ==================== 新增任務功能結束 ====================
 
 // ==================== 新增專案功能 ====================
 
