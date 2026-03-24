@@ -1777,20 +1777,7 @@ function renderTaskListOnly(container, project, filter) {
         `;
     }).join('');
     
-    container.innerHTML = `<ul class="todo-list" style="list-style: none; padding: 0; margin: 0;">${tasksHtml}</ul>
-        <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 2px dashed #cbd5e1;">
-            <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #374151;">➕ 新增任務</h4>
-            <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-                <input type="text" id="new-task-name" placeholder="任務名稱..." style="flex: 1; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
-                <input type="text" id="new-task-assignee" placeholder="負責人" style="width: 80px; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
-            </div>
-            <div style="display: flex; gap: 6px; align-items: center;">
-                <input type="date" id="new-task-start" style="flex: 1; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
-                <span style="color: #6b7280; font-size: 12px;">→</span>
-                <input type="date" id="new-task-end" style="flex: 1; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
-                <button onclick="addNewTask('${project.id}')" style="padding: 6px 14px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap;">新增</button>
-            </div>
-        </div>`;
+    container.innerHTML = `<ul class="todo-list" style="list-style: none; padding: 0; margin: 0;">${tasksHtml}</ul>`;
 }
 
 // 新增任務
