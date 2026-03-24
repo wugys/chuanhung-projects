@@ -2927,10 +2927,10 @@ function renderTodoList(container, project, filter) {
                         <span class="todo-checkbox-custom"></span>
                     </label>
                     <div class="todo-content">
-                        <div class="todo-name ${isCompleted ? 'strikethrough' : ''}" onclick="editTaskNameInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">${task.name}</div>
+                        <div class="todo-name ${isCompleted ? 'strikethrough' : ''}" onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer;" title="點擊編輯">${task.name}</div>
                         <div class="todo-assignees">
-                            <span class="assignee-badge assignee-primary" onclick="editTaskAssigneeInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">👤 ${assignedTo}</span>
-                            <span class="assignee-badge assignee-followup" onclick="editTaskFollowUpInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer;">🔔 ${followUpBy}</span>
+                            <span class="assignee-badge assignee-primary" onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer;" title="點擊編輯">👤 ${assignedTo}</span>
+                            <span class="assignee-badge assignee-followup" onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer;" title="點擊編輯">🔔 ${followUpBy}</span>
                         </div>
                     </div>
                     ${isOverdue ? '<span class="badge-overdue">逾期</span>' : ''}
