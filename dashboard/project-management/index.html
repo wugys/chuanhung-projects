@@ -74,7 +74,7 @@
             <button class="tab-btn" onclick="showView('production')">🏭 生產階段</button>
             <button class="tab-btn" onclick="showView('list')">📑 全部</button>
             <button class="tab-btn" onclick="showView('pending-confirm')">⏳ 待確認專案</button>
-            <button class="tab-btn export-btn" onclick="exportToExcel()">📥 匯出 Excel</button>
+            <button class="tab-btn export-btn" onclick="openPersonQueryModal()">👤 人員查詢</button>
         </nav>
 
         <!-- 提案階段視圖 -->
@@ -379,6 +379,76 @@
             </div>
         </div>
         
+        <!-- 人員查詢彈窗 -->
+        <div id="person-query-modal" class="modal">
+            <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
+                <span class="close-btn" onclick="closePersonQueryModal()">×</span>
+                <h3>👤 人員查詢</h3>
+                
+                <!-- 查詢條件 -->
+                <div style="margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 8px;">
+                    <!-- 公司選擇 -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">公司名稱</label>
+                        <input type="text" 
+                               id="query-company-input" 
+                               placeholder="輸入公司名稱..." 
+                               oninput="searchCompaniesForQuery(this.value)"
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                        >
+                        <div id="query-company-suggestions" style="margin-top: 4px; border: 1px solid #e5e7eb; border-radius: 6px; max-height: 150px; overflow-y: auto; display: none; background: white;"></div>
+                    </div>
+                    
+                    <!-- 人員選擇 -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">人員名稱</label>
+                        <input type="text" 
+                               id="query-person-input" 
+                               placeholder="輸入或選擇人員..." 
+                               oninput="searchPersonsForQuery(this.value)"
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                        >
+                        <div id="query-person-suggestions" style="margin-top: 4px; border: 1px solid #e5e7eb; border-radius: 6px; max-height: 150px; overflow-y: auto; display: none; background: white;"></div>
+                        <p style="margin: 6px 0 0 0; font-size: 12px; color: #6b7280;">💡 提示：輸入新公司/人員可直接查詢，系統會自動記錄</p>
+                    </div>
+                    
+                    <!-- 查詢按鈕 -->
+                    <button onclick="executePersonQuery()" 
+                            style="width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500;"
+                    >
+                        🔍 查詢該人員事項
+                    </button>
+                </div>
+                
+                <!-- 篩選按鈕 -->
+                <div id="query-filter-buttons" style="display: none; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 10px; background: #f3f4f6; padding: 8px; border-radius: 8px;">
+                        <button id="btn-query-all" onclick="switchQueryFilter('all')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">📋 全部</button>
+                        
+                        <button id="btn-query-incomplete" onclick="switchQueryFilter('incomplete')" style="flex: 1; padding: 8px 16px; border: none; border-radius: 6px; background: #3b82f6; color: white; font-size: 14px; cursor: pointer;">⏳ 待辦</button>
+                        
+                        <button id="btn-query-overdue" onclick="switchQueryFilter('overdue')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">🔴 逾期</button>
+                    </div>
+                </div>
+                
+                <!-- 查詢結果 -->
+                <div id="query-results-container" style="display: none;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 15px; color: #111827;">
+                        <span id="query-result-title"></span>
+                        <span id="query-result-count" style="font-size: 13px; color: #6b7280; font-weight: normal;"></span>
+                    </h4>
+                    
+                    <div id="query-results-list"></div>
+                </div>
+                
+                <!-- 無結果提示 -->
+                <div id="query-no-results" style="display: none; text-align: center; padding: 40px; color: #9ca3af;">
+                    <p style="font-size: 16px; margin: 0 0 8px 0;">🔍 請輸入公司和人員名稱進行查詢</p>
+                    <p style="font-size: 13px; margin: 0;">可查詢各專案中該人員負責的所有事項</p>
+                </div>
+            </div>
+        </div>
+        
         <!-- 新增客戶/聯絡人提示彈窗 -->
         <div id="client-prompt-modal" class="modal client-prompt-modal">
             <div class="modal-content">
@@ -398,7 +468,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=67"></script>
+    <script src="app.js?v=68"></script>
     <script>
         window.onload = function() {
             console.log('✅ Page loaded successfully');

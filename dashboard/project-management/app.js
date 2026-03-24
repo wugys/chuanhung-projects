@@ -3374,6 +3374,287 @@ function closeSearchResultsModal() {
     document.body.style.overflow = '';
 }
 
+// ==================== 人員查詢功能 ====================
+let currentQueryFilter = 'incomplete';
+let currentQueryCompany = '';
+let currentQueryPerson = '';
+
+// 開啟人員查詢彈窗
+function openPersonQueryModal() {
+    const modal = document.getElementById('person-query-modal');
+    document.getElementById('query-company-input').value = '';
+    document.getElementById('query-person-input').value = '';
+    document.getElementById('query-company-suggestions').style.display = 'none';
+    document.getElementById('query-person-suggestions').style.display = 'none';
+    document.getElementById('query-filter-buttons').style.display = 'none';
+    document.getElementById('query-results-container').style.display = 'none';
+    document.getElementById('query-no-results').style.display = 'block';
+    modal.classList.add('active');
+}
+
+// 關閉人員查詢彈窗
+function closePersonQueryModal() {
+    const modal = document.getElementById('person-query-modal');
+    modal.classList.remove('active');
+    currentQueryCompany = '';
+    currentQueryPerson = '';
+}
+
+// 搜尋公司（用於人員查詢）
+function searchCompaniesForQuery(query) {
+    const suggestionsDiv = document.getElementById('query-company-suggestions');
+    if (!query || query.trim() === '') {
+        suggestionsDiv.style.display = 'none';
+        return;
+    }
+    
+    const matches = clientsDB.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
+    
+    if (matches.length === 0) {
+        suggestionsDiv.style.display = 'none';
+        return;
+    }
+    
+    suggestionsDiv.innerHTML = matches.map(client => `
+        <div onclick="selectCompanyForQuery('${client.name}')" 
+             style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 14px;"
+             onmouseover="this.style.background='#f3f4f6'" 
+             onmouseout="this.style.background='white'"
+        >
+            <div style="font-weight: 500;">${client.name}</div>
+            <div style="font-size: 12px; color: #6b7280;">聯絡人: ${client.contacts.join(', ') || '無'}</div>
+        </div>
+    `).join('');
+    
+    suggestionsDiv.style.display = 'block';
+}
+
+// 選擇公司（用於人員查詢）
+function selectCompanyForQuery(companyName) {
+    document.getElementById('query-company-input').value = companyName;
+    document.getElementById('query-company-suggestions').style.display = 'none';
+    currentQueryCompany = companyName;
+    
+    // 取得該公司的人員列表
+    const client = clientsDB.find(c => c.name === companyName);
+    if (client && client.contacts.length > 0) {
+        // 自動顯示人員建議
+        searchPersonsForQuery('');
+    }
+}
+
+// 搜尋人員（用於人員查詢）
+function searchPersonsForQuery(query) {
+    const suggestionsDiv = document.getElementById('query-person-suggestions');
+    const companyName = document.getElementById('query-company-input').value.trim();
+    
+    // 取得該公司的人員
+    let persons = [];
+    if (companyName) {
+        const client = clientsDB.find(c => c.name === companyName);
+        if (client) {
+            persons = client.contacts;
+        }
+    }
+    
+    // 如果沒有公司或公司沒有人員，從所有專案中收集人員
+    if (persons.length === 0) {
+        const personSet = new Set();
+        projects.forEach(p => {
+            if (p.sales_rep) personSet.add(p.sales_rep);
+            if (p.tasks) {
+                p.tasks.forEach(t => {
+                    if (t.assigned_to) personSet.add(t.assigned_to);
+                });
+            }
+        });
+        persons = Array.from(personSet);
+    }
+    
+    // 過濾符合輸入的人員
+    let matches = persons;
+    if (query && query.trim() !== '') {
+        matches = persons.filter(p => p.toLowerCase().includes(query.toLowerCase()));
+    }
+    
+    if (matches.length === 0) {
+        suggestionsDiv.style.display = 'none';
+        return;
+    }
+    
+    suggestionsDiv.innerHTML = matches.map(person => `
+        <div onclick="selectPersonForQuery('${person}')" 
+             style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 14px;"
+             onmouseover="this.style.background='#f3f4f6'" 
+             onmouseout="this.style.background='white'"
+        >
+            👤 ${person}
+        </div>
+    `).join('');
+    
+    suggestionsDiv.style.display = 'block';
+}
+
+// 選擇人員（用於人員查詢）
+function selectPersonForQuery(personName) {
+    document.getElementById('query-person-input').value = personName;
+    document.getElementById('query-person-suggestions').style.display = 'none';
+    currentQueryPerson = personName;
+}
+
+// 執行人員查詢
+function executePersonQuery() {
+    const company = document.getElementById('query-company-input').value.trim();
+    const person = document.getElementById('query-person-input').value.trim();
+    
+    if (!person) {
+        alert('請輸入人員名稱');
+        return;
+    }
+    
+    currentQueryCompany = company;
+    currentQueryPerson = person;
+    currentQueryFilter = 'incomplete';
+    
+    // 顯示篩選按鈕
+    document.getElementById('query-filter-buttons').style.display = 'block';
+    document.getElementById('query-no-results').style.display = 'none';
+    
+    // 更新按鈕樣式
+    updateQueryFilterButtons();
+    
+    // 渲染結果
+    renderQueryResults();
+}
+
+// 切換查詢篩選
+function switchQueryFilter(filter) {
+    currentQueryFilter = filter;
+    updateQueryFilterButtons();
+    renderQueryResults();
+}
+
+// 更新查詢篩選按鈕樣式
+function updateQueryFilterButtons() {
+    const btnAll = document.getElementById('btn-query-all');
+    const btnIncomplete = document.getElementById('btn-query-incomplete');
+    const btnOverdue = document.getElementById('btn-query-overdue');
+    
+    [btnAll, btnIncomplete, btnOverdue].forEach(btn => {
+        btn.style.background = 'white';
+        btn.style.color = '#374151';
+        btn.style.border = '1px solid #d1d5db';
+    });
+    
+    let activeBtn;
+    switch(currentQueryFilter) {
+        case 'all': activeBtn = btnAll; break;
+        case 'incomplete': activeBtn = btnIncomplete; break;
+        case 'overdue': activeBtn = btnOverdue; break;
+    }
+    
+    if (activeBtn) {
+        activeBtn.style.background = '#3b82f6';
+        activeBtn.style.color = 'white';
+        activeBtn.style.border = '1px solid #3b82f6';
+    }
+}
+
+// 渲染查詢結果
+function renderQueryResults() {
+    const container = document.getElementById('query-results-container');
+    const listDiv = document.getElementById('query-results-list');
+    const titleSpan = document.getElementById('query-result-title');
+    const countSpan = document.getElementById('query-result-count');
+    
+    // 收集該人員的所有任務
+    let allTasks = [];
+    
+    projects.forEach(project => {
+        // 檢查專案負責人
+        if (project.sales_rep === currentQueryPerson) {
+            // 專案層級的負責
+        }
+        
+        // 檢查任務負責人
+        if (project.tasks) {
+            project.tasks.forEach((task, taskIndex) => {
+                const assignedTo = task.assigned_to || project.sales_rep;
+                if (assignedTo === currentQueryPerson) {
+                    // 檢查是否符合公司條件（如果有指定公司）
+                    if (currentQueryCompany && project.client !== currentQueryCompany) {
+                        return;
+                    }
+                    
+                    allTasks.push({
+                        project: project,
+                        task: task,
+                        taskIndex: taskIndex
+                    });
+                }
+            });
+        }
+    });
+    
+    // 根據篩選條件過濾
+    const today = new Date();
+    let filteredTasks = allTasks;
+    
+    if (currentQueryFilter === 'incomplete') {
+        filteredTasks = allTasks.filter(t => t.task.progress < 100);
+    } else if (currentQueryFilter === 'overdue') {
+        filteredTasks = allTasks.filter(t => {
+            const taskEnd = new Date(t.task.end);
+            return taskEnd < today && t.task.progress < 100;
+        });
+    }
+    
+    // 更新標題和數量
+    const filterText = currentQueryFilter === 'all' ? '全部' : 
+                       currentQueryFilter === 'incomplete' ? '待辦' : '逾期';
+    titleSpan.textContent = `${currentQueryPerson} 的${filterText}事項`;
+    countSpan.textContent = `(${filteredTasks.length} 項)`;
+    
+    // 渲染任務列表
+    if (filteredTasks.length === 0) {
+        listDiv.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: #9ca3af; background: #f9fafb; border-radius: 8px;"
+            >
+                <p>沒有找到符合條件的事項</p>
+            </div>
+        `;
+    } else {
+        listDiv.innerHTML = filteredTasks.map(item => {
+            const isCompleted = item.task.progress === 100;
+            const taskEnd = new Date(item.task.end);
+            const isOverdue = taskEnd < today && item.task.progress < 100;
+            
+            return `
+                <div style="padding: 12px; margin-bottom: 10px; background: ${isCompleted ? '#f0fdf4' : isOverdue ? '#fef2f2' : '#f8fafc'}; 
+                            border-radius: 8px; border: 1px solid ${isCompleted ? '#86efac' : isOverdue ? '#fecaca' : '#e5e7eb'};"
+                >
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;"
+                    >
+                        <div style="font-weight: 500; font-size: 14px; flex: 1;"
+                        >${item.task.name}</div>
+                        ${isCompleted ? '<span style="font-size: 11px; background: #22c55e; color: white; padding: 2px 6px; border-radius: 4px;">已完成</span>' : ''}
+                        ${isOverdue ? '<span style="font-size: 11px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px;">逾期</span>' : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280;"
+                    >
+                        📁 ${item.project.name} · ${item.project.client} · ${item.task.progress}%
+                        ${item.task.start && item.task.end ? ` · 📅 ${formatDateShort(item.task.start)}-${formatDateShort(item.task.end)}` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    container.style.display = 'block';
+}
+
+// ==================== 人員查詢功能結束 ====================
+
 // 點擊彈窗外關閉
 window.onclick = function(event) {
     const modal = document.getElementById('project-modal');
@@ -3381,6 +3662,7 @@ window.onclick = function(event) {
     const todoModal = document.getElementById('todo-modal');
     const addProjectModal = document.getElementById('add-project-modal');
     const searchResultsModal = document.getElementById('search-results-modal');
+    const personQueryModal = document.getElementById('person-query-modal');
     
     if (event.target === modal) {
         modal.classList.remove('active');
@@ -3396,6 +3678,9 @@ window.onclick = function(event) {
     }
     if (event.target === searchResultsModal) {
         closeSearchResultsModal();
+    }
+    if (event.target === personQueryModal) {
+        closePersonQueryModal();
     }
 }
 
