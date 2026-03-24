@@ -958,21 +958,16 @@ function closeProjectCase(projectId) {
         return;
     }
     
-    // 標記為已結案
+    // 標記為已結案 - 保留原進度
     project.isClosed = true;
     project.closedAt = new Date().toISOString();
     project.closedPhase = project.phase;
     project.phase = 'completed';
     project.statusText = '✅ 已結案';
-    project.progress = 100;
+    // 注意：不修改 project.progress，保留原進度
     
-    // 將所有任務標記為完成
-    if (project.tasks && project.tasks.length > 0) {
-        project.tasks.forEach(task => {
-            task.progress = 100;
-            task.completed_at = new Date().toISOString();
-        });
-    }
+    // 保留任務原有進度，不強制改為100%
+    // 僅標記結案時間，不修改任務進度
     
     // 儲存
     saveProjectsToLocalStorage();
