@@ -3914,8 +3914,6 @@ function saveTaskEditFromQuery() {
     const project = projects.find(p => p.id === currentEditProjectId);
     if (!project || !project.tasks[currentEditTaskIndex]) return;
     
-    const task = project.tasks[currentEditTaskIndex];
-    
     // 取得新值
     const newName = document.getElementById('edit-task-name').value.trim();
     const newStart = document.getElementById('edit-task-start').value;
@@ -3928,7 +3926,8 @@ function saveTaskEditFromQuery() {
         return;
     }
     
-    // 更新任務
+    // 更新任務 - 直接修改陣列元素以確保引用正確
+    const task = project.tasks[currentEditTaskIndex];
     task.name = newName;
     task.start = newStart;
     task.end = newEnd;
@@ -3943,18 +3942,48 @@ function saveTaskEditFromQuery() {
         delete task.completed_at;
     }
     
-    // 儲存
+    // 同時更新專案整體進度
+    updateProjectProgress(project);
+    
+    // 儲存到 LocalStorage
     saveProjectsToLocalStorage();
+    
+    console.log('✅ 任務已更新:', task);
+    console.log('📊 專案進度已更新:', project.progress + '%');
     
     // 關閉彈窗
     closeTaskEditModal();
     
-    // 重新渲染查詢結果
-    renderQueryResults();
+    // 強制重新渲染所有視圖以確保數據同步
+    renderAllViews();
+    
+    // 重新渲染查詢結果（確保使用最新數據）
+    setTimeout(() => {
+        renderQueryResults();
+    }, 50);
     
     // 顯示提示
     const message = newProgress === 100 ? '✅ 已完成並更新' : '📊 事項已更新';
     showTodoToast(message);
+}
+
+// 更新專案整體進度
+function updateProjectProgress(project) {
+    if (!project.tasks || project.tasks.length === 0) return;
+    
+    const totalProgress = project.tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+    project.progress = Math.round(totalProgress / project.tasks.length);
+    
+    // 更新狀態文字
+    if (project.progress === 100) {
+        project.statusText = '✅ 已完成';
+        project.status = 'completed';
+    } else if (project.progress > 0) {
+        project.statusText = project.statusText.replace(/🔴|🟡|🟢/, '🟡');
+        project.status = 'active';
+    }
+    
+    project.updated_at = new Date().toISOString();
 }
 
 // ==================== 人員查詢功能結束 ====================
