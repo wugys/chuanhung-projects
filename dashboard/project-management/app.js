@@ -3835,11 +3835,14 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">負責人</label>
-                        <input type="text" 
-                               id="edit-task-assignee" 
-                               value="${task.assigned_to || project.sales_rep || ''}" 
-                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                        <select id="edit-task-assignee" 
+                                style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box; background: white; cursor: pointer;"
                         >
+                            <option value="姿姿" ${(task.assigned_to || project.sales_rep) === '姿姿' ? 'selected' : ''}>姿姿</option>
+                            <option value="Mia" ${(task.assigned_to || project.sales_rep) === 'Mia' ? 'selected' : ''}>Mia</option>
+                            <option value="Kevin" ${(task.assigned_to || project.sales_rep) === 'Kevin' ? 'selected' : ''}>Kevin</option>
+                            <option value="Betty" ${(task.assigned_to || project.sales_rep) === 'Betty' ? 'selected' : ''}>Betty</option>
+                        </select>
                     </div>
                     
                     <div style="margin-bottom: 20px;">
