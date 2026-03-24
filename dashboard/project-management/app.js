@@ -3406,15 +3406,32 @@ let currentQueryPerson = '';
 
 // 開啟人員查詢彈窗
 function openPersonQueryModal() {
+    console.log('openPersonQueryModal called');
     const modal = document.getElementById('person-query-modal');
-    document.getElementById('query-company-input').value = '';
-    document.getElementById('query-person-input').value = '';
-    document.getElementById('query-company-suggestions').style.display = 'none';
-    document.getElementById('query-person-suggestions').style.display = 'none';
-    document.getElementById('query-filter-buttons').style.display = 'none';
-    document.getElementById('query-results-container').style.display = 'none';
-    document.getElementById('query-no-results').style.display = 'block';
+    if (!modal) {
+        console.error('person-query-modal not found');
+        alert('系統錯誤：找不到人員查詢視窗');
+        return;
+    }
+    
+    const companyInput = document.getElementById('query-company-input');
+    const personInput = document.getElementById('query-person-input');
+    const companySuggestions = document.getElementById('query-company-suggestions');
+    const personSuggestions = document.getElementById('query-person-suggestions');
+    const filterButtons = document.getElementById('query-filter-buttons');
+    const resultsContainer = document.getElementById('query-results-container');
+    const noResults = document.getElementById('query-no-results');
+    
+    if (companyInput) companyInput.value = '';
+    if (personInput) personInput.value = '';
+    if (companySuggestions) companySuggestions.style.display = 'none';
+    if (personSuggestions) personSuggestions.style.display = 'none';
+    if (filterButtons) filterButtons.style.display = 'none';
+    if (resultsContainer) resultsContainer.style.display = 'none';
+    if (noResults) noResults.style.display = 'block';
+    
     modal.classList.add('active');
+    console.log('Person query modal opened');
 }
 
 // 關閉人員查詢彈窗
