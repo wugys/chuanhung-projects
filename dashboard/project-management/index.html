@@ -214,23 +214,23 @@
                 </div>
                 
                 <!-- 新增任務表單（預設隱藏） -->
-                <div id="add-task-form-container" style="display: none; margin-bottom: 20px; padding: 16px; background: #f0fdf4; border-radius: 8px; border: 2px dashed #10b981;">
-                    <h4 style="margin: 0 0 12px 0; color: #065f46; font-size: 14px;">➕ 新增任務</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                        <input type="text" id="new-task-name" placeholder="任務名稱..." style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; grid-column: 1 / -1;">
-                        <select id="new-task-assignee" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-                            <option value="">選擇負責人</option>
+                <div id="add-task-form-container" style="display: none; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 2px dashed #d1d5db;">
+                    <h4 style="margin: 0 0 12px 0; color: #374151; font-weight: 600; font-size: 14px;">➕ 新增任務</h4>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                        <input type="text" id="new-task-name" placeholder="任務名稱..." style="flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <select id="new-task-assignee" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; min-width: 100px;">
+                            <option value="">負責人</option>
                             <option value="姿姿">姿姿</option>
                             <option value="Betty">Betty</option>
                             <option value="Mia">Mia</option>
                             <option value="Kevin">Kevin</option>
                         </select>
-                        <input type="date" id="new-task-start" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
-                        <input type="date" id="new-task-end" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
                     </div>
-                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                        <button type="button" onclick="toggleAddTaskForm()" style="padding: 8px 16px; background: white; color: #6b7280; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; cursor: pointer;">取消</button>
-                        <button type="button" onclick="submitNewTaskFromTodo()" style="padding: 8px 20px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500;">新增</button>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="date" id="new-task-start" placeholder="年 /月/日" style="flex: 1; min-width: 120px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <span style="color: #9ca3af;">-</span>
+                        <input type="date" id="new-task-end" placeholder="年 /月/日" style="flex: 1; min-width: 120px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <button type="button" onclick="submitNewTaskFromTodo()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; white-space: nowrap;">新增</button>
                     </div>
                 </div>
                 
@@ -490,7 +490,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=80"></script>
+    <script src="app.js?v=81"></script>
     <script>
         window.onload = function() {
             console.log('✅ Page loaded successfully');
