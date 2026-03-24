@@ -1659,7 +1659,6 @@ function renderTaskListOnly(container, project, filter) {
         const isCompleted = task.progress === 100;
         const workDays = Math.ceil((taskEnd - taskStart) / (1000 * 60 * 60 * 24)) + 1;
         const assignedTo = task.assigned_to || project.sales_rep || '未分配';
-        const followUpBy = task.follow_up_by || 'Kevin';
         
         return `
             <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid #e5e7eb;">
@@ -1687,9 +1686,6 @@ function renderTaskListOnly(container, project, filter) {
                     <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #6b7280; flex-wrap: wrap;">
                         <span onclick="editTaskAssigneeInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer; display: flex; align-items: center; gap: 4px;">
                             👤 ${assignedTo}
-                        </span>
-                        <span onclick="editTaskFollowUpInline('${project.id}', ${task.originalIndex}, this)" style="cursor:pointer; display: flex; align-items: center; gap: 4px;">
-                            🔔 ${followUpBy}
                         </span>
                         
                         ${task.start && task.end ? `<span style="display: flex; align-items: center; gap: 4px; color: #6b7280;">
