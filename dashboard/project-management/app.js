@@ -615,6 +615,26 @@ const projects = [
             { name: "等待廠商報價回覆", start: "2026-03-24", end: "", progress: 0 },
             { name: "提供客戶正式報價", start: "", end: "", progress: 0 }
         ]
+    },
+    {
+        id: "A0015-260324",
+        name: "kitty造型皮革鏡掛飾",
+        client: "易集",
+        contact: "Julie",
+        quantity: "估價10萬跟50萬",
+        deadline: "未定",
+        progress: 20,
+        status: "active",
+        statusText: "🟡 打樣中",
+        phase: "sampling",
+        sales_rep: "Kevin",
+        tasks: [
+            { name: "3/24安排打樣（新羽-吳生）", start: "2026-03-24", end: "2026-03-26", progress: 0, assigned_to: "Kevin" },
+            { name: "3/26新羽提供樣品照片與報價單", start: "2026-03-26", end: "2026-03-26", progress: 0, assigned_to: "新羽-吳生" },
+            { name: "確認樣品無誤安排寄出（順豐）", start: "2026-03-26", end: "2026-03-28", progress: 0, assigned_to: "Kevin" },
+            { name: "3/30台灣收到樣品", start: "2026-03-30", end: "2026-03-30", progress: 0, assigned_to: "Kevin" },
+            { name: "姿姿安排叫寄貨運給客戶", start: "2026-03-30", end: "", progress: 0, assigned_to: "姿姿" }
+        ]
     }
 ];
 
