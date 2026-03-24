@@ -8,8 +8,14 @@ function saveProjectsToLocalStorage() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
         console.log('💾 已儲存', projects.length, '個專案到 LocalStorage');
+        // 驗證儲存成功
+        const verify = localStorage.getItem(STORAGE_KEY);
+        if (verify) {
+            console.log('✅ 驗證成功：資料已寫入 LocalStorage');
+        }
     } catch (e) {
         console.error('LocalStorage 儲存失敗:', e);
+        alert('⚠️ 儲存失敗：' + e.message);
     }
 }
 
@@ -32,14 +38,21 @@ function loadProjectsFromLocalStorage() {
 function initProjects() {
     const stored = loadProjectsFromLocalStorage();
     if (stored && stored.length > 0) {
-        // 合併預設資料和儲存資料（去除重複）
-        const existingIds = new Set(projects.map(p => p.id));
-        stored.forEach(p => {
-            if (!existingIds.has(p.id)) {
-                projects.push(p);
-            }
-        });
-        console.log('✅ 專案資料初始化完成，共', projects.length, '個');
+        // 使用 LocalStorage 中的數據覆蓋默認數據
+        // 保留默認數據中不在 stored 中的專案
+        const storedIds = new Set(stored.map(p => p.id));
+        const defaultOnly = projects.filter(p => !storedIds.has(p.id));
+        
+        // 清空 projects 並重新填充
+        projects.length = 0;
+        
+        // 先添加 stored 中的數據
+        stored.forEach(p => projects.push(p));
+        
+        // 再添加默認數據中獨有的專案
+        defaultOnly.forEach(p => projects.push(p));
+        
+        console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
     }
 }
 // ==================== LocalStorage 結束 ====================
