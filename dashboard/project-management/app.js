@@ -3726,32 +3726,161 @@ function renderQueryResults() {
     container.style.display = 'block';
 }
 
-// 從人員查詢清單編輯任務進度
+// 從人員查詢清單編輯任務（完整編輯視窗）
+let currentEditProjectId = null;
+let currentEditTaskIndex = null;
+
 function editTaskProgressFromQuery(projectId, taskIndex) {
     const project = projects.find(p => p.id === projectId);
     if (!project || !project.tasks[taskIndex]) return;
     
+    currentEditProjectId = projectId;
+    currentEditTaskIndex = taskIndex;
     const task = project.tasks[taskIndex];
-    const newProgress = prompt(`編輯進度：${task.name}\n\n目前進度：${task.progress}%\n請輸入新進度（0-100）：`, task.progress);
     
-    if (newProgress !== null) {
-        const progress = parseInt(newProgress);
-        if (!isNaN(progress) && progress >= 0 && progress <= 100) {
-            task.progress = progress;
-            task.updated_at = new Date().toISOString();
-            
-            // 如果進度達到100%，標記為已完成
-            if (progress === 100) {
-                task.completed_at = new Date().toISOString();
-            }
-            
-            // 儲存
-            saveProjectsToLocalStorage();
-            
-            // 重新渲染查詢結果
-            renderQueryResults();
-            
-            // 顯示提示
+    // 建立編輯彈窗
+    let modalContent = `
+        <div id="task-edit-modal" class="modal active" style="z-index: 15000;">
+            <div class="modal-content" style="max-width: 450px;">
+                <span class="close-btn" onclick="closeTaskEditModal()">×</span>
+                <h3>✏️ 編輯事項</h3>
+                
+                <div style="margin: 20px 0;">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">事項名稱</label>
+                        <input type="text" 
+                               id="edit-task-name" 
+                               value="${task.name}" 
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                        >
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">開始日期</label>
+                            <input type="date" 
+                                   id="edit-task-start" 
+                                   value="${task.start || ''}" 
+                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                            >
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">結束日期</label>
+                            <input type="date" 
+                                   id="edit-task-end" 
+                                   value="${task.end || ''}" 
+                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">負責人</label>
+                        <input type="text" 
+                               id="edit-task-assignee" 
+                               value="${task.assigned_to || project.sales_rep || ''}" 
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                        >
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">進度 (<span id="edit-progress-value">${task.progress}</span>%)</label>
+                        <input type="range" 
+                               id="edit-task-progress" 
+                               min="0" 
+                               max="100" 
+                               value="${task.progress}" 
+                               oninput="document.getElementById('edit-progress-value').textContent = this.value"
+                               style="width: 100%; cursor: pointer;"
+                        >
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; margin-top: 4px;">
+                            <span>0%</span>
+                            <span>50%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="closeTaskEditModal()" 
+                            style="flex: 1; padding: 10px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; cursor: pointer;"
+                    >取消</button>
+                    
+                    <button onclick="saveTaskEditFromQuery()" 
+                            style="flex: 1; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500;"
+                    >✅ 更新</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 插入到頁面
+    const existingModal = document.getElementById('task-edit-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    document.body.insertAdjacentHTML('beforeend', modalContent);
+}
+
+// 關閉任務編輯彈窗
+function closeTaskEditModal() {
+    const modal = document.getElementById('task-edit-modal');
+    if (modal) {
+        modal.remove();
+    }
+    currentEditProjectId = null;
+    currentEditTaskIndex = null;
+}
+
+// 儲存任務編輯（從人員查詢）
+function saveTaskEditFromQuery() {
+    if (!currentEditProjectId || currentEditTaskIndex === null) return;
+    
+    const project = projects.find(p => p.id === currentEditProjectId);
+    if (!project || !project.tasks[currentEditTaskIndex]) return;
+    
+    const task = project.tasks[currentEditTaskIndex];
+    
+    // 取得新值
+    const newName = document.getElementById('edit-task-name').value.trim();
+    const newStart = document.getElementById('edit-task-start').value;
+    const newEnd = document.getElementById('edit-task-end').value;
+    const newAssignee = document.getElementById('edit-task-assignee').value.trim();
+    const newProgress = parseInt(document.getElementById('edit-task-progress').value);
+    
+    if (!newName) {
+        alert('請輸入事項名稱');
+        return;
+    }
+    
+    // 更新任務
+    task.name = newName;
+    task.start = newStart;
+    task.end = newEnd;
+    task.assigned_to = newAssignee;
+    task.progress = newProgress;
+    task.updated_at = new Date().toISOString();
+    
+    // 如果進度達到100%，標記為已完成
+    if (newProgress === 100) {
+        task.completed_at = new Date().toISOString();
+    } else {
+        delete task.completed_at;
+    }
+    
+    // 儲存
+    saveProjectsToLocalStorage();
+    
+    // 關閉彈窗
+    closeTaskEditModal();
+    
+    // 重新渲染查詢結果
+    renderQueryResults();
+    
+    // 顯示提示
+    const message = newProgress === 100 ? '✅ 已完成並更新' : '📊 事項已更新';
+    showTodoToast(message);
+}
             const message = progress === 100 ? '✅ 已完成' : `📊 進度已更新為 ${progress}%`;
             showTodoToast(message);
         } else {
@@ -3770,6 +3899,7 @@ window.onclick = function(event) {
     const addProjectModal = document.getElementById('add-project-modal');
     const searchResultsModal = document.getElementById('search-results-modal');
     const personQueryModal = document.getElementById('person-query-modal');
+    const taskEditModal = document.getElementById('task-edit-modal');
     
     if (event.target === modal) {
         modal.classList.remove('active');
@@ -3788,6 +3918,9 @@ window.onclick = function(event) {
     }
     if (event.target === personQueryModal) {
         closePersonQueryModal();
+    }
+    if (event.target === taskEditModal) {
+        closeTaskEditModal();
     }
 }
 
