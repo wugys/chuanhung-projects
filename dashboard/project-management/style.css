@@ -1200,6 +1200,25 @@ h2 {
     box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }
 
+/* 撤回結案按鈕樣式 */
+.btn-reopen-case {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-reopen-case:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
 .btn-all {
     background: #ed8936;
     color: white;

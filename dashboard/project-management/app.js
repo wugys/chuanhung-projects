@@ -914,7 +914,9 @@ function createProjectCard(project) {
     const closeCaseBtns = !isCompleted ? `
         <button class="btn-close-case-complete" onclick="event.stopPropagation(); closeProjectCaseComplete('${project.id}')">✅ 完成結案</button>
         <button class="btn-close-case-incomplete" onclick="event.stopPropagation(); closeProjectCaseIncomplete('${project.id}')">⏸️ 未完成結案</button>
-    ` : '';
+    ` : `
+        <button class="btn-reopen-case" onclick="event.stopPropagation(); reopenProjectCase('${project.id}')">↩️ 撤回結案</button>
+    `;
     
     const buttonsHtml = `
         <div class="card-buttons">
@@ -1016,6 +1018,52 @@ function closeProjectCaseIncomplete(projectId) {
     renderAllViews();
     
     showTodoToast('⏸️ 專案已未完成結案');
+}
+
+// 撤回結案 - 恢復專案到結案前的狀態
+function reopenProjectCase(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    if (!confirm('確定要撤回結案嗎？這將恢復專案到結案前的狀態。')) {
+        return;
+    }
+    
+    // 恢復結案前的狀態
+    project.isClosed = false;
+    project.phase = project.closedPhase || 'proposing';
+    project.statusText = getStatusText(project.phase);
+    delete project.closedAt;
+    delete project.closedPhase;
+    
+    // 恢復任務顯示（移除隱藏標記）
+    if (project.tasks && project.tasks.length > 0) {
+        project.tasks.forEach(task => {
+            delete task.isHidden;
+        });
+    }
+    
+    // 儲存
+    saveProjectsToLocalStorage();
+    
+    // 重新渲染所有視圖
+    renderAllViews();
+    
+    showTodoToast('↩️ 專案已撤回結案');
+}
+
+// 根據階段取得狀態文字
+function getStatusText(phase) {
+    const statusMap = {
+        'proposing': '💡 提案中',
+        'proposal_pending': '📤 提案待確認',
+        'quoting': '📋 報價中',
+        'pending': '🔵 報價待確認',
+        'sampling': '🔨 打樣中',
+        'production': '🏭 生產中',
+        'completed': '✅ 已完成'
+    };
+    return statusMap[phase] || '💡 提案中';
 }
 
 // 渲染甘特圖
@@ -1209,7 +1257,9 @@ function renderList() {
         const closeButtons = !isCompleted ? `
             <button onclick="event.stopPropagation(); closeProjectCaseComplete('${project.id}')" style="padding: 4px 8px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 4px;" title="完成結案">✅</button>
             <button onclick="event.stopPropagation(); closeProjectCaseIncomplete('${project.id}')" style="padding: 4px 8px; background: #f59e0b; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;" title="未完成結案">⏸️</button>
-        ` : '<span style="color: #9ca3af; font-size: 12px;">已結案</span>';
+        ` : `
+            <button onclick="event.stopPropagation(); reopenProjectCase('${project.id}')" style="padding: 4px 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;" title="撤回結案">↩️ 撤回</button>
+        `;
         
         row.innerHTML = `
             <td><strong>${project.id}</strong></td>
