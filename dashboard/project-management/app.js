@@ -2793,18 +2793,16 @@ async function submitNewProject(event) {
         contactName = contactSelect.value;
     }
 
-    // 檢查新客戶
+    // 自動添加新客戶到資料庫（如果不存在）
     if (clientName && !clientExists(clientName)) {
-        showClientPrompt('client', clientName);
-        // 等待用戶選擇
-        return;
+        addClient(clientName, contactName);
+        console.log(`✅ 自動新增客戶: ${clientName}`);
     }
 
-    // 檢查新聯絡人
+    // 自動添加新聯絡人到現有客戶（如果不存在）
     if (clientName && contactName && !contactExists(clientName, contactName)) {
-        showClientPrompt('contact', contactName, clientName);
-        // 等待用戶選擇
-        return;
+        addClient(clientName, contactName);
+        console.log(`✅ 自動新增聯絡人: ${contactName} 到 ${clientName}`);
     }
 
     const formData = {
