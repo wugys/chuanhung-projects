@@ -964,7 +964,13 @@ function createProjectCard(project) {
 
     // 點擊卡片直接顯示待辦事項（按鈕除外）
     // 使用 onclick 屬性確保 iOS Safari 兼容性
-    card.setAttribute('onclick', `if(!event.target.closest('.card-buttons')){ showProjectTodo('${project.id}', 'incomplete'); }`);
+    card.onclick = function(event) {
+        console.log('Card clicked:', project.id);
+        if (!event.target.closest('.card-buttons')) {
+            console.log('Opening todo modal for:', project.id);
+            showProjectTodo(project.id, 'incomplete');
+        }
+    };
     
     // 確保 iOS Safari 上可點擊
     card.style.cursor = 'pointer';
