@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>銓宏國際 - 專案管理系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=13">
+    <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
     <div class="container">
@@ -72,9 +72,10 @@
             <button class="tab-btn" onclick="showView('quote')">📋 報價階段</button>
             <button class="tab-btn" onclick="showView('sample')">🔨 打樣階段</button>
             <button class="tab-btn" onclick="showView('production')">🏭 生產階段</button>
-            <button class="tab-btn" onclick="showView('list')">📑 全部</button>
+            <button class="tab-btn" onclick="showView('list')">🔄 進行中清單</button>
+            <button class="tab-btn" onclick="showView('closed')">✅ 已結案</button>
             <button class="tab-btn" onclick="showView('pending-confirm')">⏳ 待確認專案</button>
-            <button class="tab-btn export-btn" onclick="exportToExcel()">📥 匯出 Excel</button>
+            <button class="tab-btn export-btn" onclick="openPersonQueryModal()">👤 人員查詢</button>
         </nav>
 
         <!-- 提案階段視圖 -->
@@ -147,10 +148,9 @@
                     <option value="pending">🔵 報價待確認</option>
                     <option value="sampling">🔨 打樣中</option>
                     <option value="production">🟢 生產中</option>
-                    <option value="completed">✅ 已完成</option>
                 </select>
             </div>
-            <h2>📑 全部</h2>
+            <h2>🔄 進行中</h2>
             <table class="project-table">
                 <thead>
                     <tr>
@@ -161,9 +161,42 @@
                         <th>截止日</th>
                         <th>進度</th>
                         <th>階段</th>
+                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody id="project-list-body"></tbody>
+            </table>
+        </div>
+        
+        <!-- 已結案視圖 -->
+        <div id="closed-view" class="view">
+            <div class="list-filter">
+                <label>篩選結案類型：</label>
+                <select id="closed-filter" onchange="renderClosedView()">
+                    <option value="all">全部</option>
+                    <option value="complete">✅ 已完成結案</option>
+                    <option value="incomplete">⏸️ 未完成結案</option>
+                </select>
+            </div>
+            <div class="list-filter" style="margin-top: 10px;">
+                <label>搜尋：</label>
+                <input type="text" id="closed-search" placeholder="輸入客戶或產品名稱..." oninput="renderClosedView()" style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px; width: 250px;">
+            </div>
+            <h2>✅ 已結案</h2>
+            <table class="project-table">
+                <thead>
+                    <tr>
+                        <th>編號</th>
+                        <th>客戶</th>
+                        <th>產品</th>
+                        <th>數量</th>
+                        <th>截止日</th>
+                        <th>進度</th>
+                        <th>結案類型</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="closed-projects-list"></tbody>
             </table>
         </div>
 
@@ -206,10 +239,32 @@
                 <h2 id="todo-modal-title">📝 待辦事項</h2>
                 
                 <!-- 固定控制區域（分頁式設計） -->
-                <div id="todo-controls-fixed" style="display: flex !important; gap: 12px; padding: 12px 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px; border: 2px solid #3b82f6;">
-                    <button type="button" id="btn-show-all" onclick="switchTodoFilter('all')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">📋 全部</button>
-                    <button type="button" id="btn-show-incomplete" onclick="switchTodoFilter('incomplete')" style="flex: 1; padding: 8px 16px; border: none; border-radius: 6px; background: #3b82f6; color: white; font-size: 14px; cursor: pointer;">⏳ 待辦</button>
-                    <button type="button" id="btn-show-overdue" onclick="switchTodoFilter('overdue')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">🔴 逾期</button>
+                <div id="todo-controls-fixed" style="display: flex !important; gap: 12px; padding: 12px 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px; border: 2px solid #3b82f6; flex-wrap: wrap;">
+                    <button type="button" id="btn-show-all" onclick="switchTodoFilter('all')" style="flex: 1; min-width: 70px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">📋 全部</button>
+                    <button type="button" id="btn-show-incomplete" onclick="switchTodoFilter('incomplete')" style="flex: 1; min-width: 70px; padding: 8px 12px; border: none; border-radius: 6px; background: #3b82f6; color: white; font-size: 14px; cursor: pointer;">⏳ 待辦</button>
+                    <button type="button" id="btn-show-overdue" onclick="switchTodoFilter('overdue')" style="flex: 1; min-width: 70px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">🔴 逾期</button>
+                    <button type="button" id="btn-add-task" onclick="toggleAddTaskForm()" style="flex: 1; min-width: 90px; padding: 8px 12px; border: 1px solid #10b981; border-radius: 6px; background: white; color: #10b981; font-size: 14px; cursor: pointer; font-weight: 500;">➕ 新增任務</button>
+                </div>
+                
+                <!-- 新增任務表單（預設隱藏） -->
+                <div id="add-task-form-container" style="display: none; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 2px dashed #d1d5db;">
+                    <h4 style="margin: 0 0 12px 0; color: #374151; font-weight: 600; font-size: 14px;">➕ 新增任務</h4>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                        <input type="text" id="new-task-name" placeholder="任務名稱..." style="flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <input type="text" id="new-task-assignee" list="assignee-list" placeholder="負責人" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; min-width: 100px;" autocomplete="off">
+                        <datalist id="assignee-list">
+                            <option value="姿姿">
+                            <option value="Betty">
+                            <option value="Mia">
+                            <option value="Kevin">
+                        </datalist>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="date" id="new-task-start" placeholder="年 /月/日" style="flex: 1; min-width: 120px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <span style="color: #9ca3af;">-</span>
+                        <input type="date" id="new-task-end" placeholder="年 /月/日" style="flex: 1; min-width: 120px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <button type="button" onclick="submitNewTaskFromTodo()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; white-space: nowrap;">新增</button>
+                    </div>
                 </div>
                 
                 <!-- 專案資訊區域 -->
@@ -379,6 +434,76 @@
             </div>
         </div>
         
+        <!-- 人員查詢彈窗 -->
+        <div id="person-query-modal" class="modal">
+            <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
+                <span class="close-btn" onclick="closePersonQueryModal()">×</span>
+                <h3>👤 人員查詢</h3>
+                
+                <!-- 查詢條件 -->
+                <div style="margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 8px;">
+                    <!-- 公司選擇 -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">公司名稱</label>
+                        <input type="text" 
+                               id="query-company-input" 
+                               placeholder="輸入公司名稱..." 
+                               oninput="searchCompaniesForQuery(this.value)"
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                        >
+                        <div id="query-company-suggestions" style="margin-top: 4px; border: 1px solid #e5e7eb; border-radius: 6px; max-height: 150px; overflow-y: auto; display: none; background: white;"></div>
+                    </div>
+                    
+                    <!-- 人員選擇 -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">人員名稱</label>
+                        <input type="text" 
+                               id="query-person-input" 
+                               placeholder="輸入或選擇人員..." 
+                               oninput="searchPersonsForQuery(this.value)"
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                        >
+                        <div id="query-person-suggestions" style="margin-top: 4px; border: 1px solid #e5e7eb; border-radius: 6px; max-height: 150px; overflow-y: auto; display: none; background: white;"></div>
+                        <p style="margin: 6px 0 0 0; font-size: 12px; color: #6b7280;">💡 提示：輸入新公司/人員可直接查詢，系統會自動記錄</p>
+                    </div>
+                    
+                    <!-- 查詢按鈕 -->
+                    <button onclick="executePersonQuery()" 
+                            style="width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500;"
+                    >
+                        🔍 查詢該人員事項
+                    </button>
+                </div>
+                
+                <!-- 篩選按鈕 -->
+                <div id="query-filter-buttons" style="display: none; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 10px; background: #f3f4f6; padding: 8px; border-radius: 8px;">
+                        <button id="btn-query-all" onclick="switchQueryFilter('all')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">📋 全部</button>
+                        
+                        <button id="btn-query-incomplete" onclick="switchQueryFilter('incomplete')" style="flex: 1; padding: 8px 16px; border: none; border-radius: 6px; background: #3b82f6; color: white; font-size: 14px; cursor: pointer;">⏳ 待辦</button>
+                        
+                        <button id="btn-query-overdue" onclick="switchQueryFilter('overdue')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">🔴 逾期</button>
+                    </div>
+                </div>
+                
+                <!-- 查詢結果 -->
+                <div id="query-results-container" style="display: none;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 15px; color: #111827;">
+                        <span id="query-result-title"></span>
+                        <span id="query-result-count" style="font-size: 13px; color: #6b7280; font-weight: normal;"></span>
+                    </h4>
+                    
+                    <div id="query-results-list"></div>
+                </div>
+                
+                <!-- 無結果提示 -->
+                <div id="query-no-results" style="display: none; text-align: center; padding: 40px; color: #9ca3af;">
+                    <p style="font-size: 16px; margin: 0 0 8px 0;">🔍 請輸入公司和人員名稱進行查詢</p>
+                    <p style="font-size: 13px; margin: 0;">可查詢各專案中該人員負責的所有事項</p>
+                </div>
+            </div>
+        </div>
+        
         <!-- 新增客戶/聯絡人提示彈窗 -->
         <div id="client-prompt-modal" class="modal client-prompt-modal">
             <div class="modal-content">
@@ -398,7 +523,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- 認證模組 -->
     <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=60"></script>
+    <script src="app.js?v=102"></script>
     <script>
         window.onload = function() {
             console.log('✅ Page loaded successfully');
