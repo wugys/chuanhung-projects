@@ -946,7 +946,7 @@ function createProjectCard(project) {
     card.innerHTML = `
         <div class="card-header">
             <span class="card-id">${project.id}</span>
-            <span class="card-status ${project.status}">${project.statusText}</span>
+            <span class="card-status ${project.status}">${project.statusText || project.status_text || '💡 提案中'}</span>
         </div>
         <div class="card-title">${project.name}</div>
         <div class="card-client">${project.client} / ${project.contact}</div>
@@ -2823,6 +2823,7 @@ async function submitNewProject(event) {
         progress: 0,
         status: 'active',
         status_text: '💡 提案中',
+        statusText: '💡 提案中',
         tasks: []
     };
 
@@ -3621,7 +3622,18 @@ function showMyProjects() {
 
 // 取得過濾後的專案列表
 function getFilteredProjects() {
-    return projects.filter(project => {
+    // 先對 projects 去重（根據 id）
+    const uniqueProjects = [];
+    const seenIds = new Set();
+    
+    projects.forEach(project => {
+        if (!seenIds.has(project.id)) {
+            seenIds.add(project.id);
+            uniqueProjects.push(project);
+        }
+    });
+    
+    return uniqueProjects.filter(project => {
         // 階段篩選
         if (filterState.phase !== 'all' && project.phase !== filterState.phase) {
             return false;
