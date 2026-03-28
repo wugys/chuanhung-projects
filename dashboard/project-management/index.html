@@ -334,61 +334,34 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>產品名稱 <span class="required">*</span></label>
-                            <input type="text" id="new-project-name" placeholder="例如：NFC 鑰匙圈" required>
-                        </div>
-                    </div>
-                            <select id="new-project-type" required>
-                                <option value="">選擇類型</option>
-                                <option value="印刷類">印刷類</option>
-                                <option value="紙盒包裝">紙盒包裝</option>
-                                <option value="紙置物架">紙置物架</option>
-                                <option value="高周波">高周波</option>
-                                <option value="微量射出">微量射出</option>
-                                <option value="矽膠">矽膠</option>
-                                <option value="五金飾品">五金飾品</option>
-                                <option value="絨毛玩具">絨毛玩具</option>
-                                <option value="皮革">皮革</option>
-                                <option value="包袋">包袋</option>
-                                <option value="紡織">紡織</option>
-                                <option value="3D列印">3D列印</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>數量 <span class="required">*</span></label>
-                            <input type="number" id="new-project-quantity" placeholder="1000" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label>預計交期 <span class="required">*</span></label>
-                            <input type="date" id="new-project-deadline" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>目前階段 <span class="required">*</span></label>
-                            <select id="new-project-phase" required>
-                                <option value="">選擇階段</option>
-                                <option value="proposing">💡 提案</option>
-                                <option value="quoting">📋 報價</option>
-                                <option value="sampling">🔨 打樣</option>
-                                <option value="production">🏭 生產</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>負責業務 <span class="required">*</span></label>
+                            <label>專案人員 <span class="required">*</span></label>
                             <select id="new-project-sales" required>
-                                <option value="">選擇業務</option>
+                                <option value="Kevin" selected>Kevin</option>
                                 <option value="姿姿">姿姿</option>
+                                <option value="Mia">Mia</option>
                                 <option value="Betty">Betty</option>
-                                <option value="Kevin">Kevin</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>預算</label>
+                            <input type="text" id="new-project-budget" placeholder="例如：50,000">
+                        </div>
+                        <div class="form-group">
+                            <label>數量</label>
+                            <input type="text" id="new-project-quantity" placeholder="例如：3000 pcs">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>工期</label>
+                            <input type="text" id="new-project-duration" placeholder="例如：30天">
                         </div>
                     </div>
                     <div class="form-group full-width">
-                        <label>備註</label>
-                        <textarea id="new-project-notes" rows="3" placeholder="其他說明..."></textarea>
+                        <label>案件說明</label>
+                        <textarea id="new-project-description" rows="4" placeholder="例如：&#10;3/19-客戶確認下單-姿姿-2天&#10;3/20-下採購單給大陸廠商-姿姿-2天&#10;3/21-大陸廠商安排定制-姿姿-26天"></textarea>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn-secondary" onclick="closeAddProjectModal()">取消</button>

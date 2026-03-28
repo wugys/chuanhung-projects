@@ -2729,14 +2729,9 @@ function submitNewTaskFromTodo() {
 function openAddProjectModal() {
     const modal = document.getElementById('add-project-modal');
     const projectIdInput = document.getElementById('new-project-id');
-    const deadlineInput = document.getElementById('new-project-deadline');
 
     // 自動生成專案編號
     projectIdInput.value = generateProjectId();
-
-    // 預設今天日期
-    const today = new Date();
-    deadlineInput.value = today.toISOString().split('T')[0];
 
     // 顯示彈窗
     modal.classList.add('active');
@@ -2814,18 +2809,22 @@ async function submitNewProject(event) {
 
     const formData = {
         id: document.getElementById('new-project-id').value,
-        name: document.getElementById('new-project-name').value,
+        name: clientName + ' - ' + (document.getElementById('new-project-quantity').value || '新專案'),
         client: clientName,
         contact: contactName,
-        product_type: document.getElementById('new-project-type').value,
-        quantity: document.getElementById('new-project-quantity').value + '個',
-        deadline: document.getElementById('new-project-deadline').value,
-        phase: document.getElementById('new-project-phase').value,
         sales_rep: document.getElementById('new-project-sales').value,
-        notes: document.getElementById('new-project-notes').value,
+        quantity: document.getElementById('new-project-quantity').value || '',
+        budget: document.getElementById('new-project-budget').value || '',
+        duration: document.getElementById('new-project-duration').value || '',
+        description: document.getElementById('new-project-description').value || '',
+        // 預設值
+        product_type: '',
+        deadline: '',
+        phase: 'proposing',
+        notes: '',
         progress: 0,
         status: 'active',
-        status_text: getStatusText(document.getElementById('new-project-phase').value),
+        status_text: '💡 提案中',
         tasks: []
     };
 
