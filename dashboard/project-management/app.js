@@ -943,45 +943,33 @@ function createProjectCard(project) {
         </div>
     `;
 
-    // 使用內聯 onclick 確保 iOS Safari 兼容性
     card.innerHTML = `
-        <div class="card-header" onclick="handleCardClick(event, '${project.id}')">
+        <div class="card-header">
             <span class="card-id">${project.id}</span>
             <span class="card-status ${project.status}">${project.statusText || project.status_text || '💡 提案中'}</span>
         </div>
-        <div class="card-title" onclick="handleCardClick(event, '${project.id}')">${project.name}</div>
-        <div class="card-client" onclick="handleCardClick(event, '${project.id}')">${project.client} / ${project.contact}</div>
-        <div class="card-meta" onclick="handleCardClick(event, '${project.id}')">
+        <div class="card-title">${project.name}</div>
+        <div class="card-client">${project.client} / ${project.contact}</div>
+        <div class="card-meta">
             <span>📦 ${project.quantity}</span>
             <span>📅 ${project.deadline}</span>
         </div>
         ${quoteInfo}
-        <div class="progress-bar" onclick="handleCardClick(event, '${project.id}')">
+        <div class="progress-bar">
             <div class="progress-fill" style="width: ${project.progress}%"></div>
         </div>
-        <div class="progress-text" onclick="handleCardClick(event, '${project.id}')">${project.progress}% 完成</div>
+        <div class="progress-text">${project.progress}% 完成</div>
         ${buttonsHtml}
     `;
 
-    // 給卡片本身添加點擊事件（點擊空白區域時）
-    card.onclick = function(event) {
-        handleCardClick(event, project.id);
+    // 點擊卡片直接顯示待辦事項（按鈕除外）- 使用箭頭函數
+    card.onclick = (e) => {
+        if (!e.target.closest('.card-buttons')) {
+            showProjectTodo(project.id, 'incomplete');
+        }
     };
-    
-    // 確保 iOS Safari 上可點擊
-    card.style.cursor = 'pointer';
-    card.style.webkitTapHighlightColor = 'rgba(0,0,0,0.1)';
 
     return card;
-}
-
-// 卡片點擊處理函數（全域函數確保 iOS 兼容性）
-function handleCardClick(event, projectId) {
-    console.log('Card clicked:', projectId);
-    if (!event.target.closest('.card-buttons')) {
-        console.log('Opening todo modal for:', projectId);
-        showProjectTodo(projectId, 'incomplete');
-    }
 }
 
 // 完成結案 - 進度設為100%，所有任務標記完成
