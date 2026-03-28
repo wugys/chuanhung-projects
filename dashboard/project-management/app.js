@@ -4489,8 +4489,13 @@ function saveTaskEditFromQuery() {
     // 重新渲染待辦事項彈窗的任務列表（如果開啟中）
     const todoBody = document.getElementById('todo-modal-body');
     if (todoBody && currentTodoProject && currentTodoProject.id === currentEditProjectId) {
-        renderTaskListOnly(todoBody, currentTodoProject, currentTodoFilter);
-        updateTodoStats(currentTodoProject);
+        // 重要：重新從 projects 陣列獲取最新的 project 數據，確保狀態同步
+        const updatedProject = projects.find(p => p.id === currentEditProjectId);
+        if (updatedProject) {
+            currentTodoProject = updatedProject; // 更新引用
+            renderTaskListOnly(todoBody, currentTodoProject, currentTodoFilter);
+            updateTodoStats(currentTodoProject);
+        }
     }
 
     // 重新渲染查詢結果（確保使用最新數據）
