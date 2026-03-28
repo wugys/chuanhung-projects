@@ -963,11 +963,16 @@ function createProjectCard(project) {
     `;
 
     // 點擊卡片直接顯示待辦事項（按鈕除外）
-    card.onclick = (e) => {
+    card.addEventListener('click', (e) => {
+        console.log('Card clicked:', project.id, 'target:', e.target.className);
         if (!e.target.closest('.card-buttons')) {
             showProjectTodo(project.id, 'incomplete');
         }
-    };
+    });
+    
+    // 確保 iOS Safari 上可點擊
+    card.style.cursor = 'pointer';
+    card.style.webkitTapHighlightColor = 'rgba(0,0,0,0.1)';
 
     return card;
 }
@@ -1763,6 +1768,13 @@ function showProjectTodo(projectId, filter = 'incomplete') {
         const body = document.getElementById('todo-modal-body');
         if (body) {
             renderTaskListOnly(body, project, filter);
+        }
+
+        // 關閉搜尋結果彈窗（如果開啟）
+        const searchResultsModal = document.getElementById('search-results-modal');
+        if (searchResultsModal && searchResultsModal.classList.contains('active')) {
+            searchResultsModal.classList.remove('active');
+            console.log('Search results modal closed');
         }
 
         isTodoModalOpen = true;
