@@ -987,6 +987,7 @@ function closeProjectCaseComplete(projectId) {
     project.closedPhase = project.phase;
     project.phase = 'completed';
     project.statusText = '✅ 已完成結案';
+    project.status_text = '✅ 已完成結案';
     project.progress = 100;
 
     // 將所有任務標記為完成，並儲存原始進度
@@ -1025,6 +1026,7 @@ function closeProjectCaseIncomplete(projectId) {
     project.closedPhase = project.phase;
     project.phase = 'completed';
     project.statusText = '⏸️ 未完成結案';
+    project.status_text = '⏸️ 未完成結案';
     // 保留原有進度
 
     // 隱藏任務 - 標記為隱藏
@@ -1055,7 +1057,9 @@ function reopenProjectCase(projectId) {
     // 恢復結案前的狀態
     project.isClosed = false;
     project.phase = project.closedPhase || 'proposing';
-    project.statusText = getStatusText(project.phase);
+    const restoredStatus = getStatusText(project.phase);
+    project.statusText = restoredStatus;
+    project.status_text = restoredStatus;
     delete project.closedAt;
     delete project.closedPhase;
 
@@ -3161,6 +3165,7 @@ function applyProgressUpdate() {
     if (analysis.phase) {
         project.phase = analysis.phase;
         project.statusText = analysis.phaseText;
+        project.status_text = analysis.phaseText;
     }
 
     // 將選中的事項加入全部事項（tasks）
@@ -3210,6 +3215,7 @@ function updateProjectPhase(projectId, newPhase) {
     // 更新階段
     project.phase = newPhase;
     project.statusText = phaseMap[newPhase];
+    project.status_text = phaseMap[newPhase];
 
     // 如果完成，設定進度為100%
     if (newPhase === 'completed') {
@@ -3445,6 +3451,7 @@ function updateProjectProgress(project) {
     if (project.progress === 100 && project.phase !== 'completed') {
         project.phase = 'completed';
         project.statusText = '✅ 已完成';
+        project.status_text = '✅ 已完成';
     }
 }
 
@@ -4566,9 +4573,11 @@ function updateProjectProgress(project) {
     // 更新狀態文字
     if (project.progress === 100) {
         project.statusText = '✅ 已完成';
+        project.status_text = '✅ 已完成';
         project.status = 'completed';
     } else if (project.progress > 0) {
         project.statusText = project.statusText.replace(/🔴|🟡|🟢/, '🟡');
+        project.status_text = project.status_text.replace(/🔴|🟡|🟢/, '🟡');
         project.status = 'active';
     }
 
