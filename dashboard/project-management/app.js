@@ -963,33 +963,12 @@ function createProjectCard(project) {
     `;
 
     // 點擊卡片直接顯示待辦事項（按鈕除外）
-    card.addEventListener('click', (e) => {
-        console.log('Card clicked:', project.id, 'target:', e.target.className);
-        if (!e.target.closest('.card-buttons')) {
-            showProjectTodo(project.id, 'incomplete');
-        }
-    });
-    
-    // iOS Safari 觸摸事件支援
-    let touchStarted = false;
-    card.addEventListener('touchstart', () => {
-        touchStarted = true;
-    }, { passive: true });
-    
-    card.addEventListener('touchend', (e) => {
-        if (touchStarted && !e.target.closest('.card-buttons')) {
-            console.log('Card touched:', project.id);
-            e.preventDefault();
-            showProjectTodo(project.id, 'incomplete');
-        }
-        touchStarted = false;
-    });
+    // 使用 onclick 屬性確保 iOS Safari 兼容性
+    card.setAttribute('onclick', `if(!event.target.closest('.card-buttons')){ showProjectTodo('${project.id}', 'incomplete'); }`);
     
     // 確保 iOS Safari 上可點擊
     card.style.cursor = 'pointer';
     card.style.webkitTapHighlightColor = 'rgba(0,0,0,0.1)';
-    card.setAttribute('role', 'button');
-    card.setAttribute('tabindex', '0');
 
     return card;
 }
