@@ -263,7 +263,7 @@ const SupabaseAuthInstance = new SupabaseAuth();
 window.SupabaseAuth = SupabaseAuthInstance;
 window.ROLES = ROLES;
 
-// 相容舊版 Auth API
+// 相容舊版 Auth API - 確保所有函數都可用
 window.Auth = {
     init: () => SupabaseAuthInstance.init(),
     login: (username, password) => SupabaseAuthInstance.login(username, password),
@@ -276,17 +276,35 @@ window.Auth = {
 };
 
 // 自動初始化 - 確保在頁面載入後立即執行
-function autoInit() {
+async function autoInit() {
     console.log('🔄 自動初始化 Supabase Auth...');
-    SupabaseAuthInstance.init().then(success => {
-        if (success) {
-            console.log('✅ 自動初始化成功');
-        } else {
-            console.error('❌ 自動初始化失敗，將在第一次登入時重試');
+    console.log('🔍 window.supabase:', typeof window.supabase);
+    
+    // 等待 supabase 庫載入（最多等5秒）
+    let retries = 0;
+    while (!window.supabase && retries < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        retries++;
+        if (retries % 10 === 0) {
+            console.log(`⏳ 等待 Supabase 庫載入... (${retries * 100}ms)`);
         }
-    });
+    }
+    
+    if (!window.supabase) {
+        console.error('❌ Supabase 庫未載入，初始化失敗');
+        return false;
+    }
+    
+    const success = await SupabaseAuthInstance.init();
+    if (success) {
+        console.log('✅ 自動初始化成功');
+    } else {
+        console.error('❌ 自動初始化失敗');
+    }
+    return success;
 }
 
+// 立即執行初始化
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', autoInit);
 } else {
