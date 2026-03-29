@@ -1718,7 +1718,11 @@ function showProjectTodo(projectId, filter = 'incomplete') {
         document.getElementById('todo-project-id-display').textContent = project.id || 'N/A';
         document.getElementById('todo-project-client-display').textContent =
             `${project.client || 'N/A'} / ${project.contact || 'N/A'}`;
-        document.getElementById('todo-project-deadline-display').textContent = project.deadline || 'N/A';
+        
+        // 設置截止日和日期異常檢查
+        currentTodoProject = project; // 確保設置當前專案
+        updateDeadlineDisplay(project);
+        
         document.getElementById('todo-project-sales-display').textContent = project.sales_rep || '未分配';
 
         // 更新專案進度（如果元素存在）
@@ -1957,9 +1961,12 @@ function renderTaskListOnly(container, project, filter) {
         const isCompleted = task.progress === 100;
         const workDays = Math.ceil((taskEnd - taskStart) / (1000 * 60 * 60 * 24)) + 1;
         const assignedTo = task.assigned_to || project.sales_rep || '未分配';
+        
+        // 檢查任務日期是否超過專案截止日
+        const isBeyondDeadline = checkTaskBeyondDeadline(project, task);
 
         return `
-            <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid #e5e7eb;">
+            <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid ${isBeyondDeadline ? '#ef4444' : '#e5e7eb'}; ${isBeyondDeadline ? 'box-shadow: 0 0 0 2px #fecaca;' : ''}">
                 <!-- 第一行：复选框 + 任务名称 + 按钮 -->
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0;">
@@ -1978,17 +1985,19 @@ function renderTaskListOnly(container, project, filter) {
                     </div>
 
                     ${isOverdue ? '<span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 11px; flex-shrink: 0;">逾期</span>' : ''}
+                    ${isBeyondDeadline ? '<span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; flex-shrink: 0; margin-left: 4px;">超過截止日</span>' : ''}
                 </div>
 
                 <!-- 第二行：负责人 + 日期 + 按钮 -->
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #f3f4f6;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed ${isBeyondDeadline ? '#fecaca' : '#f3f4f6'};">
                     <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #6b7280; flex-wrap: wrap;">
                         <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px;" title="點擊編輯">
                             👤 ${assignedTo}
                         </span>
 
-                        ${task.start && task.end ? `<span style="display: flex; align-items: center; gap: 4px; color: #6b7280;">
+                        ${task.start && task.end ? `<span style="display: flex; align-items: center; gap: 4px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'}; font-weight: ${isBeyondDeadline ? '600' : 'normal'};">
                             📅 ${formatDateShort(task.start)}-${formatDateShort(task.end)} · ${workDays}天
+                            ${isBeyondDeadline ? '<span style="color: #ef4444; margin-left: 4px;">⚠️ 超過截止日</span>' : ''}
                         </span>` : ''}
                     </div>
 
@@ -2623,6 +2632,137 @@ function closeTodoModal() {
     showOverdueOnly = false;
     hideCompleted = false;
 }
+
+// ==================== 截止日編輯與日期異常檢查 ====================
+
+// 更新截止日顯示和異常檢查
+function updateDeadlineDisplay(project) {
+    if (!project) return;
+    
+    const deadlineDisplay = document.getElementById('todo-project-deadline-display');
+    const warningEl = document.getElementById('deadline-warning');
+    
+    if (deadlineDisplay) {
+        deadlineDisplay.textContent = project.deadline || 'N/A';
+    }
+    
+    // 檢查日期異常
+    const hasDateIssue = checkDeadlineConflict(project);
+    if (warningEl) {
+        warningEl.style.display = hasDateIssue ? 'inline-block' : 'none';
+    }
+}
+
+// 檢查截止日與任務日期是否衝突
+function checkDeadlineConflict(project) {
+    if (!project || !project.deadline || !project.tasks || project.tasks.length === 0) {
+        return false;
+    }
+    
+    // 如果截止日是文字說明（非日期格式），不進行檢查
+    const deadlineStr = project.deadline.trim();
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (!datePattern.test(deadlineStr)) {
+        return false;
+    }
+    
+    const deadlineDate = new Date(deadlineStr);
+    deadlineDate.setHours(0, 0, 0, 0);
+    
+    // 檢查所有任務的結束日期是否超過截止日
+    for (const task of project.tasks) {
+        if (task.end) {
+            const taskEndDate = new Date(task.end);
+            taskEndDate.setHours(0, 0, 0, 0);
+            
+            if (taskEndDate > deadlineDate) {
+                return true; // 有日期異常
+            }
+        }
+    }
+    
+    return false;
+}
+
+// 檢查單個任務是否超過截止日
+function checkTaskBeyondDeadline(project, task) {
+    if (!project || !project.deadline || !task || !task.end) {
+        return false;
+    }
+    
+    // 如果截止日是文字說明（非日期格式），不進行檢查
+    const deadlineStr = project.deadline.trim();
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (!datePattern.test(deadlineStr)) {
+        return false;
+    }
+    
+    const deadlineDate = new Date(deadlineStr);
+    deadlineDate.setHours(0, 0, 0, 0);
+    
+    const taskEndDate = new Date(task.end);
+    taskEndDate.setHours(0, 0, 0, 0);
+    
+    return taskEndDate > deadlineDate;
+}
+
+// 切換截止日編輯模式
+function toggleEditDeadline() {
+    const displayContainer = document.getElementById('deadline-display-container');
+    const editContainer = document.getElementById('deadline-edit-container');
+    const input = document.getElementById('edit-deadline-input');
+    
+    if (displayContainer && editContainer && input && currentTodoProject) {
+        displayContainer.style.display = 'none';
+        editContainer.style.display = 'block';
+        input.value = currentTodoProject.deadline || '';
+        input.focus();
+    }
+}
+
+// 取消截止日編輯
+function cancelEditDeadline() {
+    const displayContainer = document.getElementById('deadline-display-container');
+    const editContainer = document.getElementById('deadline-edit-container');
+    
+    if (displayContainer && editContainer) {
+        displayContainer.style.display = 'block';
+        editContainer.style.display = 'none';
+    }
+}
+
+// 儲存截止日
+function saveDeadline() {
+    const input = document.getElementById('edit-deadline-input');
+    if (!input || !currentTodoProject) return;
+    
+    const newDeadline = input.value.trim();
+    
+    // 更新專案資料
+    currentTodoProject.deadline = newDeadline || null;
+    currentTodoProject.updated_at = new Date().toISOString();
+    
+    // 儲存到 LocalStorage
+    saveProjectsToLocalStorage();
+    
+    // 更新顯示
+    updateDeadlineDisplay(currentTodoProject);
+    
+    // 切換回顯示模式
+    cancelEditDeadline();
+    
+    // 顯示提示
+    const hasIssue = checkDeadlineConflict(currentTodoProject);
+    const message = hasIssue 
+        ? '⚠️ 截止日已更新，任務日期超過截止日！' 
+        : '✅ 截止日已更新';
+    showTodoToast(message);
+    
+    // 重新渲染主視圖以反映變更
+    renderAllViews();
+}
+
+// ==================== 截止日編輯與日期異常檢查結束 ====================
 
 // ==================== 新增任務功能 ====================
 

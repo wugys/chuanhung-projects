@@ -278,8 +278,19 @@
                         <span id="todo-project-client-display" style="font-size: 14px; color: #111827; font-weight: 500;">-</span>
                     </div>
                     <div>
-                        <span style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">截止日</span>
-                        <span id="todo-project-deadline-display" style="font-size: 14px; color: #111827; font-weight: 500;">-</span>
+                        <span style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                            截止日
+                            <button onclick="toggleEditDeadline()" style="margin-left: 8px; padding: 2px 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">編輯</button>
+                        </span>
+                        <div id="deadline-display-container">
+                            <span id="todo-project-deadline-display" style="font-size: 14px; color: #111827; font-weight: 500;">-</span>
+                            <span id="deadline-warning" style="display: none; margin-left: 8px; padding: 2px 8px; background: #ef4444; color: white; font-size: 12px; border-radius: 4px;">日期異常須注意</span>
+                        </div>
+                        <div id="deadline-edit-container" style="display: none; margin-top: 8px;">
+                            <input type="text" id="edit-deadline-input" placeholder="YYYY-MM-DD 或文字說明" style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; width: 180px;">
+                            <button onclick="saveDeadline()" style="margin-left: 4px; padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">儲存</button>
+                            <button onclick="cancelEditDeadline()" style="margin-left: 4px; padding: 6px 12px; background: #6b7280; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">取消</button>
+                        </div>
                     </div>
                     <div>
                         <span style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">負責人</span>
