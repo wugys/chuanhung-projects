@@ -575,6 +575,42 @@
             </div>
         </div>
 
+        <!-- 登入彈窗 -->
+        <div id="login-modal" class="modal" style="display: none; z-index: 9999;">
+            <div class="modal-content" style="max-width: 400px; padding: 30px;">
+                <span class="close-btn" onclick="closeLoginModal()">&times;</span>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <h2 style="margin: 0 0 8px 0; color: #374151;">🔐 系統登入</h2>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">請輸入帳號密碼以繼續</p>
+                </div>
+                
+                <div id="login-error" style="display: none; background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;"></div>
+                
+                <form id="login-form-inline" onsubmit="handleInlineLogin(event)">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151; font-weight: 500;">帳號</label>
+                        <input type="text" id="login-username-inline" placeholder="請輸入帳號 (如: wugys)" required
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151; font-weight: 500;">密碼</label>
+                        <input type="password" id="login-password-inline" placeholder="請輸入密碼" required
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    
+                    <button type="submit" id="login-submit-btn" 
+                            style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer;">
+                        登入
+                    </button>
+                </form>
+                
+                <div style="margin-top: 16px; text-align: center; font-size: 13px; color: #9ca3af;">
+                    <p>忘記密碼？請聯繫 Kevin</p>
+                </div>
+            </div>
+        </div>
+
     </div>
     
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -588,8 +624,8 @@
     <script src="modules/data-validator.js?v=1"></script>
     <!-- 3. 儲存操作 -->
     <script src="modules/storage.js?v=1"></script>
-    <!-- 4. 登入權限 -->
-    <script src="modules/auth.js?v=1"></script>
+    <!-- 4. 登入權限（Supabase Auth）-->
+    <script src="modules/supabase-auth.js?v=1"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
     <script src="app.js?v=102"></script>
@@ -601,7 +637,127 @@
         window.onload = function() {
             console.log('✅ 銓宏專案管理系統 v2.0 載入成功');
             console.log('📦 使用模組化架構');
+            
+            // 初始化登入狀態
+            initAuthUI();
         };
+        
+        // ==================== 登入相關功能 ====================
+        
+        // 初始化登入 UI
+        function initAuthUI() {
+            updateAuthUI();
+            
+            // 綁定登入/登出按鈕
+            const loginBtn = document.getElementById('btn-show-login');
+            const logoutBtn = document.getElementById('btn-logout');
+            
+            if (loginBtn) {
+                loginBtn.onclick = showLoginModal;
+            }
+            if (logoutBtn) {
+                logoutBtn.onclick = handleLogout;
+            }
+        }
+        
+        // 更新登入 UI 狀態
+        function updateAuthUI() {
+            const isLoggedIn = window.Auth && window.Auth.isLoggedIn();
+            const user = isLoggedIn ? window.Auth.getCurrentUser() : null;
+            
+            const userNameEl = document.getElementById('current-user-name');
+            const loginBtn = document.getElementById('btn-show-login');
+            const logoutBtn = document.getElementById('btn-logout');
+            
+            if (userNameEl) {
+                userNameEl.textContent = isLoggedIn ? (user?.name || user?.username) : '訪客';
+                userNameEl.className = isLoggedIn ? 'logged-in' : 'guest';
+            }
+            if (loginBtn) {
+                loginBtn.style.display = isLoggedIn ? 'none' : 'inline-block';
+            }
+            if (logoutBtn) {
+                logoutBtn.style.display = isLoggedIn ? 'inline-block' : 'none';
+            }
+        }
+        
+        // 顯示登入彈窗
+        function showLoginModal() {
+            const modal = document.getElementById('login-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.getElementById('login-username-inline')?.focus();
+            }
+        }
+        
+        // 關閉登入彈窗
+        function closeLoginModal() {
+            const modal = document.getElementById('login-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            hideLoginError();
+        }
+        
+        // 顯示登入錯誤
+        function showLoginError(message) {
+            const errorEl = document.getElementById('login-error');
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // 隱藏登入錯誤
+        function hideLoginError() {
+            const errorEl = document.getElementById('login-error');
+            if (errorEl) {
+                errorEl.style.display = 'none';
+            }
+        }
+        
+        // 處理內嵌登入
+        async function handleInlineLogin(event) {
+            event.preventDefault();
+            hideLoginError();
+            
+            const username = document.getElementById('login-username-inline').value.trim();
+            const password = document.getElementById('login-password-inline').value;
+            const submitBtn = document.getElementById('login-submit-btn');
+            
+            // 顯示載入狀態
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '登入中...';
+            
+            try {
+                const result = await window.Auth.login(username, password);
+                
+                if (result.success) {
+                    closeLoginModal();
+                    updateAuthUI();
+                    // 清空表單
+                    document.getElementById('login-form-inline').reset();
+                    alert(`✅ 歡迎回來，${result.user.name}！`);
+                } else {
+                    showLoginError(result.error || '登入失敗');
+                }
+            } catch (error) {
+                console.error('登入錯誤:', error);
+                showLoginError('登入過程發生錯誤，請稍後再試');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+        
+        // 處理登出
+        async function handleLogout() {
+            if (confirm('確定要登出嗎？')) {
+                await window.Auth.logout();
+                updateAuthUI();
+            }
+        }
     </script>
 </body>
 </html>

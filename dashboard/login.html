@@ -224,7 +224,7 @@
                 <label>帳號</label>
                 <div class="input-wrapper">
                     <i class="fas fa-user"></i>
-                    <input type="email" id="email" placeholder="請輸入電子郵件" required>
+                    <input type="text" id="username" placeholder="請輸入帳號 (如: wugys)" required>
                 </div>
             </div>
 
@@ -362,12 +362,15 @@
             
             console.log('登入表單提交');
 
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('remember-me').checked;
             const loginBtn = document.getElementById('login-btn');
             
-            console.log('Email:', email);
+            console.log('Username:', username);
+
+            // 將 username 轉換為 email 格式
+            const email = username.includes('@') ? username : `${username}@chuanhung.local`;
 
             // 顯示載入狀態
             loginBtn.disabled = true;
