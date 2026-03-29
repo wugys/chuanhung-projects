@@ -725,6 +725,17 @@
             const password = document.getElementById('login-password-inline').value;
             const submitBtn = document.getElementById('login-submit-btn');
             
+            console.log('🔄 嘗試登入:', username);
+            console.log('🔍 window.Auth:', window.Auth);
+            console.log('🔍 window.SupabaseAuth:', window.SupabaseAuth);
+            
+            // 檢查 Auth 是否就緒
+            if (!window.Auth) {
+                showLoginError('系統初始化中，請稍後再試');
+                console.error('❌ window.Auth 未定義');
+                return;
+            }
+            
             // 顯示載入狀態
             const originalText = submitBtn.textContent;
             submitBtn.disabled = true;
@@ -732,6 +743,7 @@
             
             try {
                 const result = await window.Auth.login(username, password);
+                console.log('📥 登入結果:', result);
                 
                 if (result.success) {
                     closeLoginModal();
@@ -743,8 +755,8 @@
                     showLoginError(result.error || '登入失敗');
                 }
             } catch (error) {
-                console.error('登入錯誤:', error);
-                showLoginError('登入過程發生錯誤，請稍後再試');
+                console.error('❌ 登入錯誤:', error);
+                showLoginError('登入過程發生錯誤：' + error.message);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
