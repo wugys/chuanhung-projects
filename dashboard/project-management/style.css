@@ -2197,6 +2197,10 @@ h2 {
     .todo-name {
         width: 100%;
         margin-top: 8px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-all;
+        line-height: 1.4;
     }
 }
 
