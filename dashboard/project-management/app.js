@@ -4519,33 +4519,33 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                         >
                     </div>
 
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <div style="flex: 1;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 100px;">
                             <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">開始日期</label>
                             <input type="date"
                                    id="edit-task-start"
                                    value="${task.start || ''}"
                                    onchange="onEditTaskStartChange()"
-                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                                   style="width: 100%; padding: 10px 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
                             >
                         </div>
-                        <div style="flex: 1;">
+                        <div style="width: 70px; flex-shrink: 0;">
                             <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">天數</label>
                             <input type="number"
                                    id="edit-task-duration"
                                    value="${calculateDays(task.start, task.end)}"
                                    min="1"
                                    onchange="onEditTaskDurationChange()"
-                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                                   style="width: 100%; padding: 10px 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box; text-align: center;"
                             >
                         </div>
-                        <div style="flex: 1;">
+                        <div style="flex: 1; min-width: 100px;">
                             <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">結束日期</label>
                             <input type="date"
                                    id="edit-task-end"
                                    value="${task.end || ''}"
                                    onchange="onEditTaskEndChange()"
-                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                                   style="width: 100%; padding: 10px 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
                             >
                         </div>
                     </div>
