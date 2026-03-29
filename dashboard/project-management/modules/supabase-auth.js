@@ -90,14 +90,25 @@ class SupabaseAuth {
 
     // 登入（使用 username，自動轉換為 email）
     async login(username, password) {
+        console.log('🔄 login() 被呼叫');
+        console.log('🔍 this.client 狀態:', this.client ? '存在' : '不存在');
+        console.log('🔍 this.initialized:', this.initialized);
+        
         if (!this.client) {
-            await this.init();
+            console.log('🔄 client 不存在，執行初始化...');
+            const initSuccess = await this.init();
+            if (!initSuccess) {
+                console.error('❌ 初始化失敗，無法登入');
+                return { success: false, error: '系統初始化失敗，請重新整理頁面' };
+            }
         }
 
         // 將 username 轉換為 email 格式
         const email = this.usernameToEmail(username);
+        console.log('📧 轉換後的 email:', email);
 
         try {
+            console.log('📤 呼叫 signInWithPassword...');
             const { data, error } = await this.client.auth.signInWithPassword({
                 email: email,
                 password: password
@@ -264,9 +275,20 @@ window.Auth = {
     requirePermission: (permission) => SupabaseAuthInstance.requirePermission(permission)
 };
 
-// 自動初始化
+// 自動初始化 - 確保在頁面載入後立即執行
+function autoInit() {
+    console.log('🔄 自動初始化 Supabase Auth...');
+    SupabaseAuthInstance.init().then(success => {
+        if (success) {
+            console.log('✅ 自動初始化成功');
+        } else {
+            console.error('❌ 自動初始化失敗，將在第一次登入時重試');
+        }
+    });
+}
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => SupabaseAuthInstance.init());
+    document.addEventListener('DOMContentLoaded', autoInit);
 } else {
-    SupabaseAuthInstance.init();
+    autoInit();
 }
