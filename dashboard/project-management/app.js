@@ -4525,7 +4525,7 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                         <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">事項名稱</label>
                         <input type="text"
                                id="edit-task-name"
-                               value="${escapeHtml(task.name)}"
+                               value='${escapeHtml(task.name)}'
                                style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
                         >
                     </div>
