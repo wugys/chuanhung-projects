@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銓宏國際 - 專案管理系統 v2.0 測試</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #1f2937;
+        }
+        
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        #current-user-name {
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        #current-user-name.guest {
+            color: #9ca3af;
+        }
+        
+        #current-user-name.logged-in {
+            color: #059669;
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .project-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .project-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .project-card h3 {
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .client-name {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+        
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .login-content {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .login-content h2 {
+            margin-bottom: 24px;
+            color: #1f2937;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .login-message {
+            margin-top: 16px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .login-message.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .login-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            color: #1e40af;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .info-box p {
+            color: #3b82f6;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .action-bar {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 12px;
+        }
+        
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登入彈窗 -->
+    <div id="login-modal" class="login-modal">
+        <div class="login-content">
+            <h2>🏢 銓宏國際</h2>
+            <p style="color: #6b7280; margin-bottom: 24px;">專案管理系統 v2.0 測試</p>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label>帳號</label>
+                    <input type="text" id="login-username" placeholder="請輸入帳號" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>密碼</label>
+                    <input type="password" id="login-password" placeholder="請輸入密碼" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    🔐 登入
+                </button>
+            </form>
+            
+            <div id="login-message" class="login-message"></div>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                <p style="font-size: 12px; color: #9ca3af; margin: 0;">預設帳號：wugys / 密碼：0403</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 標題區 -->
+        <div class="header">
+            <h1>📊 銓宏國際專案管理系統</h1>
+            <div class="user-section">
+                <span id="current-user-name" class="guest">訪客</span>
+                <button id="btn-logout" class="btn btn-danger" style="display: none;">🚪 登出</button>
+                <button id="btn-show-login" class="btn btn-primary">🔐 登入</button>
+            </div>
+        </div>
+        
+        <!-- 使用說明 -->
+        <div class="info-box">
+            <h3>📖 新系統功能示範</h3>
+            <p>這是模組化重構後的 v2.0 測試頁面。請先登入（帳號：wugys / 密碼：0403），然後測試以下功能：</p>
+            <ul style="margin-top: 12px; padding-left: 20px; color: #3b82f6; font-size: 14px;">
+                <li>登入 / 登出功能</li>
+                <li>資料驗證與安全防護</li>
+                <li>自動備份機制</li>
+                <li>API 操作：ProjectApp.addProject()</li>
+            </ul>
+        </div>
+        
+        <!-- 操作列 -->
+        <div class="action-bar">
+            <button class="btn btn-success" onclick="demoAddProject()">➕ 新增測試專案</button>
+            <button class="btn btn-primary" onclick="demoExport()">📤 匯出資料</button>
+            <button class="btn btn-primary" onclick="demoStorageInfo()">💾 儲存資訊</button>
+            <button class="btn btn-danger" onclick="demoClearAll()">🗑️ 清除所有資料</button>
+        </div>
+        
+        <!-- 專案列表 -->
+        <div id="project-container" class="project-container">
+            <div class="empty-state">
+                <p>尚無專案資料</p>
+                <p style="font-size: 14px; margin-top: 8px;">點擊「新增測試專案」或登入後操作</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入新模組 -->
+    <script src="modules/utils.js"></script>
+    <script src="modules/data-validator.js"></script>
+    <script src="modules/storage.js"></script>
+    <script src="modules/auth.js"></script>
+    <script src="modules/app.js"></script>
+    
+    <script>
+        // 測試功能示範
+        
+        function demoAddProject() {
+            // 檢查登入狀態
+            if (!Auth.isLoggedIn()) {
+                Utils.showToast('請先登入', 'error');
+                document.getElementById('login-modal').style.display = 'flex';
+                return;
+            }
+            
+            // 建立測試專案
+            const testProject = {
+                id: Utils.generateProjectId(),
+                name: '測試專案 ' + new Date().toLocaleTimeString(),
+                client: '測試客戶',
+                contact: '測試聯絡人',
+                quantity: '1000 pcs',
+                deadline: '2026-12-31',
+                progress: Math.floor(Math.random() * 100),
+                status: 'active',
+                statusText: '🟡 報價中',
+                phase: 'quoting',
+                sales_rep: Auth.getCurrentUser().name,
+                tasks: [
+                    { name: '需求確認', start: '2026-03-29', end: '2026-03-30', progress: 100 },
+                    { name: '報價作業', start: '2026-03-30', end: '2026-04-01', progress: 50 }
+                ]
+            };
+            
+            const result = ProjectApp.addProject(testProject);
+            
+            if (result.success) {
+                Utils.showToast('✅ 專案新增成功！', 'success');
+            } else {
+                Utils.showToast('❌ ' + result.error, 'error');
+            }
+        }
+        
+        function demoExport() {
+            const data = ProjectApp.export();
+            Utils.downloadJSON(data, `chuanhung-backup-${new Date().toISOString().slice(0,10)}.json`);
+            Utils.showToast('✅ 資料已匯出', 'success');
+        }
+        
+        function demoStorageInfo() {
+            const usage = Storage.getStorageUsage();
+            const percent = ((usage / (5 * 1024 * 1024)) * 100).toFixed(1);
+            
+            alert(`💾 LocalStorage 使用情況：\n\n已使用：${(usage / 1024).toFixed(1)} KB\n佔比：${percent}%\n專案數：${ProjectApp.getProjects().length}\n客戶數：${ProjectApp.getClients().length}`);
+        }
+        
+        function demoClearAll() {
+            Utils.confirmDialog(
+                '確定要清除所有資料嗎？此操作無法復原。',
+                () => {
+                    Storage.clearAll();
+                    ProjectApp.reload();
+                    Utils.showToast('🗑️ 資料已清除', 'success');
+                }
+            );
+        }
+        
+        // 頁面載入完成
+        console.log('✅ 測試頁面載入完成');
+        console.log('📦 可用模組：', {
+            Utils: typeof Utils !== 'undefined',
+            DataValidator: typeof DataValidator !== 'undefined',
+            Storage: typeof Storage !== 'undefined',
+            Auth: typeof Auth !== 'undefined',
+            ProjectApp: typeof ProjectApp !== 'undefined'
+        });
+    </script>
+</body>
+</html>

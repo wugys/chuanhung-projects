@@ -19,9 +19,14 @@
                     <h1>📊 銓宏國際專案管理系統</h1>
                 </div>
                 <div class="header-actions">
-                    <div class="user-info" id="user-info">
-                        <span class="user-role" id="user-role"></span>
-                        <span class="user-name" id="user-name"></span>
+                    <div class="user-info" id="user-info" style="display: flex; align-items: center; gap: 12px;">
+                        <span id="current-user-name" class="guest" style="font-size: 14px; color: #374151;">訪客</span>
+                        <button id="btn-logout" style="display: none; padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                            🚪 登出
+                        </button>
+                        <button id="btn-show-login" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                            🔐 登入
+                        </button>
                     </div>
                 </div>
             </div>
@@ -232,6 +237,43 @@
             </div>
         </div>
 
+        <!-- 登入彈窗 -->
+        <div id="login-modal" class="modal" style="display: flex; z-index: 10000;">
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <div class="login-header" style="margin-bottom: 24px;">
+                    <h2 style="margin: 0 0 8px 0; font-size: 24px;">🏢 銓宏國際</h2>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">專案管理系統 v2.0</p>
+                </div>
+                
+                <form id="login-form" style="text-align: left;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">帳號</label>
+                        <input type="text" id="login-username" 
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                               placeholder="請輸入帳號" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">密碼</label>
+                        <input type="password" id="login-password" 
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                               placeholder="請輸入密碼" required>
+                    </div>
+                    
+                    <button type="submit" 
+                            style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer;">
+                        🔐 登入
+                    </button>
+                </form>
+                
+                <div id="login-message" style="display: none; margin-top: 16px; padding: 10px; border-radius: 4px; font-size: 14px;"></div>
+                
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af;">
+                    <p style="margin: 0;">預設帳號：wugys / 密碼：0403</p>
+                </div>
+            </div>
+        </div>
+        
         <!-- 待辦事項彈窗 -->
         <div id="todo-modal" class="modal">
             <div class="modal-content">
@@ -538,12 +580,26 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <!-- 認證模組 -->
-    <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=102"></script>
+    
+    <!-- 新模組化架構 v2.0 -->
+    <!-- 1. 工具函數 -->
+    <script src="modules/utils.js?v=1"></script>
+    <!-- 2. 資料驗證 -->
+    <script src="modules/data-validator.js?v=1"></script>
+    <!-- 3. 儲存操作 -->
+    <script src="modules/storage.js?v=1"></script>
+    <!-- 4. 登入權限 -->
+    <script src="modules/auth.js?v=1"></script>
+    <!-- 5. 主程式 -->
+    <script src="modules/app.js?v=1"></script>
+    
+    <!-- 相容性：保留原有 app.js 作為備援 -->
+    <!-- <script src="app.js?v=102"></script> -->
+    
     <script>
         window.onload = function() {
-            console.log('✅ Page loaded successfully');
+            console.log('✅ 銓宏專案管理系統 v2.0 載入成功');
+            console.log('📦 使用模組化架構');
         };
     </script>
 </body>
