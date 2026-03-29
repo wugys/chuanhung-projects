@@ -10,13 +10,38 @@ const Auth = (function() {
     const CONFIG = {
         storageKey: 'chuanhung_auth_v1',
         sessionDuration: 8 * 60 * 60 * 1000, // 8小時過期
-        adminAccount: {
-            username: 'wugys',
-            password: '0403', // 實際應用應使用 hash
-            name: 'Kevin',
-            role: 'admin',
-            permissions: ['read', 'write', 'delete', 'admin']
-        }
+        
+        // 帳號列表
+        accounts: [
+            {
+                username: 'wugys',
+                password: '0403',
+                name: 'Kevin',
+                role: 'admin',
+                permissions: ['read', 'write', 'delete', 'admin']
+            },
+            {
+                username: 'zizi',
+                password: 'zizi123',
+                name: '姿姿',
+                role: 'manager',
+                permissions: ['read', 'write']
+            },
+            {
+                username: 'mia',
+                password: 'mia123',
+                name: 'Mia',
+                role: 'staff',
+                permissions: ['read', 'write']
+            },
+            {
+                username: 'betty',
+                password: 'betty123',
+                name: 'Betty',
+                role: 'staff',
+                permissions: ['read', 'write']
+            }
+        ]
     };
     
     // 目前登入狀態
@@ -63,17 +88,19 @@ const Auth = (function() {
      * 登入
      */
     function login(username, password) {
-        // 驗證帳號密碼
-        if (username === CONFIG.adminAccount.username && 
-            password === CONFIG.adminAccount.password) {
-            
+        // 在所有帳號中查找匹配
+        const account = CONFIG.accounts.find(acc => 
+            acc.username === username && acc.password === password
+        );
+        
+        if (account) {
             // 建立 session
             currentSession = {
                 user: {
-                    username: CONFIG.adminAccount.username,
-                    name: CONFIG.adminAccount.name,
-                    role: CONFIG.adminAccount.role,
-                    permissions: CONFIG.adminAccount.permissions
+                    username: account.username,
+                    name: account.name,
+                    role: account.role,
+                    permissions: account.permissions
                 },
                 loginAt: Date.now(),
                 expiresAt: Date.now() + CONFIG.sessionDuration
