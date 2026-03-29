@@ -1981,7 +1981,7 @@ function renderTaskListOnly(container, project, filter) {
             <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid ${isBeyondDeadline ? '#ef4444' : '#e5e7eb'}; ${isBeyondDeadline ? 'box-shadow: 0 0 0 2px #fecaca;' : ''}">
                 <!-- 第一行：复选框 + 任务名称 + 负责人 -->
                 <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
-                    <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0; display: flex; align-items: center; height: 21px;">
+                    <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0; display: flex; align-items: center; padding-top: 1px;">
                         <input type="checkbox" class="todo-checkbox"
                             ${isCompleted ? 'checked' : ''}
                             onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)"
@@ -1991,7 +1991,7 @@ function renderTaskListOnly(container, project, filter) {
 
                     <div class="todo-name ${isCompleted ? 'strikethrough' : ''}"
                          onclick="openTaskEditModal('${project.id}', ${task.originalIndex})"
-                         style="cursor:pointer; font-size: 14px; font-weight: 500; line-height: 1.5; flex: 1; word-break: break-word; padding-top: 0px;"
+                         style="cursor:pointer; font-size: 14px; font-weight: 500; line-height: 1.5; flex: 1; word-break: break-word;"
                          title="點擊編輯">
                         ${task.name}
                     </div>
