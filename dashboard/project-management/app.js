@@ -2001,21 +2001,21 @@ function renderTaskListOnly(container, project, filter) {
                     </span>
                 </div>
 
-                <!-- 第二行：天数 + 日期 + 标签 + 按钮 -->
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-left: 26px;">
+                <!-- 第二行：天数(最左) + 日期 + 标签 + 按钮 -->
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding-left: 26px;">
                     ${task.start && task.end ? `
-                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'}; font-weight: ${isBeyondDeadline ? '600' : 'normal'}; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">
+                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'}; font-weight: ${isBeyondDeadline ? '600' : 'normal'}; background: #f3f4f6; padding: 3px 8px; border-radius: 4px; flex-shrink: 0;">
                         📅 ${workDays}天
                     </span>
-                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; font-size: 12px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'};">
+                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; font-size: 12px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'}; flex-shrink: 0;">
                         ${formatDateShort(task.start)}-${formatDateShort(task.end)}
                         ${isBeyondDeadline ? '<span style="color: #ef4444;">⚠️</span>' : ''}
                     </span>` : ''}
 
-                    ${isOverdue ? '<span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 11px;">逾期</span>' : ''}
-                    ${isBeyondDeadline ? '<span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">超過截止日</span>' : ''}
+                    ${isOverdue ? '<span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 11px; flex-shrink: 0;">逾期</span>' : ''}
+                    ${isBeyondDeadline ? '<span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; flex-shrink: 0;">超過截止日</span>' : ''}
 
-                    <div style="display: flex; gap: 4px; margin-left: auto;">
+                    <div style="display: flex; gap: 4px; margin-left: auto; flex-shrink: 0;">
                         ${project.clientMaterials && project.clientMaterials.length > 0 ? `
                         <button onclick="showTaskMaterials('${project.id}', ${task.originalIndex})"
                                 style="padding: 3px 6px; font-size: 11px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; color: #92400e; cursor: pointer; white-space: nowrap;">圖稿</button>
