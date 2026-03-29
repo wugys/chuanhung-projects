@@ -1116,8 +1116,15 @@ function getStatusText(phase) {
 
 // 渲染甘特圖
 function renderGantt() {
-    const filter = document.getElementById('gantt-phase-filter')?.value || 'all';
     const container = document.getElementById('gantt-chart');
+    
+    // 如果甘特圖容器不存在，跳過渲染
+    if (!container) {
+        console.log('⏭️ 甘特圖容器不存在，跳過渲染');
+        return;
+    }
+    
+    const filter = document.getElementById('gantt-phase-filter')?.value || 'all';
     container.innerHTML = '';
 
     let filteredProjects = projects;
