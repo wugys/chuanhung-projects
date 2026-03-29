@@ -2592,9 +2592,9 @@ function closeTodoModal() {
     document.getElementById('todo-modal').classList.remove('active');
     isTodoModalOpen = false;
     currentTodoProject = null;
-    currentTodoFilter = 'all';
+    currentTodoFilter = 'incomplete';
     showOverdueOnly = false;
-    hideCompleted = false;
+    hideCompleted = true;
 }
 
 // 切換任務完成狀態
@@ -2628,9 +2628,9 @@ function closeTodoModal() {
     document.getElementById('todo-modal').classList.remove('active');
     isTodoModalOpen = false;
     currentTodoProject = null;
-    currentTodoFilter = 'all';
+    currentTodoFilter = 'incomplete';
     showOverdueOnly = false;
-    hideCompleted = false;
+    hideCompleted = true;
 }
 
 // ==================== 截止日編輯與日期異常檢查 ====================
@@ -3426,8 +3426,8 @@ function showToast(message) {
 // ==================== 待辦事項功能優化 (SYS-2026-0321-003) ====================
 
 let currentTodoProject = null;
-let currentTodoFilter = 'all';
-let hideCompleted = false;
+let currentTodoFilter = 'incomplete';
+let hideCompleted = true;
 let showOverdueOnly = false;
 let isTodoModalOpen = false; // 追蹤 modal 開啟狀態，防止競態條件
 let currentGanttProject = null;
@@ -3645,9 +3645,9 @@ closeTodoModal = function() {
     document.getElementById('todo-modal').classList.remove('active');
     isTodoModalOpen = false; // 標記 modal 已關閉
     currentTodoProject = null;
-    currentTodoFilter = 'all';
+    currentTodoFilter = 'incomplete';
     showOverdueOnly = false;
-    hideCompleted = false;
+    hideCompleted = true;
     // 不重新整理主頁面，避免競態條件
 };
 
