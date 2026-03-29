@@ -625,10 +625,10 @@
     <!-- 3. 儲存操作 -->
     <script src="modules/storage.js?v=1"></script>
     <!-- 4. 登入權限（Supabase Auth）-->
-    <script src="modules/supabase-auth.js?v=3"></script>
+    <script src="modules/supabase-auth.js?v=4"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=104"></script>
+    <script src="app.js?v=105"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>
@@ -692,9 +692,14 @@
         
         // 關閉登入彈窗
         function closeLoginModal() {
+            console.log('🔄 嘗試關閉登入彈窗...');
             const modal = document.getElementById('login-modal');
+            console.log('🔍 login-modal 元素:', modal);
             if (modal) {
                 modal.style.display = 'none';
+                console.log('✅ 登入彈窗已關閉');
+            } else {
+                console.error('❌ 找不到 login-modal 元素');
             }
             hideLoginError();
         }
@@ -749,12 +754,16 @@
                 console.log('📥 登入結果:', result);
                 
                 if (result && result.success) {
+                    console.log('✅ 登入成功，準備關閉彈窗...');
                     closeLoginModal();
+                    console.log('✅ 彈窗關閉完成，更新 UI...');
                     updateAuthUI();
+                    console.log('✅ UI 更新完成');
                     // 清空表單
                     document.getElementById('login-form-inline').reset();
                     alert(`✅ 歡迎回來，${result.user.name}！`);
                 } else {
+                    console.log('❌ 登入失敗:', result);
                     showLoginError(result?.error || '登入失敗');
                 }
             } catch (error) {
