@@ -1978,9 +1978,9 @@ function renderTaskListOnly(container, project, filter) {
 
         return `
             <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid ${isBeyondDeadline ? '#ef4444' : '#e5e7eb'}; ${isBeyondDeadline ? 'box-shadow: 0 0 0 2px #fecaca;' : ''}">
-                <!-- 第一行：复选框 + 任务名称 + 负责人 + 工期 + 按钮 -->
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0;">
+                <!-- 第一行：复选框 + 任务名称 -->
+                <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+                    <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0; margin-top: 2px;">
                         <input type="checkbox" class="todo-checkbox"
                             ${isCompleted ? 'checked' : ''}
                             onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)"
@@ -1990,24 +1990,27 @@ function renderTaskListOnly(container, project, filter) {
 
                     <div class="todo-name ${isCompleted ? 'strikethrough' : ''}"
                          onclick="openTaskEditModal('${project.id}', ${task.originalIndex})"
-                         style="cursor:pointer; font-size: 14px; font-weight: 500; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;"
+                         style="cursor:pointer; font-size: 14px; font-weight: 500; line-height: 1.5; flex: 1; word-break: break-word;"
                          title="點擊編輯">
                         ${task.name}
                     </div>
+                </div>
 
-                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; flex-shrink: 0;" title="點擊編輯">
-                        👤 ${assignedTo}
-                    </span>
-
-                    ${task.start && task.end ? `<span style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'}; font-weight: ${isBeyondDeadline ? '600' : 'normal'}; flex-shrink: 0;">
-                        📅 ${workDays}天
+                <!-- 第二行：日期 + 工期 + 负责人 + 按钮 -->
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-left: 26px;">
+                    ${task.start && task.end ? `<span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'}; font-weight: ${isBeyondDeadline ? '600' : 'normal'};">
+                        📅 ${task.start} ~ ${task.end}
                         ${isBeyondDeadline ? '<span style="color: #ef4444;">⚠️</span>' : ''}
                     </span>` : ''}
 
-                    ${isOverdue ? '<span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 11px; flex-shrink: 0;">逾期</span>' : ''}
-                    ${isBeyondDeadline ? '<span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; flex-shrink: 0;">超過截止日</span>' : ''}
+                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280;" title="點擊編輯">
+                        👤 ${assignedTo}
+                    </span>
 
-                    <div style="display: flex; gap: 4px; flex-shrink: 0; margin-left: auto;">
+                    ${isOverdue ? '<span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 11px;">逾期</span>' : ''}
+                    ${isBeyondDeadline ? '<span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">超過截止日</span>' : ''}
+
+                    <div style="display: flex; gap: 4px; margin-left: auto;">
                         ${project.clientMaterials && project.clientMaterials.length > 0 ? `
                         <button onclick="showTaskMaterials('${project.id}', ${task.originalIndex})"
                                 style="padding: 3px 6px; font-size: 11px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 4px; color: #92400e; cursor: pointer; white-space: nowrap;">圖稿</button>
@@ -2026,8 +2029,6 @@ function renderTaskListOnly(container, project, filter) {
 
                         <button onclick="deleteTask('${project.id}', ${task.originalIndex})"
                                 style="padding: 3px 6px; font-size: 11px; background: transparent; border: none; color: #9ca3af; cursor: pointer;">🗑️</button>
-                    </div>
-                </div>
                     </div>
                 </div>
             </li>
