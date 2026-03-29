@@ -237,43 +237,6 @@
             </div>
         </div>
 
-        <!-- 登入彈窗 -->
-        <div id="login-modal" class="modal" style="display: flex; z-index: 10000;">
-            <div class="modal-content" style="max-width: 400px; text-align: center;">
-                <div class="login-header" style="margin-bottom: 24px;">
-                    <h2 style="margin: 0 0 8px 0; font-size: 24px;">🏢 銓宏國際</h2>
-                    <p style="margin: 0; color: #6b7280; font-size: 14px;">專案管理系統 v2.0</p>
-                </div>
-                
-                <form id="login-form" style="text-align: left;">
-                    <div style="margin-bottom: 16px;">
-                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">帳號</label>
-                        <input type="text" id="login-username" 
-                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
-                               placeholder="請輸入帳號" required>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">密碼</label>
-                        <input type="password" id="login-password" 
-                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
-                               placeholder="請輸入密碼" required>
-                    </div>
-                    
-                    <button type="submit" 
-                            style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer;">
-                        🔐 登入
-                    </button>
-                </form>
-                
-                <div id="login-message" style="display: none; margin-top: 16px; padding: 10px; border-radius: 4px; font-size: 14px;"></div>
-                
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af;">
-                    <p style="margin: 0;">預設帳號：wugys / 密碼：0403</p>
-                </div>
-            </div>
-        </div>
-        
         <!-- 待辦事項彈窗 -->
         <div id="todo-modal" class="modal">
             <div class="modal-content">
@@ -628,7 +591,7 @@
     <script src="modules/supabase-auth.js?v=4"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=105"></script>
+    <script src="app.js?v=106"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>
