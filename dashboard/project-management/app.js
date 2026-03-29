@@ -15,6 +15,7 @@ function escapeHtml(text) {
 }
 
 // 儲存專案資料到 LocalStorage
+// 格式化日期為簡短格式 (2026-03-17 → 3/17)function formatDateShort(dateStr) {    if (!dateStr) return '';    const date = new Date(dateStr);    return `${date.getMonth() + 1}/${date.getDate()}`;}
 function saveProjectsToLocalStorage() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
@@ -1978,7 +1979,7 @@ function renderTaskListOnly(container, project, filter) {
 
         return `
             <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid ${isBeyondDeadline ? '#ef4444' : '#e5e7eb'}; ${isBeyondDeadline ? 'box-shadow: 0 0 0 2px #fecaca;' : ''}">
-                <!-- 第一行：复选框 + 任务名称 -->
+                <!-- 第一行：复选框 + 任务名称 + 负责人 -->
                 <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
                     <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0; margin-top: 2px;">
                         <input type="checkbox" class="todo-checkbox"
@@ -1994,18 +1995,22 @@ function renderTaskListOnly(container, project, filter) {
                          title="點擊編輯">
                         ${task.name}
                     </div>
-                </div>
 
-                <!-- 第二行：日期 + 工期 + 负责人 + 按钮 -->
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-left: 26px;">
-                    ${task.start && task.end ? `<span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'}; font-weight: ${isBeyondDeadline ? '600' : 'normal'};">
-                        📅 ${task.start} ~ ${task.end}
-                        ${isBeyondDeadline ? '<span style="color: #ef4444;">⚠️</span>' : ''}
-                    </span>` : ''}
-
-                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280;" title="點擊編輯">
+                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; flex-shrink: 0; white-space: nowrap;" title="點擊編輯">
                         👤 ${assignedTo}
                     </span>
+                </div>
+
+                <!-- 第二行：天数 + 日期 + 标签 + 按钮 -->
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-left: 26px;">
+                    ${task.start && task.end ? `
+                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'}; font-weight: ${isBeyondDeadline ? '600' : 'normal'}; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">
+                        📅 ${workDays}天
+                    </span>
+                    <span onclick="openTaskEditModal('${project.id}', ${task.originalIndex})" style="cursor:pointer; font-size: 12px; color: ${isBeyondDeadline ? '#dc2626' : '#6b7280'};">
+                        ${formatDateShort(task.start)}-${formatDateShort(task.end)}
+                        ${isBeyondDeadline ? '<span style="color: #ef4444;">⚠️</span>' : ''}
+                    </span>` : ''}
 
                     ${isOverdue ? '<span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 11px;">逾期</span>' : ''}
                     ${isBeyondDeadline ? '<span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">超過截止日</span>' : ''}
