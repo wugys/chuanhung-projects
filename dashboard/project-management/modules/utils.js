@@ -377,3 +377,6 @@ const Utils = (function() {
         confirmDialog
     };
 })();
+
+// 綁定到全域 window 物件
+window.Utils = Utils;

@@ -383,3 +383,6 @@ const DataValidator = (function() {
         CLIENT_SCHEMA
     };
 })();
+
+// 綁定到全域 window 物件
+window.DataValidator = DataValidator;

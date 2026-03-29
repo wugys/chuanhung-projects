@@ -400,3 +400,6 @@ const Storage = (function() {
         restoreFromBackup
     };
 })();
+
+// 綁定到全域 window 物件
+window.Storage = Storage;

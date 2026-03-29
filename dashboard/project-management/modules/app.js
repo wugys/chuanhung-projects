@@ -28,15 +28,20 @@ let clientsDB = [];
     
     // 檢查必要模組
     const requiredModules = ['Utils', 'DataValidator', 'Storage', 'Auth'];
-    const missingModules = requiredModules.filter(m => typeof window[m] === 'undefined');
+    const missingModules = [];
+    
+    for (const m of requiredModules) {
+        if (typeof window[m] === 'undefined') {
+            missingModules.push(m);
+        }
+    }
     
     if (missingModules.length > 0) {
         console.error('❌ 缺少必要模組:', missingModules);
-        alert('系統載入失敗，請重新整理頁面');
-        return;
+        console.warn('⚠️ 部分模組可能未正確載入，系統將以降級模式運行');
+    } else {
+        console.log('✅ 所有模組已載入');
     }
-    
-    console.log('✅ 所有模組已載入');
     
     // 初始化認證系統
     if (typeof Auth !== 'undefined') {

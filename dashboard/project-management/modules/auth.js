@@ -291,6 +291,9 @@ const Auth = (function() {
     };
 })();
 
+// 綁定到全域 window 物件
+window.Auth = Auth;
+
 // 自動初始化（如果 DOM 已準備好）
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', Auth.init);
