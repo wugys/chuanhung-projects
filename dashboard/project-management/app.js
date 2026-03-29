@@ -4525,7 +4525,17 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                             <input type="date"
                                    id="edit-task-start"
                                    value="${task.start || ''}"
-                                   onchange="updateEditProgressFromDates()"
+                                   onchange="onEditTaskStartChange()"
+                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                            >
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">天數</label>
+                            <input type="number"
+                                   id="edit-task-duration"
+                                   value="${calculateDays(task.start, task.end)}"
+                                   min="1"
+                                   onchange="onEditTaskDurationChange()"
                                    style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
                             >
                         </div>
@@ -4534,7 +4544,7 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                             <input type="date"
                                    id="edit-task-end"
                                    value="${task.end || ''}"
-                                   onchange="updateEditProgressFromDates()"
+                                   onchange="onEditTaskEndChange()"
                                    style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
                             >
                         </div>
@@ -4631,6 +4641,68 @@ function calculateAutoProgress(start, end) {
 
     const progress = Math.round((passedDays / totalDays) * 100);
     return Math.min(100, Math.max(0, progress));
+}
+
+// 計算兩個日期之間的天數
+function calculateDays(start, end) {
+    if (!start || !end) return 1;
+    
+    const startDate = new Date(start);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(end);
+    endDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = endDate - startDate;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays : 1;
+}
+
+// 將天數加到日期上，返回新日期字符串
+function addDaysToDate(dateStr, days) {
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + parseInt(days));
+    return date.toISOString().split('T')[0];
+}
+
+// 當開始日期變更時：保持天數不變，更新結束日期
+function onEditTaskStartChange() {
+    const startInput = document.getElementById('edit-task-start');
+    const endInput = document.getElementById('edit-task-end');
+    const durationInput = document.getElementById('edit-task-duration');
+    
+    if (startInput.value && durationInput.value) {
+        const newEnd = addDaysToDate(startInput.value, durationInput.value);
+        endInput.value = newEnd;
+        updateEditProgressFromDates();
+    }
+}
+
+// 當天數變更時：更新結束日期 = 開始日期 + 天數
+function onEditTaskDurationChange() {
+    const startInput = document.getElementById('edit-task-start');
+    const endInput = document.getElementById('edit-task-end');
+    const durationInput = document.getElementById('edit-task-duration');
+    
+    if (startInput.value && durationInput.value && parseInt(durationInput.value) > 0) {
+        const newEnd = addDaysToDate(startInput.value, durationInput.value);
+        endInput.value = newEnd;
+        updateEditProgressFromDates();
+    }
+}
+
+// 當結束日期變更時：更新天數顯示
+function onEditTaskEndChange() {
+    const startInput = document.getElementById('edit-task-start');
+    const endInput = document.getElementById('edit-task-end');
+    const durationInput = document.getElementById('edit-task-duration');
+    
+    if (startInput.value && endInput.value) {
+        const days = calculateDays(startInput.value, endInput.value);
+        durationInput.value = days;
+        updateEditProgressFromDates();
+    }
 }
 
 // 更新編輯表單中的進度顯示
