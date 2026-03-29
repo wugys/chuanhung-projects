@@ -35,7 +35,13 @@ class SupabaseAuth {
 
     // 初始化 Supabase 客戶端
     async init() {
-        if (this.initialized) return true;
+        if (this.initialized) {
+            console.log('✅ Supabase Auth 已初始化 (cached)');
+            return true;
+        }
+
+        console.log('🔄 初始化 Supabase Auth...');
+        console.log('🔍 window.supabase:', typeof window.supabase);
 
         if (!window.supabase) {
             console.error('❌ Supabase library not loaded');
@@ -46,6 +52,7 @@ class SupabaseAuth {
             this.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             this.initialized = true;
             console.log('✅ Supabase Auth 已初始化');
+            console.log('🔍 client:', this.client ? 'created' : 'null');
 
             // 檢查現有會話
             await this.checkSession();

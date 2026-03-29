@@ -728,6 +728,8 @@
             console.log('🔄 嘗試登入:', username);
             console.log('🔍 window.Auth:', window.Auth);
             console.log('🔍 window.SupabaseAuth:', window.SupabaseAuth);
+            console.log('🔍 SupabaseAuthInstance 初始化狀態:', window.SupabaseAuth?.initialized);
+            console.log('🔍 SupabaseAuthInstance client:', window.SupabaseAuth?.client);
             
             // 檢查 Auth 是否就緒
             if (!window.Auth) {
@@ -742,17 +744,18 @@
             submitBtn.textContent = '登入中...';
             
             try {
+                console.log('📤 呼叫 Auth.login...');
                 const result = await window.Auth.login(username, password);
                 console.log('📥 登入結果:', result);
                 
-                if (result.success) {
+                if (result && result.success) {
                     closeLoginModal();
                     updateAuthUI();
                     // 清空表單
                     document.getElementById('login-form-inline').reset();
                     alert(`✅ 歡迎回來，${result.user.name}！`);
                 } else {
-                    showLoginError(result.error || '登入失敗');
+                    showLoginError(result?.error || '登入失敗');
                 }
             } catch (error) {
                 console.error('❌ 登入錯誤:', error);
