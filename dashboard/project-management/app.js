@@ -2710,13 +2710,41 @@ function checkTaskBeyondDeadline(project, task) {
 function toggleEditDeadline() {
     const displayContainer = document.getElementById('deadline-display-container');
     const editContainer = document.getElementById('deadline-edit-container');
-    const input = document.getElementById('edit-deadline-input');
-    
-    if (displayContainer && editContainer && input && currentTodoProject) {
+    const dateInput = document.getElementById('edit-deadline-date');
+    const textInput = document.getElementById('edit-deadline-text');
+
+    if (displayContainer && editContainer && currentTodoProject) {
         displayContainer.style.display = 'none';
         editContainer.style.display = 'block';
-        input.value = currentTodoProject.deadline || '';
-        input.focus();
+
+        // 判斷現有值是日期還是文字
+        const currentDeadline = currentTodoProject.deadline || '';
+        const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+        if (datePattern.test(currentDeadline)) {
+            // 是日期格式
+            dateInput.value = currentDeadline;
+            textInput.value = '';
+        } else {
+            // 是文字或空
+            dateInput.value = '';
+            textInput.value = currentDeadline;
+        }
+
+        // 添加互斥事件監聽
+        dateInput.onchange = function() {
+            if (this.value) {
+                textInput.value = '';
+            }
+        };
+        textInput.oninput = function() {
+            if (this.value) {
+                dateInput.value = '';
+            }
+        };
+
+        // 自動聚焦到日期選擇器（手機會彈出日期鍵盤）
+        dateInput.focus();
     }
 }
 
@@ -2733,31 +2761,33 @@ function cancelEditDeadline() {
 
 // 儲存截止日
 function saveDeadline() {
-    const input = document.getElementById('edit-deadline-input');
-    if (!input || !currentTodoProject) return;
-    
-    const newDeadline = input.value.trim();
-    
+    const dateInput = document.getElementById('edit-deadline-date');
+    const textInput = document.getElementById('edit-deadline-text');
+    if (!currentTodoProject) return;
+
+    // 優先使用日期選擇器的值，如果沒有則使用文字輸入
+    const newDeadline = dateInput.value.trim() || textInput.value.trim();
+
     // 更新專案資料
     currentTodoProject.deadline = newDeadline || null;
     currentTodoProject.updated_at = new Date().toISOString();
-    
+
     // 儲存到 LocalStorage
     saveProjectsToLocalStorage();
-    
+
     // 更新顯示
     updateDeadlineDisplay(currentTodoProject);
-    
+
     // 切換回顯示模式
     cancelEditDeadline();
-    
+
     // 顯示提示
     const hasIssue = checkDeadlineConflict(currentTodoProject);
-    const message = hasIssue 
-        ? '⚠️ 截止日已更新，任務日期超過截止日！' 
+    const message = hasIssue
+        ? '⚠️ 截止日已更新，任務日期超過截止日！'
         : '✅ 截止日已更新';
     showTodoToast(message);
-    
+
     // 重新渲染主視圖以反映變更
     renderAllViews();
 }

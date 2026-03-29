@@ -287,9 +287,15 @@
                             <span id="deadline-warning" style="display: none; margin-left: 8px; padding: 2px 8px; background: #ef4444; color: white; font-size: 12px; border-radius: 4px;">日期異常須注意</span>
                         </div>
                         <div id="deadline-edit-container" style="display: none; margin-top: 8px;">
-                            <input type="text" id="edit-deadline-input" placeholder="YYYY-MM-DD 或文字說明" style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; width: 180px;">
-                            <button onclick="saveDeadline()" style="margin-left: 4px; padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">儲存</button>
-                            <button onclick="cancelEditDeadline()" style="margin-left: 4px; padding: 6px 12px; background: #6b7280; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">取消</button>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <input type="date" id="edit-deadline-date" style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px;">
+                                <span style="color: #6b7280; font-size: 13px;">或</span>
+                                <input type="text" id="edit-deadline-text" placeholder="文字說明（如：預計這兩天下單）" style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; width: 200px;">
+                            </div>
+                            <div style="margin-top: 8px;">
+                                <button onclick="saveDeadline()" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">儲存</button>
+                                <button onclick="cancelEditDeadline()" style="margin-left: 4px; padding: 6px 12px; background: #6b7280; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">取消</button>
+                            </div>
                         </div>
                     </div>
                     <div>
