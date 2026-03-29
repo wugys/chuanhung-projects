@@ -1980,8 +1980,8 @@ function renderTaskListOnly(container, project, filter) {
         return `
             <li class="todo-item ${isCompleted ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-index="${task.originalIndex}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; background: #fff; border: 1px solid ${isBeyondDeadline ? '#ef4444' : '#e5e7eb'}; ${isBeyondDeadline ? 'box-shadow: 0 0 0 2px #fecaca;' : ''}">
                 <!-- 第一行：复选框 + 任务名称 + 负责人 -->
-                <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
-                    <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0; margin-top: 2px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0; display: flex; align-items: center;">
                         <input type="checkbox" class="todo-checkbox"
                             ${isCompleted ? 'checked' : ''}
                             onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)"
