@@ -3,6 +3,17 @@
 // ==================== LocalStorage 儲存功能 ====================
 const STORAGE_KEY = 'chuanhung_projects_v1';
 
+// HTML 跳脫函數（防止 XSS）
+function escapeHtml(text) {
+    if (!text) return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 // 儲存專案資料到 LocalStorage
 function saveProjectsToLocalStorage() {
     try {
@@ -4514,7 +4525,7 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                         <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">事項名稱</label>
                         <input type="text"
                                id="edit-task-name"
-                               value="${task.name}"
+                               value="${escapeHtml(task.name)}"
                                style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
                         >
                     </div>
