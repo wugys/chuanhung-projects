@@ -67,10 +67,17 @@ class SupabaseAuth {
 
     // 檢查目前會話
     async checkSession() {
-        if (!this.client) return false;
+        if (!this.client) {
+            console.log('❌ checkSession: client 不存在');
+            return false;
+        }
 
         try {
+            console.log('🔄 檢查現有會話...');
             const { data: { session }, error } = await this.client.auth.getSession();
+            
+            console.log('🔍 session:', session ? '存在' : '不存在');
+            console.log('🔍 error:', error);
             
             if (error) {
                 console.error('❌ 檢查會話失敗:', error);
@@ -83,6 +90,7 @@ class SupabaseAuth {
                 return true;
             }
 
+            console.log('ℹ️ 沒有現有會話');
             return false;
         } catch (error) {
             console.error('❌ 檢查會話錯誤:', error);
