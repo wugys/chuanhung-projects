@@ -4358,6 +4358,7 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                             <input type="date"
                                    id="edit-task-start"
                                    value="${task.start || ''}"
+                                   onchange="updateEditProgressFromDates()"
                                    style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
                             >
                         </div>
@@ -4366,6 +4367,7 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                             <input type="date"
                                    id="edit-task-end"
                                    value="${task.end || ''}"
+                                   onchange="updateEditProgressFromDates()"
                                    style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
                             >
                         </div>
@@ -4384,7 +4386,10 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                     </div>
 
                     <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">進度 (<span id="edit-progress-value">${task.progress}</span>%)</label>
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">
+                            進度 (<span id="edit-progress-value">${task.progress}</span>%)
+                            <span style="font-size: 12px; color: #6b7280; font-weight: 400; margin-left: 8px;">📅 根據日期自動計算</span>
+                        </label>
                         <input type="range"
                                id="edit-task-progress"
                                min="0"
@@ -4430,6 +4435,52 @@ function closeTaskEditModal() {
     }
     currentEditProjectId = null;
     currentEditTaskIndex = null;
+}
+
+// 根據日期自動計算進度
+function calculateAutoProgress(start, end) {
+    if (!start || !end) return 0;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const startDate = new Date(start);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(end);
+    endDate.setHours(0, 0, 0, 0);
+
+    // 如果還沒開始
+    if (today < startDate) return 0;
+
+    // 如果已經結束
+    if (today >= endDate) return 100;
+
+    // 計算進度
+    const totalDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+    const passedDays = (today - startDate) / (1000 * 60 * 60 * 24);
+
+    if (totalDays <= 0) return 0;
+
+    const progress = Math.round((passedDays / totalDays) * 100);
+    return Math.min(100, Math.max(0, progress));
+}
+
+// 更新編輯表單中的進度顯示
+function updateEditProgressFromDates() {
+    const start = document.getElementById('edit-task-start').value;
+    const end = document.getElementById('edit-task-end').value;
+
+    if (start && end) {
+        const autoProgress = calculateAutoProgress(start, end);
+        const progressInput = document.getElementById('edit-task-progress');
+        const progressValue = document.getElementById('edit-progress-value');
+
+        if (progressInput && progressValue) {
+            progressInput.value = autoProgress;
+            progressValue.textContent = autoProgress;
+        }
+    }
 }
 
 // 儲存任務編輯（從人員查詢）
