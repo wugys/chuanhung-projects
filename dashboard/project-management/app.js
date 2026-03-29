@@ -4523,11 +4523,9 @@ function editTaskProgressFromQuery(projectId, taskIndex) {
                 <div style="margin: 20px 0;">
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">事項名稱</label>
-                        <input type="text"
-                               id="edit-task-name"
-                               value='${escapeHtml(task.name)}'
-                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
-                        >
+                        <textarea id="edit-task-name"
+                                  rows="2"
+                                  style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box; resize: vertical; min-height: 44px; line-height: 1.4;">${escapeHtml(task.name)}</textarea>
                     </div>
 
                     <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
