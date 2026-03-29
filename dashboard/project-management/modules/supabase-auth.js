@@ -42,9 +42,10 @@ class SupabaseAuth {
 
         console.log('🔄 初始化 Supabase Auth...');
         console.log('🔍 window.supabase:', typeof window.supabase);
+        console.log('🔍 window.supabase?.createClient:', typeof window.supabase?.createClient);
 
-        if (!window.supabase) {
-            console.error('❌ Supabase library not loaded');
+        if (!window.supabase || !window.supabase.createClient) {
+            console.error('❌ Supabase library not loaded or createClient not available');
             return false;
         }
 
@@ -52,7 +53,8 @@ class SupabaseAuth {
             this.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             this.initialized = true;
             console.log('✅ Supabase Auth 已初始化');
-            console.log('🔍 client:', this.client ? 'created' : 'null');
+            console.log('🔍 client created:', !!this.client);
+            console.log('🔍 client.auth:', !!this.client?.auth);
 
             // 檢查現有會話
             await this.checkSession();
@@ -279,10 +281,13 @@ window.Auth = {
 async function autoInit() {
     console.log('🔄 自動初始化 Supabase Auth...');
     console.log('🔍 window.supabase:', typeof window.supabase);
+    console.log('🔍 window.supabase?.createClient:', typeof window.supabase?.createClient);
     
-    // 等待 supabase 庫載入（最多等5秒）
+    // 等待 supabase 庫載入（最多等10秒）
     let retries = 0;
-    while (!window.supabase && retries < 50) {
+    const maxRetries = 100;
+    
+    while ((!window.supabase || !window.supabase.createClient) && retries < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, 100));
         retries++;
         if (retries % 10 === 0) {
@@ -291,8 +296,14 @@ async function autoInit() {
     }
     
     if (!window.supabase) {
-        console.error('❌ Supabase 庫未載入，初始化失敗');
-        return false;
+        console.error('❌ Supabase 庫未載入，嘗試動態載入...');
+        // 動態載入 Supabase
+        try {
+            await loadSupabaseFromCDN();
+        } catch (e) {
+            console.error('❌ 動態載入失敗:', e);
+            return false;
+        }
     }
     
     const success = await SupabaseAuthInstance.init();
@@ -302,6 +313,23 @@ async function autoInit() {
         console.error('❌ 自動初始化失敗');
     }
     return success;
+}
+
+// 動態載入 Supabase CDN
+function loadSupabaseFromCDN() {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+        script.onload = () => {
+            console.log('✅ Supabase 動態載入成功');
+            resolve();
+        };
+        script.onerror = () => {
+            console.error('❌ Supabase 動態載入失敗');
+            reject(new Error('Failed to load Supabase'));
+        };
+        document.head.appendChild(script);
+    });
 }
 
 // 立即執行初始化
