@@ -3596,7 +3596,7 @@ function toggleTaskComplete(projectId, taskIndex, isChecked) {
 
     // 重新渲染列表
     const body = document.getElementById('todo-modal-body');
-    renderTodoList(body, project, currentTodoFilter);
+    renderTaskListOnly(body, project, currentTodoFilter);
 
     // 顯示提示
     const taskName = project.tasks[taskIndex].name;
@@ -3626,7 +3626,7 @@ function toggleHideCompleted(isChecked) {
     hideCompleted = isChecked;
     if (currentTodoProject) {
         const body = document.getElementById('todo-modal-body');
-        if (body) renderTodoList(body, currentTodoProject, currentTodoFilter);
+        if (body) renderTaskListOnly(body, currentTodoProject, currentTodoFilter);
     }
 }
 
@@ -3636,7 +3636,7 @@ function toggleShowOverdueOnly(isChecked) {
     showOverdueOnly = isChecked;
     if (currentTodoProject) {
         const body = document.getElementById('todo-modal-body');
-        if (body) renderTodoList(body, currentTodoProject, currentTodoFilter);
+        if (body) renderTaskListOnly(body, currentTodoProject, currentTodoFilter);
     }
 }
 
