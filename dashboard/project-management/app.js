@@ -1388,8 +1388,8 @@ function renderList() {
         };
 
         const closeButtons = `
-            <button class="btn-close-case-complete" onclick="event.stopPropagation(); closeProjectCaseComplete('${project.id}')" title="完成結案">✅ 完成</button>
-            <button class="btn-close-case-incomplete" onclick="event.stopPropagation(); closeProjectCaseIncomplete('${project.id}')" title="未完成結案">⏸️ 未完</button>
+            <button class="btn-close-case-complete" style="background: #10b981 !important; color: white !important; border: none !important; padding: 6px 12px !important; border-radius: 6px !important; font-size: 13px !important; font-weight: 500 !important; cursor: pointer !important; opacity: 1 !important; filter: none !important; outline: none !important; box-shadow: none !important; margin-right: 4px !important;" onclick="event.stopPropagation(); closeProjectCaseComplete('${project.id}')" title="完成結案">✅ 完成</button>
+            <button class="btn-close-case-incomplete" style="background: #f59e0b !important; color: white !important; border: none !important; padding: 6px 12px !important; border-radius: 6px !important; font-size: 13px !important; font-weight: 500 !important; cursor: pointer !important; opacity: 1 !important; filter: none !important; outline: none !important; box-shadow: none !important;" onclick="event.stopPropagation(); closeProjectCaseIncomplete('${project.id}')" title="未完成結案">⏸️ 未完</button>
         `;
 
         row.innerHTML = `
@@ -1480,7 +1480,7 @@ function renderClosedView() {
             </td>
             <td>${closeType}</td>
             <td style="white-space: nowrap;">
-                <button class="btn-reopen-case" onclick="event.stopPropagation(); reopenProjectCase('${project.id}')" title="撤回結案">↩️ 撤回</button>
+                <button class="btn-reopen-case" style="background: #3b82f6 !important; color: white !important; border: none !important; padding: 6px 12px !important; border-radius: 6px !important; font-size: 13px !important; font-weight: 500 !important; cursor: pointer !important; opacity: 1 !important; filter: none !important; outline: none !important; box-shadow: none !important;" onclick="event.stopPropagation(); reopenProjectCase('${project.id}')" title="撤回結案">↩️ 撤回</button>
             </td>
         `;
         tbody.appendChild(row);
