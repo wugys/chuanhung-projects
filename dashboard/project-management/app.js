@@ -930,7 +930,7 @@ function createProjectCard(project) {
     // 更改階段按鈕
     const showChangePhase = !isCompleted;
     const changePhaseBtn = showChangePhase ? `
-        <button class="btn-next-step" onclick="event.stopPropagation(); showNextStepOptions('${project.id}', event)">更改狀態</button>
+        <button class="btn-next-step" onclick="event.stopPropagation(); showNextStepOptions('${project.id}', event)">階段狀態</button>
     ` : '';
 
     const buttonsHtml = `
@@ -1133,7 +1133,7 @@ function showNextStepOptions(projectId, event) {
         <div style="position: relative;">
             <span onclick="closeNextStepModal()" style="position: absolute; top: -8px; right: -4px; cursor: pointer; font-size: 16px; color: #9ca3af;"
             onmouseover="this.style.color='#6b7280'" onmouseout="this.style.color='#9ca3af'">×</span>
-            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;">更改狀態</p>
+            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;">選擇階段狀態</p>
             <div>${optionsHtml}</div>
         </div>
     `;
