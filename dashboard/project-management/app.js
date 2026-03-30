@@ -1106,14 +1106,14 @@ function showNextStepOptions(projectId, event) {
     // 取得狀態標籤位置（直接使用 event.target，因為是點擊狀態標籤觸發）
     const rect = event.target.getBoundingClientRect();
 
-    // 顯示彈窗（小型，顯示在狀態標籤下方）
+    // 顯示彈窗（小型，顯示在狀態標籤右側）
     const modal = document.createElement('div');
     modal.id = 'next-step-modal';
     modal.style.cssText = `
         position: fixed;
         z-index: 9999;
-        left: ${rect.left}px;
-        top: ${rect.bottom + 5}px;
+        left: ${rect.right + 10}px;
+        top: ${rect.top}px;
         background: white;
         border-radius: 8px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
