@@ -362,7 +362,7 @@
                         <div class="form-group">
                             <label>聯絡人 <span class="required">*</span></label>
                             <div class="contact-search-container">
-                                <input type="text" id="new-project-contact" placeholder="輸入聯絡人姓名搜尋..." required autocomplete="off" disabled>
+                                <input type="text" id="new-project-contact" placeholder="輸入聯絡人姓名..." required autocomplete="off">
                                 <div id="contact-suggestions" class="contact-suggestions-dropdown"></div>
                             </div>
                         </div>
@@ -552,14 +552,14 @@
             </div>
         </div>
 
-        <!-- 新增負責人提示彈窗 -->
+        <!-- 新增負責人/聯絡人提示彈窗 -->
         <div id="assignee-prompt-modal" class="modal client-prompt-modal">
             <div class="modal-content">
-                <h3 id="assignee-prompt-title">👤 新增負責人</h3>
+                <h3 id="assignee-prompt-title">👤 新增</h3>
                 <p id="assignee-prompt-message"></p>
                 <div class="prompt-buttons">
-                    <button class="btn-prompt btn-prompt-primary" onclick="confirmAddToAssigneeDB()">加入負責人資料庫</button>
-                    <button class="btn-prompt btn-prompt-secondary" onclick="cancelAddToAssigneeDB()">僅用於此專案</button>
+                    <button class="btn-prompt btn-prompt-primary" id="btn-confirm-add-db" onclick="handleConfirmAddToDB()">加入資料庫</button>
+                    <button class="btn-prompt btn-prompt-secondary" id="btn-cancel-add-db" onclick="handleCancelAddToDB()">僅用於此專案</button>
                 </div>
             </div>
         </div>
@@ -617,7 +617,7 @@
     <script src="modules/supabase-auth.js?v=5"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=145"></script>
+    <script src="app.js?v=146"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>
