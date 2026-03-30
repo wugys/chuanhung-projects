@@ -927,15 +927,8 @@ function createProjectCard(project) {
         <button class="btn-reopen-case" onclick="event.stopPropagation(); reopenProjectCase('${project.id}')">↩️ 撤回結案</button>
     `;
 
-    // 更改階段按鈕
-    const showChangePhase = !isCompleted;
-    const changePhaseBtn = showChangePhase ? `
-        <button class="btn-next-step" onclick="event.stopPropagation(); showNextStepOptions('${project.id}', event)">階段狀態</button>
-    ` : '';
-
     const buttonsHtml = `
         <div class="card-buttons">
-            ${changePhaseBtn}
             ${closeCaseBtns}
         </div>
     `;
@@ -943,7 +936,7 @@ function createProjectCard(project) {
     card.innerHTML = `
         <div class="card-header">
             <span class="card-id">${project.id}</span>
-            <span class="card-status ${project.status}">${project.statusText}</span>
+            <span class="card-status ${project.status}" onclick="event.stopPropagation(); showNextStepOptions('${project.id}', event)" style="cursor: pointer;" title="點擊更改狀態">${project.statusText}</span>
         </div>
         <div class="card-title">${project.name}</div>
         <div class="card-client">${project.client} / ${project.contact}</div>
