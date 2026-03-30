@@ -1247,12 +1247,22 @@ h2 {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    outline: none;
+    box-shadow: none;
+    opacity: 1;
+    filter: none;
 }
 
 .btn-close-case-complete:hover {
     background: #059669;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.btn-close-case-complete:disabled {
+    background: #10b981;
+    opacity: 1;
+    filter: none;
 }
 
 /* 未完成結案按鈕樣式 */
@@ -1266,12 +1276,22 @@ h2 {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    outline: none;
+    box-shadow: none;
+    opacity: 1;
+    filter: none;
 }
 
 .btn-close-case-incomplete:hover {
     background: #d97706;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+.btn-close-case-incomplete:disabled {
+    background: #f59e0b;
+    opacity: 1;
+    filter: none;
 }
 
 /* 撤回結案按鈕樣式 */
@@ -1285,12 +1305,22 @@ h2 {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    outline: none;
+    box-shadow: none;
+    opacity: 1;
+    filter: none;
 }
 
 .btn-reopen-case:hover {
     background: #2563eb;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+.btn-reopen-case:disabled {
+    background: #3b82f6;
+    opacity: 1;
+    filter: none;
 }
 
 .btn-next-step {
