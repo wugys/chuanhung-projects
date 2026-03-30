@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>銓宏國際 - 專案管理系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=137">
+    <link rel="stylesheet" href="style.css?v=138">
 </head>
 <body>
     <div class="container">
@@ -327,35 +327,111 @@
                 <span class="close-btn" onclick="closeAddProjectModal()">×</span>
                 <h2>📋 新增專案</h2>
                 <form id="add-project-form" onsubmit="submitNewProject(event)">
+                    <!-- 第1列：專案編號 + 新增日期 -->
                     <div class="form-row">
                         <div class="form-group">
                             <label>專案編號 <span class="required">*</span></label>
                             <input type="text" id="new-project-id" required readonly>
                         </div>
                         <div class="form-group">
-                            <label>客戶名稱 <span class="required">*</span></label>
+                            <label>新增日期 <span class="required">*</span></label>
+                            <input type="date" id="new-project-start-date" required>
+                        </div>
+                    </div>
+
+                    <!-- 第2列：負責人 + 公司名稱 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>負責人 <span class="required">*</span></label>
+                            <select id="new-project-assignee" required>
+                                <option value="">請選擇負責人</option>
+                                <option value="KEVIN">KEVIN</option>
+                                <option value="姿姿">姿姿</option>
+                                <option value="MIA">MIA</option>
+                                <option value="BETTY">BETTY</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>公司名稱 <span class="required">*</span></label>
                             <div class="client-search-container">
-                                <input type="text" id="new-project-client" placeholder="輸入客戶名稱搜尋..." required autocomplete="off">
+                                <input type="text" id="new-project-client" placeholder="輸入公司名稱搜尋..." required autocomplete="off">
                                 <div id="client-suggestions" class="client-suggestions-dropdown"></div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- 第3列：聯絡人 + 產品名稱 -->
                     <div class="form-row">
                         <div class="form-group">
                             <label>聯絡人 <span class="required">*</span></label>
                             <div class="contact-select-container">
                                 <select id="new-project-contact" required disabled>
-                                    <option value="">先選擇客戶</option>
+                                    <option value="">先選擇公司</option>
                                 </select>
                                 <input type="text" id="new-contact-input" class="hidden" placeholder="輸入新聯絡人姓名">
                                 <button type="button" id="btn-add-new-contact" class="btn-icon" onclick="toggleNewContactInput()" title="新增聯絡人">+</button>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>產品名稱 <span class="required">*</span></label>
-                            <input type="text" id="new-project-name" placeholder="例如：NFC 鑰匙圈" required>
+                            <label>產品名稱</label>
+                            <input type="text" id="new-project-name" placeholder="選填">
                         </div>
                     </div>
+
+                    <!-- 第4列：數量 + 預算 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>數量</label>
+                            <input type="text" id="new-project-quantity" placeholder="選填，例如：1000 pcs">
+                        </div>
+                        <div class="form-group">
+                            <label>預算</label>
+                            <input type="text" id="new-project-budget" placeholder="選填，例如：50,000">
+                        </div>
+                    </div>
+
+                    <!-- 第5列：工期 + 客戶需求階段 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>工期</label>
+                            <input type="text" id="new-project-duration" placeholder="選填，例如：30天">
+                        </div>
+                        <div class="form-group">
+                            <label>目前階段 <span class="required">*</span></label>
+                            <select id="new-project-phase" required>
+                                <option value="proposing">💡 提案</option>
+                                <option value="quoting">📋 報價</option>
+                                <option value="sampling">🔨 打樣</option>
+                                <option value="production">🏭 大貨</option>
+                                <option value="shipping">🚚 出貨</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 第6列：客戶需求事項 -->
+                    <div class="form-row full-width">
+                        <div class="form-group">
+                            <label>客戶需求事項</label>
+                            <div id="client-requirements-list" class="requirements-list">
+                                <!-- 動態添加需求項目 -->
+                            </div>
+                            <button type="button" class="btn-add-requirement" onclick="addRequirementItem()">
+                                <i class="fas fa-plus"></i> 添加需求事項
+                            </button>
+                            <div class="requirement-example" style="margin-top: 10px; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 12px; color: #666;">
+                                <strong>範例：</strong>3/30-一番賞禮品提案，2天
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第7列：備註 -->
+                    <div class="form-row full-width">
+                        <div class="form-group">
+                            <label>備註</label>
+                            <textarea id="new-project-remarks" rows="3" placeholder="其他備註說明..."></textarea>
+                        </div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="button" class="btn-secondary" onclick="closeAddProjectModal()">取消</button>
                         <button type="submit" class="btn-primary">✅ 建立專案</button>
@@ -535,7 +611,7 @@
     <script src="modules/supabase-auth.js?v=5"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=1774854698"></script>
+    <script src="app.js?v=138"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>

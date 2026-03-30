@@ -130,6 +130,61 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+/* 客戶需求事項樣式 */
+.requirements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.requirement-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.requirement-item input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.requirement-item .btn-remove-requirement {
+    padding: 8px 12px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.requirement-item .btn-remove-requirement:hover {
+    background: #dc2626;
+}
+
+.btn-add-requirement {
+    padding: 8px 16px;
+    background: #f3f4f6;
+    border: 1px dashed #9ca3af;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btn-add-requirement:hover {
+    background: #e5e7eb;
+    border-color: #6b7280;
+}
+
 /* 響應式設計 */
 @media (max-width: 640px) {
     .form-row {

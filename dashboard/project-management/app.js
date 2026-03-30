@@ -2997,14 +2997,20 @@ function submitNewTaskFromTodo() {
 function openAddProjectModal() {
     const modal = document.getElementById('add-project-modal');
     const projectIdInput = document.getElementById('new-project-id');
-    const deadlineInput = document.getElementById('new-project-deadline');
+    const startDateInput = document.getElementById('new-project-start-date');
 
     // 自動生成專案編號
     projectIdInput.value = generateProjectId();
 
-    // 預設今天日期
+    // 預設今天日期為起始日
     const today = new Date();
-    deadlineInput.value = today.toISOString().split('T')[0];
+    startDateInput.value = today.toISOString().split('T')[0];
+
+    // 清空需求事項列表
+    const requirementsList = document.getElementById('client-requirements-list');
+    if (requirementsList) {
+        requirementsList.innerHTML = '';
+    }
 
     // 顯示彈窗
     modal.classList.add('active');
@@ -3019,13 +3025,54 @@ function closeAddProjectModal() {
     const contactSelect = document.getElementById('new-project-contact');
     const contactInput = document.getElementById('new-contact-input');
     if (contactSelect) {
-        contactSelect.innerHTML = '<option value="">先選擇客戶</option>';
+        contactSelect.innerHTML = '<option value="">先選擇公司</option>';
         contactSelect.disabled = true;
         contactSelect.classList.remove('hidden');
     }
     if (contactInput) {
         contactInput.value = '';
         contactInput.classList.add('hidden');
+    }
+
+    // 清空需求事項列表
+    const requirementsList = document.getElementById('client-requirements-list');
+    if (requirementsList) {
+        requirementsList.innerHTML = '';
+    }
+}
+
+// 添加客戶需求事項
+function addRequirementItem() {
+    const requirementsList = document.getElementById('client-requirements-list');
+    const itemCount = requirementsList.children.length + 1;
+    
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'requirement-item';
+    itemDiv.innerHTML = `
+        <span style="color: #666; font-size: 14px; min-width: 24px;">${itemCount}></span>
+        <input type="text" name="requirement[]" placeholder="例如：3/30-一番賞禮品提案，2天" >
+        <button type="button" class="btn-remove-requirement" onclick="removeRequirementItem(this)">刪除</button>
+    `;
+    
+    requirementsList.appendChild(itemDiv);
+    
+    // 自動聚焦到新輸入框
+    const newInput = itemDiv.querySelector('input');
+    if (newInput) newInput.focus();
+}
+
+// 刪除客戶需求事項
+function removeRequirementItem(button) {
+    const item = button.closest('.requirement-item');
+    if (item) {
+        item.remove();
+        // 重新編號
+        const requirementsList = document.getElementById('client-requirements-list');
+        const items = requirementsList.querySelectorAll('.requirement-item');
+        items.forEach((item, index) => {
+            const span = item.querySelector('span');
+            if (span) span.textContent = `${index + 1}>`;
+        });
     }
 }
 
@@ -3086,16 +3133,35 @@ async function submitNewProject(event) {
         client: clientName,
         contact: contactName,
         product_type: '',
-        quantity: '',
+        quantity: document.getElementById('new-project-quantity')?.value || '',
+        budget: document.getElementById('new-project-budget')?.value || '',
+        duration: document.getElementById('new-project-duration')?.value || '',
         deadline: '',
-        phase: 'proposing',
-        sales_rep: 'Kevin',
-        notes: '',
+        start_date: document.getElementById('new-project-start-date')?.value || '',
+        assignee: document.getElementById('new-project-assignee')?.value || 'KEVIN',
+        phase: document.getElementById('new-project-phase')?.value || 'proposing',
+        sales_rep: document.getElementById('new-project-assignee')?.value || 'KEVIN',
+        notes: document.getElementById('new-project-remarks')?.value || '',
         progress: 0,
         status: 'active',
-        status_text: '💡 提案中',
-        tasks: []
+        status_text: getStatusText(document.getElementById('new-project-phase')?.value || 'proposing'),
+        tasks: [],
+        requirements: []
     };
+
+    // 收集客戶需求事項
+    const requirementInputs = document.querySelectorAll('input[name="requirement[]"]');
+    requirementInputs.forEach(input => {
+        if (input.value.trim()) {
+            formData.requirements.push(input.value.trim());
+        }
+    });
+
+    // 如果有需求事項，加入 notes
+    if (formData.requirements.length > 0) {
+        formData.notes = '客戶需求：\n' + formData.requirements.map((req, idx) => `${idx + 1}> ${req}`).join('\n') + 
+                         (formData.notes ? '\n\n備註：\n' + formData.notes : '');
+    }
 
     try {
         // 寫入 Supabase
