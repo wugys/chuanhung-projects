@@ -14,8 +14,7 @@ function escapeHtml(text) {
         .replace(/'/g, '&#039;');
 }
 
-// 儲存專案資料到 LocalStorage
-// 格式化日期為簡短格式 (2026-03-17 → 3/17)function formatDateShort(dateStr) {    if (!dateStr) return '';    const date = new Date(dateStr);    return `${date.getMonth() + 1}/${date.getDate()}`;}
+// 儲存專案資料到 LocalStorage（並同步到 Supabase）
 function saveProjectsToLocalStorage() {
     try {
         // 【資料保護機制】儲存前先建立備份（但配額超過時跳過備份，不影響主要儲存）
@@ -41,6 +40,18 @@ function saveProjectsToLocalStorage() {
         
         localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
         console.log('💾 已儲存', projects.length, '個專案到 LocalStorage');
+        
+        // 【Supabase 同步】如果已啟用，同時儲存到 Supabase
+        if (USE_SUPABASE && isMigratedToSupabase()) {
+            saveProjectsToSupabase().then(success => {
+                if (success) {
+                    console.log('☁️ 已同步到 Supabase');
+                } else {
+                    console.warn('⚠️ Supabase 同步失敗，但 LocalStorage 儲存成功');
+                }
+            });
+        }
+        
         // 驗證儲存成功
         const verify = localStorage.getItem(STORAGE_KEY);
         if (verify) {
@@ -104,6 +115,138 @@ function listBackups() {
     return backups.sort((a, b) => b.timestamp - a.timestamp);
 }
 
+// ==================== Supabase 儲存功能（v164+）====================
+const USE_SUPABASE = true; // 啟用 Supabase 儲存
+
+// 取得 Supabase 客戶端（與 supabase-auth.js 共用配置）
+function getSupabaseClient() {
+    if (!window.supabase?.createClient) {
+        return null;
+    }
+    // 使用與 supabase-auth.js 相同的配置
+    const SUPABASE_URL = 'https://djvyozmdenvzlbyieyss.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqdnlvem1kZW52emxieWlleXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTA1ODcsImV4cCI6MjA4OTY4NjU4N30.xc33MXQmbNph4EcFHwNbmai3dXDanIj2VKStJ6Xy2Tg';
+    return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+// 從 Supabase 載入專案資料
+async function loadProjectsFromSupabase() {
+    if (!USE_SUPABASE) return null;
+    
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+        console.log('⚠️ Supabase 未初始化，使用 LocalStorage');
+        return null;
+    }
+    
+    try {
+        console.log('🔄 正在從 Supabase 載入資料...');
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*');
+        
+        if (error) {
+            console.error('❌ Supabase 載入失敗:', error);
+            return null;
+        }
+        
+        if (data && data.length > 0) {
+            // 轉換資料格式（從資料庫欄位名稱到程式碼使用的名稱）
+            const projects = data.map(record => ({
+                id: record.id,
+                name: record.name,
+                client: record.client,
+                contact: record.contact,
+                quantity: record.quantity,
+                deadline: record.deadline,
+                progress: record.progress || 0,
+                status: record.status || 'active',
+                statusText: record.status_text,
+                phase: record.phase || 'proposing',
+                sales_rep: record.sales_rep || 'Kevin',
+                tasks: record.tasks || [],
+                quoteDate: record.quote_date,
+                budget: record.budget,
+                duration: record.duration,
+                description: record.description,
+                notes: record.notes,
+                isClosed: record.status === 'completed'
+            }));
+            
+            console.log('✅ 從 Supabase 載入', projects.length, '個專案');
+            return projects;
+        }
+    } catch (e) {
+        console.error('❌ Supabase 載入異常:', e);
+    }
+    
+    return null;
+}
+
+// 儲存專案資料到 Supabase
+async function saveProjectsToSupabase() {
+    if (!USE_SUPABASE) return false;
+    
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+        console.log('⚠️ Supabase 未初始化，僅使用 LocalStorage');
+        return false;
+    }
+    
+    try {
+        console.log('🔄 正在儲存資料到 Supabase...');
+        
+        // 轉換資料格式
+        const records = projects.map(project => ({
+            id: project.id,
+            name: project.name,
+            client: project.client,
+            contact: project.contact,
+            quantity: project.quantity,
+            deadline: project.deadline,
+            progress: project.progress || 0,
+            status: project.status || 'active',
+            status_text: project.statusText,
+            phase: project.phase || 'proposing',
+            sales_rep: project.sales_rep || 'Kevin',
+            tasks: project.tasks || [],
+            quote_date: project.quoteDate,
+            budget: project.budget,
+            duration: project.duration,
+            description: project.description,
+            notes: project.notes
+        }));
+        
+        // 使用 upsert 批量儲存
+        const { error } = await supabase
+            .from('projects')
+            .upsert(records, { onConflict: 'id' });
+        
+        if (error) {
+            console.error('❌ Supabase 儲存失敗:', error);
+            return false;
+        }
+        
+        console.log('✅ 已儲存', records.length, '個專案到 Supabase');
+        return true;
+    } catch (e) {
+        console.error('❌ Supabase 儲存異常:', e);
+        return false;
+    }
+}
+
+// 檢查是否已遷移到 Supabase
+function isMigratedToSupabase() {
+    const status = localStorage.getItem('chuanhung_migration_status');
+    if (status) {
+        const parsed = JSON.parse(status);
+        return parsed.migrated === true;
+    }
+    return false;
+}
+
+// ==================== Supabase 儲存功能結束 ====================
+
 // 從 LocalStorage 載入專案資料
 function loadProjectsFromLocalStorage() {
     try {
@@ -119,35 +262,68 @@ function loadProjectsFromLocalStorage() {
     return null;
 }
 
-// 初始化時載入資料 - 資料庫優先原則：LocalStorage 永遠優先於程式碼預設資料
-function initProjects() {
+// 初始化時載入資料 - 資料庫優先原則：Supabase > LocalStorage > 預設資料
+async function initProjectsAsync() {
+    console.log('🔄 初始化專案資料...');
+    
+    // 優先嘗試從 Supabase 載入（如果已遷移或啟用）
+    if (USE_SUPABASE && isMigratedToSupabase()) {
+        const supabaseData = await loadProjectsFromSupabase();
+        if (supabaseData && supabaseData.length > 0) {
+            projects.length = 0;
+            supabaseData.forEach(p => projects.push(p));
+            console.log('✅ 專案資料初始化完成（從 Supabase 載入）', projects.length, '個');
+            localStorage.setItem('chuanhung_data_source', 'supabase');
+            return;
+        }
+    }
+    
+    // 其次從 LocalStorage 載入
     const stored = loadProjectsFromLocalStorage();
     if (stored && stored.length > 0) {
-        // 【核心原則】LocalStorage 中的資料優先，完全取代程式碼中的預設資料
-        // 這確保版本回退時不會覆蓋用戶已更新的專案進度
         projects.length = 0;
         stored.forEach(p => projects.push(p));
-        console.log('✅ 專案資料初始化完成（從 LocalStorage 載入，優先於預設資料）', projects.length, '個');
-        
-        // 標記這是真实用户資料（非預設資料）
+        console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
         localStorage.setItem('chuanhung_data_source', 'user');
     } else {
         // 只有 LocalStorage 完全為空時，才使用程式碼中的預設資料
-        console.log('⚠️ LocalStorage 無資料，使用程式碼預設資料', projects.length, '個');
-        console.log('💡 首次載入後，資料將儲存到 LocalStorage，後續版本回退不會影響');
-        
-        // 立即將預設資料儲存到 LocalStorage
+        console.log('⚠️ 無既有資料，使用程式碼預設資料', projects.length, '個');
         saveProjectsToLocalStorage();
         localStorage.setItem('chuanhung_data_source', 'default');
     }
+}
+
+// 舊版同步 initProjects（保留向後相容）
+function initProjects() {
+    // 如果尚未遷移到 Supabase，使用 LocalStorage
+    if (!isMigratedToSupabase()) {
+        const stored = loadProjectsFromLocalStorage();
+        if (stored && stored.length > 0) {
+            projects.length = 0;
+            stored.forEach(p => projects.push(p));
+            console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
+            localStorage.setItem('chuanhung_data_source', 'user');
+        } else {
+            console.log('⚠️ LocalStorage 無資料，使用程式碼預設資料', projects.length, '個');
+            saveProjectsToLocalStorage();
+            localStorage.setItem('chuanhung_data_source', 'default');
+        }
+    }
+    // 如果已遷移，init() 會呼叫 initProjectsAsync() 重新載入
     
     // 【開發者工具】顯示資料保護機制提示
     console.log('%c🔒 資料保護機制已啟用', 'color: #10b981; font-size: 14px; font-weight: bold;');
     console.log('%c• LocalStorage 資料永遠優先於程式碼預設資料', 'color: #6b7280;');
     console.log('%c• 每次修改前自動建立備份', 'color: #6b7280;');
+    if (USE_SUPABASE) {
+        console.log('%c• Supabase 雲端儲存已啟用', 'color: #3b82f6;');
+    }
     console.log('%c• 可用指令:', 'color: #6b7280;');
     console.log('%c  - listBackups() %c查看所有備份', 'color: #3b82f6;', 'color: #6b7280;');
     console.log('%c  - restoreFromBackup(key) %c從備份還原', 'color: #3b82f6;', 'color: #6b7280;');
+    if (USE_SUPABASE) {
+        console.log('%c  - migrateToSupabase() %c遷移到 Supabase', 'color: #3b82f6;', 'color: #6b7280;');
+    }
 }
 // ==================== LocalStorage 結束 ====================
 
