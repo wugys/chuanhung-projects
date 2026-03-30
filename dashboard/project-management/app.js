@@ -930,7 +930,7 @@ function createProjectCard(project) {
     // 下一步按鈕（僅對提案中、報價中、打樣中顯示）
     const showNextStep = ['proposing', 'quoting', 'sampling'].includes(project.phase);
     const nextStepBtn = showNextStep ? `
-        <button class="btn-next-step" onclick="event.stopPropagation(); showNextStepOptions('${project.id}')">➡️ 下一步</button>
+        <button class="btn-next-step" onclick="event.stopPropagation(); showNextStepOptions('${project.id}', event)">➡️ 下一步</button>
     ` : '';
 
     const buttonsHtml = `
@@ -1086,7 +1086,7 @@ function reopenProjectCase(projectId) {
 }
 
 // 顯示下一步選項
-function showNextStepOptions(projectId) {
+function showNextStepOptions(projectId, event) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
 
@@ -1118,32 +1118,58 @@ function showNextStepOptions(projectId) {
 
     // 建立選項 HTML
     const optionsHtml = options.map(opt => 
-        `<button onclick="selectNextStep('${projectId}', '${opt.value}')" style="display: block; width: 100%; padding: 12px; margin: 8px 0; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;"
+        `<button onclick="selectNextStep('${projectId}', '${opt.value}')" style="display: block; width: 100%; padding: 8px 12px; margin: 4px 0; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;"
         onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">${opt.label}</button>`
     ).join('');
 
-    // 顯示彈窗
+    // 取得按鈕位置
+    const btn = event.target.closest('.btn-next-step');
+    const rect = btn ? btn.getBoundingClientRect() : { left: 0, top: 0 };
+
+    // 顯示彈窗（小型，靠近按鈕）
     const modal = document.createElement('div');
     modal.id = 'next-step-modal';
-    modal.className = 'modal';
-    modal.style.display = 'flex';
+    modal.style.cssText = `
+        position: fixed;
+        z-index: 9999;
+        left: ${rect.left}px;
+        top: ${rect.bottom + 5}px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        padding: 12px;
+        min-width: 140px;
+        max-width: 180px;
+    `;
     modal.innerHTML = `
-        <div class="modal-content" style="max-width: 350px; text-align: center;">
-            <span class="close-btn" onclick="closeNextStepModal()">×</span>
-            <h3 style="margin-bottom: 20px;">➡️ 選擇下一步</h3>
-            <p style="margin-bottom: 20px; color: #6b7280; font-size: 14px;">目前階段：${project.statusText}</p>
-            <div style="text-align: left;">
-                ${optionsHtml}
-            </div>
-            <button onclick="closeNextStepModal()" style="margin-top: 15px; padding: 10px 20px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">取消</button>
+        <div style="position: relative;">
+            <span onclick="closeNextStepModal()" style="position: absolute; top: -8px; right: -4px; cursor: pointer; font-size: 16px; color: #9ca3af;"
+            onmouseover="this.style.color='#6b7280'" onmouseout="this.style.color='#9ca3af'">×</span>
+            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;">➡️ 選擇下一步</p>
+            <div>${optionsHtml}</div>
         </div>
     `;
+    
+    // 點擊外部關閉
+    modal.onclick = function(e) {
+        if (e.target === modal) closeNextStepModal();
+    };
     
     // 移除舊的彈窗（如果存在）
     const oldModal = document.getElementById('next-step-modal');
     if (oldModal) oldModal.remove();
     
     document.body.appendChild(modal);
+    
+    // 點擊其他地方關閉
+    setTimeout(() => {
+        document.addEventListener('click', function closeOnClick(e) {
+            if (!modal.contains(e.target)) {
+                closeNextStepModal();
+                document.removeEventListener('click', closeOnClick);
+            }
+        });
+    }, 100);
 }
 
 // 關閉下一步彈窗
