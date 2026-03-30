@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>銓宏國際 - 專案管理系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=18">
+    <link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
     <div class="container">
@@ -68,20 +68,27 @@
                 <button class="clear-search-btn" onclick="clearGlobalFilter()">
                     <i class="fas fa-times"></i> 清除
                 </button>
+                <button class="search-person-btn" onclick="openPersonQueryModal()">
+                    <i class="fas fa-user"></i> 人員查詢
+                </button>
             </div>
         </header>
 
         <!-- 視圖切換 -->
         <nav class="nav-tabs">
-            <button class="tab-btn active" onclick="showView('proposal')">💡 提案階段</button>
-            <button class="tab-btn" onclick="showView('quote')">📋 報價階段</button>
-            <button class="tab-btn" onclick="showView('sample')">🔨 打樣階段</button>
-            <button class="tab-btn" onclick="showView('production')">🏭 生產階段</button>
-            <button class="tab-btn" onclick="showView('shipping')">🚚 出貨階段</button>
-            <button class="tab-btn" onclick="showView('list')">🔄 進行中清單</button>
-            <button class="tab-btn" onclick="showView('closed')">✅ 已結案</button>
-            <button class="tab-btn" onclick="showView('pending-confirm')">⏳ 待確認專案</button>
-            <button class="tab-btn export-btn" onclick="openPersonQueryModal()">👤 人員查詢</button>
+            <div class="nav-main-stages">
+                <button class="tab-btn active" onclick="showView('proposal')">💡 提案階段</button>
+                <button class="tab-btn" onclick="showView('quote')">📋 報價階段</button>
+                <button class="tab-btn" onclick="showView('sample')">🔨 打樣階段</button>
+                <button class="tab-btn" onclick="showView('production')">🏭 生產階段</button>
+                <button class="tab-btn" onclick="showView('shipping')">🚚 出貨階段</button>
+                <button class="tab-btn" onclick="showView('list')">🔄 進行中清單</button>
+            </div>
+            <div class="nav-divider"></div>
+            <div class="nav-management">
+                <button class="tab-btn" onclick="showView('closed')">✅ 已結案</button>
+                <button class="tab-btn" onclick="showView('pending-confirm')">⏳ 待確認專案</button>
+            </div>
         </nav>
 
         <!-- 提案階段視圖 -->
@@ -528,7 +535,7 @@
     <script src="modules/supabase-auth.js?v=5"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=134"></script>
+    <script src="app.js?v=136"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>
