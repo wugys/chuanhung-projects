@@ -2941,6 +2941,46 @@ h2 {
     display: block;
 }
 
+/* 負責人搜尋樣式 */
+.assignee-search-container {
+    position: relative;
+}
+
+.assignee-suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-top: 4px;
+}
+
+.assignee-suggestions-dropdown.active {
+    display: block;
+}
+
+.assignee-suggestion-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+}
+
+.assignee-suggestion-item:hover {
+    background: #f8f9fa;
+}
+
+.assignee-suggestion-item:last-child {
+    border-bottom: none;
+}
+
 .client-suggestion-item {
     padding: 10px 14px;
     cursor: pointer;

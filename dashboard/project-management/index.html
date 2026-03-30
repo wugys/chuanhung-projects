@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>銓宏國際 - 專案管理系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=138">
+    <link rel="stylesheet" href="style.css?v=139">
 </head>
 <body>
     <div class="container">
@@ -343,13 +343,10 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>負責人 <span class="required">*</span></label>
-                            <select id="new-project-assignee" required>
-                                <option value="">請選擇負責人</option>
-                                <option value="KEVIN">KEVIN</option>
-                                <option value="姿姿">姿姿</option>
-                                <option value="MIA">MIA</option>
-                                <option value="BETTY">BETTY</option>
-                            </select>
+                            <div class="assignee-search-container">
+                                <input type="text" id="new-project-assignee" placeholder="輸入負責人姓名..." required autocomplete="off">
+                                <div id="assignee-suggestions" class="assignee-suggestions-dropdown"></div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>公司名稱 <span class="required">*</span></label>
@@ -611,7 +608,7 @@
     <script src="modules/supabase-auth.js?v=5"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=138"></script>
+    <script src="app.js?v=139"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>

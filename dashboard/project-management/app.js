@@ -363,6 +363,60 @@ function initAddProjectForm() {
             }
         });
     }
+
+    // 負責人輸入框事件（模糊搜尋）
+    const assigneeInput = document.getElementById('new-project-assignee');
+    if (assigneeInput) {
+        assigneeInput.addEventListener('input', (e) => {
+            showAssigneeSuggestions(e.target.value);
+        });
+
+        assigneeInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                const dropdown = document.getElementById('assignee-suggestions');
+                if (dropdown) dropdown.classList.remove('active');
+            }, 200);
+        });
+
+        assigneeInput.addEventListener('focus', (e) => {
+            showAssigneeSuggestions(e.target.value);
+        });
+    }
+}
+
+// 顯示負責人建議列表
+function showAssigneeSuggestions(query) {
+    const dropdown = document.getElementById('assignee-suggestions');
+    if (!dropdown) return;
+
+    // 負責人列表
+    const assignees = ['KEVIN', '姿姿', 'MIA', 'BETTY'];
+
+    if (!query || query.length < 1) {
+        dropdown.classList.remove('active');
+        return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const matches = assignees.filter(name => 
+        name.toLowerCase().includes(lowerQuery)
+    );
+
+    if (matches.length === 0) {
+        dropdown.innerHTML = '<div class="assignee-suggestion-item" style="color: #999;">無符合的負責人</div>';
+    } else {
+        dropdown.innerHTML = matches.map(name => `
+            <div class="assignee-suggestion-item" onclick="selectAssignee('${name}')">${name}</div>
+        `).join('');
+    }
+
+    dropdown.classList.add('active');
+}
+
+// 選擇負責人
+function selectAssignee(name) {
+    document.getElementById('new-project-assignee').value = name;
+    document.getElementById('assignee-suggestions').classList.remove('active');
 }
 
 // ==================== 客戶資料庫功能結束 ====================
