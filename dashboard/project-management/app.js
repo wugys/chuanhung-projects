@@ -1046,8 +1046,28 @@ function renderPendingConfirmView() {
     });
 }
 
+// 根據階段取得狀態文字（提前定義供 createProjectCard 使用）
+function getStatusText(phase) {
+    const statusMap = {
+        'proposing': '💡 提案中',
+        'proposal_pending': '📤 提案待確認',
+        'quoting': '📋 報價中',
+        'pending': '🔵 報價待確認',
+        'sampling': '🔨 打樣中',
+        'production': '🏭 生產中',
+        'shipping': '🚚 出貨中',
+        'completed': '✅ 已完成'
+    };
+    return statusMap[phase] || '💡 提案中';
+}
+
 // 建立專案卡片
 function createProjectCard(project) {
+    // 確保 statusText 有值
+    if (!project.statusText) {
+        project.statusText = getStatusText(project.phase || 'proposing');
+    }
+
     const card = document.createElement('div');
     card.className = `project-card ${project.status}`;
 
@@ -1312,21 +1332,6 @@ function selectNextStep(projectId, nextPhase) {
     closeNextStepModal();
 
     showTodoToast(`✅ 專案階段已更改為${project.statusText}`);
-}
-
-// 根據階段取得狀態文字
-function getStatusText(phase) {
-    const statusMap = {
-        'proposing': '💡 提案中',
-        'proposal_pending': '📤 提案待確認',
-        'quoting': '📋 報價中',
-        'pending': '🔵 報價待確認',
-        'sampling': '🔨 打樣中',
-        'production': '🏭 生產中',
-        'shipping': '🚚 出貨中',
-        'completed': '✅ 已完成'
-    };
-    return statusMap[phase] || '💡 提案中';
 }
 
 // 渲染甘特圖
@@ -3513,21 +3518,6 @@ async function submitNewProject(event) {
         renderAllViews();
         alert('✅ 專案已建立（離線模式）');
     }
-}
-
-// 根據階段取得狀態文字
-function getStatusText(phase) {
-    const statusMap = {
-        'proposing': '💡 提案中',
-        'proposal_pending': '📤 提案待確認',
-        'quoting': '📋 報價中',
-        'pending': '🔵 報價待確認',
-        'sampling': '🔨 打樣中',
-        'production': '🏭 生產中',
-        'shipping': '🚚 出貨中',
-        'completed': '✅ 已完成'
-    };
-    return statusMap[phase] || '💡 提案中';
 }
 
 // 重新整理所有視圖
