@@ -870,19 +870,12 @@ function renderProductionView() {
         productionContainer.appendChild(card);
     });
 
-    // 即將出貨（這裡可以根據實際需求篩選接近截止日的專案）
+    // 出貨中
     const shippingContainer = document.getElementById('shipping-projects');
     shippingContainer.innerHTML = '';
-    // 篩選截止日在 7 天內的專案
-    const today = new Date();
-    const upcomingProjects = projects.filter(p => {
-        if (p.phase !== 'production') return false;
-        const deadline = new Date(p.deadline);
-        const diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
-        return diffDays <= 7 && diffDays >= 0;
-    });
+    const shippingProjects = projects.filter(p => p.phase === 'shipping');
 
-    upcomingProjects.forEach(project => {
+    shippingProjects.forEach(project => {
         const card = createProjectCard(project);
         shippingContainer.appendChild(card);
     });
@@ -1090,7 +1083,8 @@ function showNextStepOptions(projectId, event) {
         { value: 'quoting', label: '📋 報價' },
         { value: 'pending', label: '🔵 報價待確認' },
         { value: 'sampling', label: '🔨 打樣' },
-        { value: 'production', label: '🏭 生產' }
+        { value: 'production', label: '🏭 生產' },
+        { value: 'shipping', label: '🚚 出貨' }
     ];
 
     // 建立選項 HTML（當前階段標記為灰色）
@@ -1383,6 +1377,7 @@ function renderList() {
             'pending': '報價待確認',
             'sampling': '打樣中',
             'production': '生產中',
+            'shipping': '出貨中',
             'completed': '已完成',
             'proposing': '提案中',
             'proposal_pending': '提案待確認'
@@ -1413,6 +1408,7 @@ function renderList() {
                     <option value="pending" ${project.phase === 'pending' ? 'selected' : ''}>🔵 報價待確認</option>
                     <option value="sampling" ${project.phase === 'sampling' ? 'selected' : ''}>🔨 打樣</option>
                     <option value="production" ${project.phase === 'production' ? 'selected' : ''}>🏭 生產</option>
+                    <option value="shipping" ${project.phase === 'shipping' ? 'selected' : ''}>🚚 出貨</option>
                     <option value="completed" ${project.phase === 'completed' ? 'selected' : ''}>✅ 已完成</option>
                 </select>
             </td>
@@ -3138,10 +3134,12 @@ async function submitNewProject(event) {
 function getStatusText(phase) {
     const statusMap = {
         'proposing': '💡 提案中',
+        'proposal_pending': '📤 提案待確認',
         'quoting': '📋 報價中',
         'pending': '🔵 報價待確認',
         'sampling': '🔨 打樣中',
         'production': '🏭 生產中',
+        'shipping': '🚚 出貨中',
         'completed': '✅ 已完成'
     };
     return statusMap[phase] || '💡 提案中';
@@ -3469,6 +3467,7 @@ function updateProjectPhase(projectId, newPhase) {
         'pending': '🔵 報價待確認',
         'sampling': '🔨 打樣中',
         'production': '🏭 生產中',
+        'shipping': '🚚 出貨中',
         'completed': '✅ 已完成'
     };
 
@@ -3999,6 +3998,7 @@ function showWorkloadStats() {
             else if (p.phase === 'quoting' || p.phase === 'pending') stats[rep].quoting++;
             else if (p.phase === 'sampling') stats[rep].sampling++;
             else if (p.phase === 'production') stats[rep].production++;
+            else if (p.phase === 'shipping') stats[rep].production++; // 出貨併入生產統計
             else if (p.phase === 'completed') stats[rep].completed++;
         }
     });
