@@ -927,15 +927,15 @@ function createProjectCard(project) {
         <button class="btn-reopen-case" onclick="event.stopPropagation(); reopenProjectCase('${project.id}')">↩️ 撤回結案</button>
     `;
 
-    // 下一步按鈕（僅對提案中、報價中、打樣中顯示）
-    const showNextStep = ['proposing', 'quoting', 'sampling'].includes(project.phase);
-    const nextStepBtn = showNextStep ? `
-        <button class="btn-next-step" onclick="event.stopPropagation(); showNextStepOptions('${project.id}', event)">➡️ 下一步</button>
+    // 更改階段按鈕
+    const showChangePhase = !isCompleted;
+    const changePhaseBtn = showChangePhase ? `
+        <button class="btn-next-step" onclick="event.stopPropagation(); showNextStepOptions('${project.id}', event)">更改階段</button>
     ` : '';
 
     const buttonsHtml = `
         <div class="card-buttons">
-            ${nextStepBtn}
+            ${changePhaseBtn}
             ${closeCaseBtns}
         </div>
     `;
@@ -1090,37 +1090,25 @@ function showNextStepOptions(projectId, event) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
 
-    let options = [];
-    
-    // 根據當前階段顯示不同選項
-    switch (project.phase) {
-        case 'proposing':
-            options = [
-                { value: 'quoting', label: '📋 報價中' },
-                { value: 'proposal_pending', label: '📤 提案待確認' }
-            ];
-            break;
-        case 'quoting':
-            options = [
-                { value: 'pending', label: '🔵 報價待確認' },
-                { value: 'sampling', label: '🔨 打樣中' }
-            ];
-            break;
-        case 'sampling':
-            options = [
-                { value: 'production', label: '🏭 生產中' }
-            ];
-            break;
-        default:
-            alert('當前階段無法進行下一步');
-            return;
-    }
+    // 所有可選階段
+    const allPhases = [
+        { value: 'proposing', label: '💡 提案' },
+        { value: 'proposal_pending', label: '📤 提案待確認' },
+        { value: 'quoting', label: '📋 報價' },
+        { value: 'pending', label: '🔵 報價待確認' },
+        { value: 'sampling', label: '🔨 打樣' },
+        { value: 'production', label: '🏭 生產' }
+    ];
 
-    // 建立選項 HTML
-    const optionsHtml = options.map(opt => 
-        `<button onclick="selectNextStep('${projectId}', '${opt.value}')" style="display: block; width: 100%; padding: 8px 12px; margin: 4px 0; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;"
-        onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">${opt.label}</button>`
-    ).join('');
+    // 建立選項 HTML（當前階段標記為灰色）
+    const optionsHtml = allPhases.map(opt => {
+        const isCurrent = project.phase === opt.value;
+        const bgColor = isCurrent ? '#9ca3af' : '#3b82f6';
+        const onclick = isCurrent ? '' : `onclick="selectNextStep('${projectId}', '${opt.value}')"`;
+        
+        return `<button ${onclick} style="display: block; width: 100%; padding: 8px 12px; margin: 4px 0; background: ${bgColor}; color: white; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;"
+        ${isCurrent ? 'disabled' : ''}>${opt.label} ${isCurrent ? '(目前)' : ''}</button>`;
+    }).join('');
 
     // 取得按鈕位置
     const btn = event.target.closest('.btn-next-step');
@@ -1138,14 +1126,14 @@ function showNextStepOptions(projectId, event) {
         border-radius: 8px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         padding: 12px;
-        min-width: 140px;
-        max-width: 180px;
+        min-width: 160px;
+        max-width: 200px;
     `;
     modal.innerHTML = `
         <div style="position: relative;">
             <span onclick="closeNextStepModal()" style="position: absolute; top: -8px; right: -4px; cursor: pointer; font-size: 16px; color: #9ca3af;"
             onmouseover="this.style.color='#6b7280'" onmouseout="this.style.color='#9ca3af'">×</span>
-            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;">➡️ 選擇下一步</p>
+            <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 12px;">更改階段</p>
             <div>${optionsHtml}</div>
         </div>
     `;
@@ -1196,7 +1184,7 @@ function selectNextStep(projectId, nextPhase) {
     // 關閉彈窗
     closeNextStepModal();
 
-    showTodoToast(`➡️ 專案已移至${project.statusText}`);
+    showTodoToast(`✅ 專案階段已更改為${project.statusText}`);
 }
 
 // 根據階段取得狀態文字
