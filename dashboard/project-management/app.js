@@ -866,12 +866,14 @@ function init() {
 
 // 更新狀態列
 function updateStatusBar() {
+    const proposing = projects.filter(p => p.phase === 'proposing').length;
     const urgent = projects.filter(p => p.status === 'urgent').length;
     const quoting = projects.filter(p => p.phase === 'quoting').length;
     const pending = projects.filter(p => p.phase === 'pending').length;
     const sampling = projects.filter(p => p.phase === 'sampling' || p.phase === 'production').length;
     const completed = projects.filter(p => p.phase === 'completed').length;
 
+    document.getElementById('proposal-count').textContent = proposing;
     document.getElementById('urgent-count').textContent = urgent;
     document.getElementById('quote-count').textContent = quoting;
     document.getElementById('pending-count').textContent = pending;
