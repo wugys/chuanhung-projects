@@ -1097,7 +1097,7 @@ function showNextStepOptions(projectId) {
         case 'proposing':
             options = [
                 { value: 'quoting', label: '📋 報價中' },
-                { value: 'pending', label: '🔵 報價待確認' }
+                { value: 'proposal_pending', label: '📤 提案待確認' }
             ];
             break;
         case 'quoting':
