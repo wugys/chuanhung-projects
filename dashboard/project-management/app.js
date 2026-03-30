@@ -1,5 +1,15 @@
 // 銓宏國際專案管理系統 - 功能邏輯
 
+// ==================== Supabase 客戶端引用 ====================
+// 從 Supabase Auth 模組取得客戶端實例（動態取得）
+function getSupabaseClient() {
+    const client = window.SupabaseAuth?.client || window.SupabaseAuthInstance?.client || null;
+    if (!client) {
+        console.log('⚠️ Supabase client 未初始化');
+    }
+    return client;
+}
+
 // ==================== LocalStorage 儲存功能 ====================
 const STORAGE_KEY = 'chuanhung_projects_v1';
 
@@ -49,12 +59,13 @@ function loadProjectsFromLocalStorage() {
 // 從 Supabase 載入專案資料
 async function loadProjectsFromSupabase() {
     try {
-        if (!supabaseClient) {
+        const client = getSupabaseClient();
+        if (!client) {
             console.log('⚠️ Supabase 未初始化，跳過雲端載入');
             return null;
         }
 
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
             .from('projects')
             .select('*')
             .order('created_at', { ascending: false });
@@ -75,12 +86,13 @@ async function loadProjectsFromSupabase() {
 // 儲存專案資料到 Supabase（更新或插入）
 async function saveProjectToSupabase(project) {
     try {
-        if (!supabaseClient) {
+        const client = getSupabaseClient();
+        if (!client) {
             console.log('⚠️ Supabase 未初始化，僅儲存到 LocalStorage');
             return false;
         }
 
-        const { data, error } = await supabaseClient
+        const { data, error } = await client
             .from('projects')
             .upsert([project], { onConflict: 'id' })
             .select();
@@ -3566,20 +3578,28 @@ async function submitNewProject(event) {
 
     try {
         // 寫入 Supabase
-        const { data, error } = await supabaseClient
-            .from('projects')
-            .insert([formData])
-            .select();
+        const client = getSupabaseClient();
+        if (client) {
+            const { data, error } = await client
+                .from('projects')
+                .insert([formData])
+                .select();
 
-        if (error) {
-            console.error('Supabase 寫入錯誤:', error);
-            // 離線模式：僅儲存到本地
+            if (error) {
+                console.error('Supabase 寫入錯誤:', error);
+                // 離線模式：僅儲存到本地
+                projects.push(formData);
+                saveProjectsToLocalStorage();
+                console.log('💾 離線模式：專案已儲存到 LocalStorage');
+            } else {
+                // 添加到本地陣列（即時顯示）
+                projects.push(formData);
+            }
+        } else {
+            // Supabase 未初始化，僅儲存到本地
             projects.push(formData);
             saveProjectsToLocalStorage();
-            console.log('💾 離線模式：專案已儲存到 LocalStorage');
-        } else {
-            // 添加到本地陣列（即時顯示）
-            projects.push(formData);
+            console.log('💾 Supabase 未連接，專案已儲存到 LocalStorage');
         }
 
         // 關閉彈窗並重新整理顯示
@@ -3682,9 +3702,10 @@ async function analyzeProgressWithAI() { alert("此功能已停用"); return; //
 
     try {
         let analysis;
+        const client = getSupabaseClient();
 
         // 嘗試使用 AI API
-        if (AI_CONFIG.useEdgeFunction && supabaseClient) {
+        if (AI_CONFIG.useEdgeFunction && client) {
             try {
                 analysis = await callAIWithEdgeFunction(description);
             } catch (apiError) {
@@ -3755,7 +3776,12 @@ function toggleAnalysisTask(index, isChecked) {
 
 // 呼叫 Supabase Edge Function 進行 AI 分析
 async function callAIWithEdgeFunction(description) {
-    const { data, error } = await supabaseClient.functions.invoke(
+    const client = getSupabaseClient();
+    if (!client) {
+        throw new Error('Supabase client 未初始化');
+    }
+    
+    const { data, error } = await client.functions.invoke(
         AI_CONFIG.edgeFunctionName,
         {
             body: {
