@@ -771,6 +771,7 @@ function showView(viewName) {
         case 'quote': renderQuoteView(); break;
         case 'sample': renderSampleView(); break;
         case 'production': renderProductionView(); break;
+        case 'shipping': renderShippingView(); break;
         case 'pending-confirm': renderPendingConfirmView(); break;
         case 'closed': renderClosedView(); break;
     }
@@ -869,9 +870,12 @@ function renderProductionView() {
         const card = createProjectCard(project);
         productionContainer.appendChild(card);
     });
+}
 
+// 渲染出貨階段視圖
+function renderShippingView() {
     // 出貨中
-    const shippingContainer = document.getElementById('shipping-projects');
+    const shippingContainer = document.getElementById('shipping-only-projects');
     shippingContainer.innerHTML = '';
     const shippingProjects = projects.filter(p => p.phase === 'shipping');
 
