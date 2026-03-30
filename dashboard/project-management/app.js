@@ -1120,6 +1120,312 @@ function init() {
     renderList();
     updateTime();
     initSalesRepFilter(); // 初始化人員篩選器
+    
+    // 【自動遷移檢查】檢查是否需要遷移到 Supabase
+    checkAndAutoMigrate();
+}
+
+// 自動遷移檢查與執行
+async function checkAndAutoMigrate() {
+    // 只有在啟用 Supabase 且尚未遷移時才執行
+    if (!USE_SUPABASE) return;
+    
+    const migrationStatus = localStorage.getItem('chuanhung_migration_status');
+    if (migrationStatus) {
+        const status = JSON.parse(migrationStatus);
+        if (status.migrated) {
+            console.log('✅ 已遷移到 Supabase，跳過自動遷移');
+            return;
+        }
+    }
+    
+    // 檢查是否有 LocalStorage 資料需要遷移
+    const projectsData = localStorage.getItem('chuanhung_projects_v1');
+    if (!projectsData) {
+        console.log('⚠️ 沒有 LocalStorage 資料需要遷移');
+        return;
+    }
+    
+    const projects = JSON.parse(projectsData);
+    if (projects.length === 0) {
+        console.log('⚠️ LocalStorage 資料為空，不需要遷移');
+        return;
+    }
+    
+    // 顯示遷移提示
+    console.log('%c🚀 檢測到需要遷移到 Supabase', 'color: #3b82f6; font-size: 14px; font-weight: bold;');
+    console.log(`📊 發現 ${projects.length} 個專案需要遷移`);
+    
+    // 顯示自動遷移 UI 提示
+    showMigrationToast(projects.length);
+}
+
+// 顯示遷移提示
+function showMigrationToast(projectCount) {
+    // 創建提示元素
+    const toast = document.createElement('div');
+    toast.id = 'migration-toast';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 25px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        z-index: 10000;
+        max-width: 400px;
+        font-family: system-ui, -apple-system, sans-serif;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    toast.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 15px;">
+            <div style="font-size: 32px;">☁️</div>
+            <div style="flex: 1;">
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">
+                    資料升級到 Supabase
+                </div>
+                <div style="font-size: 14px; opacity: 0.9; line-height: 1.5; margin-bottom: 15px;">
+                    檢測到 ${projectCount} 個專案需要從本地儲存遷移到雲端 Supabase。<br>
+                    <span style="font-size: 12px; opacity: 0.8;">
+                        ✓ 500MB+ 儲存空間<br>
+                        ✓ 跨設備同步<br>
+                        ✓ 自動備份
+                    </span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btn-start-migration" style="
+                        background: white;
+                        color: #667eea;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 14px;
+                        flex: 1;
+                    ">開始遷移</button>
+                    <button id="btn-cancel-migration" style="
+                        background: rgba(255,255,255,0.2);
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">稍後</button>
+                </div>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                background: none;
+                border: none;
+                color: white;
+                font-size: 20px;
+                cursor: pointer;
+                opacity: 0.6;
+                padding: 0;
+                line-height: 1;
+            ">×</button>
+        </div>
+        <style>
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        </style>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // 綁定按鈕事件
+    document.getElementById('btn-start-migration').addEventListener('click', async () => {
+        toast.remove();
+        await performAutoMigration();
+    });
+    
+    document.getElementById('btn-cancel-migration').addEventListener('click', () => {
+        toast.remove();
+        console.log('⏸️ 用戶選擇稍後遷移');
+    });
+}
+
+// 執行自動遷移
+async function performAutoMigration() {
+    console.log('%c🚀 開始自動遷移...', 'color: #3b82f6; font-size: 16px; font-weight: bold;');
+    
+    // 顯示進度提示
+    const progressToast = document.createElement('div');
+    progressToast.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px 40px;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        z-index: 10001;
+        text-align: center;
+        min-width: 300px;
+    `;
+    progressToast.innerHTML = `
+        <div style="font-size: 48px; margin-bottom: 15px;">☁️</div>
+        <div style="font-weight: bold; font-size: 18px; margin-bottom: 10px;">正在遷移到 Supabase...</div>
+        <div id="migration-progress-text" style="color: #666; font-size: 14px;">準備中...</div>
+        <div style="margin-top: 20px; height: 4px; background: #eee; border-radius: 2px; overflow: hidden;">
+            <div id="migration-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); transition: width 0.3s;"></div>
+        </div>
+    `;
+    document.body.appendChild(progressToast);
+    
+    const updateProgress = (text, percent) => {
+        document.getElementById('migration-progress-text').textContent = text;
+        document.getElementById('migration-progress-bar').style.width = percent + '%';
+    };
+    
+    try {
+        updateProgress('檢查 Supabase 連線...', 10);
+        
+        // 檢查 Supabase
+        const supabase = getSupabaseClient();
+        if (!supabase) {
+            throw new Error('Supabase 未初始化');
+        }
+        
+        updateProgress('讀取本地資料...', 20);
+        const projectsData = localStorage.getItem('chuanhung_projects_v1');
+        const clientsData = localStorage.getItem('chuanhung_clients_v1');
+        
+        if (!projectsData) {
+            throw new Error('沒有專案資料');
+        }
+        
+        const projects = JSON.parse(projectsData);
+        const clients = clientsData ? JSON.parse(clientsData) : [];
+        
+        updateProgress(`正在遷移 ${projects.length} 個專案...`, 30);
+        
+        // 遷移專案
+        let successCount = 0;
+        let errorCount = 0;
+        const total = projects.length;
+        
+        for (let i = 0; i < projects.length; i++) {
+            const project = projects[i];
+            const percent = 30 + Math.floor((i / total) * 60);
+            updateProgress(`正在遷移: ${project.id} (${i + 1}/${total})`, percent);
+            
+            try {
+                const record = {
+                    id: project.id,
+                    name: project.name,
+                    client: project.client,
+                    contact: project.contact,
+                    quantity: project.quantity,
+                    deadline: project.deadline,
+                    progress: project.progress || 0,
+                    status: project.status || 'active',
+                    status_text: project.statusText,
+                    phase: project.phase || 'proposing',
+                    sales_rep: project.sales_rep || 'Kevin',
+                    tasks: project.tasks || [],
+                    quote_date: project.quoteDate,
+                    budget: project.budget,
+                    duration: project.duration,
+                    description: project.description,
+                    notes: project.notes
+                };
+                
+                const { error } = await supabase
+                    .from('projects')
+                    .upsert(record, { onConflict: 'id' });
+                
+                if (error) {
+                    console.error(`❌ 專案 ${project.id} 遷移失敗:`, error);
+                    errorCount++;
+                } else {
+                    successCount++;
+                }
+            } catch (e) {
+                console.error(`❌ 專案 ${project.id} 遷移異常:`, e);
+                errorCount++;
+            }
+        }
+        
+        updateProgress('遷移客戶資料...', 90);
+        
+        // 遷移客戶
+        if (clients.length > 0) {
+            for (const client of clients) {
+                try {
+                    await supabase
+                        .from('clients')
+                        .upsert({
+                            name: client.name,
+                            contacts: client.contacts || []
+                        }, { onConflict: 'name' });
+                } catch (e) {
+                    console.warn('客戶遷移失敗:', client.name, e);
+                }
+            }
+        }
+        
+        updateProgress('完成...', 100);
+        
+        // 標記遷移完成
+        localStorage.setItem('chuanhung_migration_status', JSON.stringify({
+            migrated: true,
+            timestamp: new Date().toISOString(),
+            projects: successCount,
+            errors: errorCount
+        }));
+        
+        setTimeout(() => {
+            progressToast.remove();
+            
+            // 顯示成功提示
+            const successToast = document.createElement('div');
+            successToast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                padding: 20px 25px;
+                border-radius: 12px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+                z-index: 10000;
+                animation: slideIn 0.3s ease-out;
+            `;
+            successToast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 32px;">✅</div>
+                    <div>
+                        <div style="font-weight: bold; font-size: 16px;">遷移完成！</div>
+                        <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">
+                            成功: ${successCount} 個專案${errorCount > 0 ? `, 失敗: ${errorCount} 個` : ''}
+                        </div>
+                        <div style="font-size: 12px; opacity: 0.8; margin-top: 8px;">
+                            資料已同步到雲端，請重新整理頁面
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(successToast);
+            
+            setTimeout(() => {
+                successToast.remove();
+                location.reload();
+            }, 3000);
+        }, 500);
+        
+    } catch (error) {
+        progressToast.remove();
+        alert('遷移失敗: ' + error.message);
+        console.error('自動遷移失敗:', error);
+    }
 }
 
 // 更新狀態列
