@@ -3278,6 +3278,18 @@ function openAddProjectModal() {
         requirementsList.innerHTML = '';
     }
 
+    // 初始化聯絡人輸入框（禁用狀態）
+    const contactInput = document.getElementById('new-project-contact');
+    const contactDropdown = document.getElementById('contact-suggestions');
+    if (contactInput) {
+        contactInput.value = '';
+        contactInput.disabled = true;
+        contactInput.placeholder = '先選擇公司';
+    }
+    if (contactDropdown) {
+        contactDropdown.classList.remove('active');
+    }
+
     // 顯示彈窗
     modal.classList.add('active');
 }
