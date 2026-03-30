@@ -3008,15 +3008,15 @@ async function submitNewProject(event) {
         name: document.getElementById('new-project-name').value,
         client: clientName,
         contact: contactName,
-        product_type: document.getElementById('new-project-type').value,
-        quantity: document.getElementById('new-project-quantity').value + '個',
-        deadline: document.getElementById('new-project-deadline').value,
-        phase: document.getElementById('new-project-phase').value,
-        sales_rep: document.getElementById('new-project-sales').value,
-        notes: document.getElementById('new-project-notes').value,
+        product_type: '',
+        quantity: '',
+        deadline: '',
+        phase: 'proposing',
+        sales_rep: 'Kevin',
+        notes: '',
         progress: 0,
         status: 'active',
-        status_text: getStatusText(document.getElementById('new-project-phase').value),
+        status_text: '💡 提案中',
         tasks: []
     };
 
