@@ -620,7 +620,7 @@
     <script src="modules/supabase-auth.js?v=5"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=140"></script>
+    <script src="app.js?v=153"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>
@@ -629,6 +629,9 @@
         window.onload = function() {
             console.log('✅ 銓宏專案管理系統 v2.0 載入成功');
             console.log('📦 使用模組化架構');
+            
+            // 初始化系統資料
+            init();
             
             // 初始化登入狀態
             initAuthUI();
