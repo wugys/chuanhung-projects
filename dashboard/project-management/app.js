@@ -778,7 +778,7 @@ function showView(viewName) {
 
 // 渲染報價階段視圖
 function renderQuoteView() {
-    // 報價中
+    // 報價中（只顯示報價中，不包含報價待確認）
     const quotingContainer = document.getElementById('quoting-projects');
     quotingContainer.innerHTML = '';
     const quotingProjects = projects.filter(p => p.phase === 'quoting');
@@ -786,16 +786,6 @@ function renderQuoteView() {
     quotingProjects.forEach(project => {
         const card = createProjectCard(project);
         quotingContainer.appendChild(card);
-    });
-
-    // 報價待確認
-    const pendingContainer = document.getElementById('pending-projects');
-    pendingContainer.innerHTML = '';
-    const pendingProjects = projects.filter(p => p.phase === 'pending');
-
-    pendingProjects.forEach(project => {
-        const card = createProjectCard(project);
-        pendingContainer.appendChild(card);
     });
 }
 
@@ -821,7 +811,7 @@ function filterPendingProjects() {
 
 // 渲染提案階段視圖
 function renderProposalView() {
-    // 提案中
+    // 提案中（只顯示提案中，不包含提案待確認）
     const proposingContainer = document.getElementById('proposing-projects');
     if (proposingContainer) {
         proposingContainer.innerHTML = '';
@@ -830,18 +820,6 @@ function renderProposalView() {
         proposingProjects.forEach(project => {
             const card = createProjectCard(project);
             proposingContainer.appendChild(card);
-        });
-    }
-
-    // 提案待確認
-    const proposalPendingContainer = document.getElementById('proposal-pending-projects');
-    if (proposalPendingContainer) {
-        proposalPendingContainer.innerHTML = '';
-        const proposalPendingProjects = projects.filter(p => p.phase === 'proposal_pending');
-
-        proposalPendingProjects.forEach(project => {
-            const card = createProjectCard(project);
-            proposalPendingContainer.appendChild(card);
         });
     }
 }
