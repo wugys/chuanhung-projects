@@ -18,14 +18,25 @@ function escapeHtml(text) {
 // 格式化日期為簡短格式 (2026-03-17 → 3/17)function formatDateShort(dateStr) {    if (!dateStr) return '';    const date = new Date(dateStr);    return `${date.getMonth() + 1}/${date.getDate()}`;}
 function saveProjectsToLocalStorage() {
     try {
-        // 【資料保護機制】儲存前先建立備份
+        // 【資料保護機制】儲存前先建立備份（但配額超過時跳過備份，不影響主要儲存）
         const existing = localStorage.getItem(STORAGE_KEY);
         if (existing) {
-            const backupKey = `${STORAGE_KEY}_backup_${Date.now()}`;
-            localStorage.setItem(backupKey, existing);
-            // 只保留最近 10 個備份
-            cleanupOldBackups();
-            console.log('📦 已建立資料備份:', backupKey);
+            try {
+                const backupKey = `${STORAGE_KEY}_backup_${Date.now()}`;
+                localStorage.setItem(backupKey, existing);
+                // 只保留最近 5 個備份（減少空間使用）
+                cleanupOldBackups();
+                console.log('📦 已建立資料備份:', backupKey);
+            } catch (backupError) {
+                // 備份失敗（配額超過）時，繼續執行主要儲存，不中斷
+                console.warn('⚠️ 無法建立備份（空間不足），繼續儲存主要資料:', backupError.message);
+                // 嘗試清理舊備份釋放空間
+                try {
+                    cleanupOldBackups(3); // 只保留 3 個
+                } catch (e) {
+                    console.warn('無法清理舊備份');
+                }
+            }
         }
         
         localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
@@ -41,8 +52,8 @@ function saveProjectsToLocalStorage() {
     }
 }
 
-// 清理舊備份（只保留最近 10 個）
-function cleanupOldBackups() {
+// 清理舊備份（只保留最近 N 個，預設 5 個）
+function cleanupOldBackups(keepCount = 5) {
     const backups = [];
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -52,7 +63,7 @@ function cleanupOldBackups() {
     }
     // 按時間排序並刪除舊的
     backups.sort();
-    while (backups.length > 10) {
+    while (backups.length > keepCount) {
         const oldKey = backups.shift();
         localStorage.removeItem(oldKey);
         console.log('🗑️ 已清理舊備份:', oldKey);
