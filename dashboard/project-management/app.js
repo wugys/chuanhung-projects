@@ -1,15 +1,5 @@
 // 銓宏國際專案管理系統 - 功能邏輯
 
-// ==================== Supabase 客戶端引用 ====================
-// 從 Supabase Auth 模組取得客戶端實例（動態取得）
-function getSupabaseClient() {
-    const client = window.SupabaseAuth?.client || window.SupabaseAuthInstance?.client || null;
-    if (!client) {
-        console.log('⚠️ Supabase client 未初始化');
-    }
-    return client;
-}
-
 // ==================== LocalStorage 儲存功能 ====================
 const STORAGE_KEY = 'chuanhung_projects_v1';
 
@@ -56,96 +46,25 @@ function loadProjectsFromLocalStorage() {
     return null;
 }
 
-// 從 Supabase 載入專案資料
-async function loadProjectsFromSupabase() {
-    try {
-        const client = getSupabaseClient();
-        if (!client) {
-            console.log('⚠️ Supabase 未初始化，跳過雲端載入');
-            return null;
-        }
-
-        const { data, error } = await client
-            .from('projects')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('❌ 從 Supabase 載入失敗:', error);
-            return null;
-        }
-
-        console.log('☁️ 從 Supabase 載入', data.length, '個專案');
-        return data;
-    } catch (e) {
-        console.error('❌ Supabase 載入錯誤:', e);
-        return null;
-    }
-}
-
-// 儲存專案資料到 Supabase（更新或插入）
-async function saveProjectToSupabase(project) {
-    try {
-        const client = getSupabaseClient();
-        if (!client) {
-            console.log('⚠️ Supabase 未初始化，僅儲存到 LocalStorage');
-            return false;
-        }
-
-        const { data, error } = await client
-            .from('projects')
-            .upsert([project], { onConflict: 'id' })
-            .select();
-
-        if (error) {
-            console.error('❌ 儲存到 Supabase 失敗:', error);
-            return false;
-        }
-
-        console.log('☁️ 已同步專案到 Supabase:', project.id);
-        return true;
-    } catch (e) {
-        console.error('❌ Supabase 儲存錯誤:', e);
-        return false;
-    }
-}
-
 // 初始化時載入資料
-async function initProjects() {
-    // 優先嘗試從 Supabase 載入
-    const supabaseData = await loadProjectsFromSupabase();
-
-    if (supabaseData && supabaseData.length > 0) {
-        // 使用 Supabase 資料覆蓋默認資料
-        const supabaseIds = new Set(supabaseData.map(p => p.id));
-        const defaultOnly = projects.filter(p => !supabaseIds.has(p.id));
+function initProjects() {
+    const stored = loadProjectsFromLocalStorage();
+    if (stored && stored.length > 0) {
+        // 使用 LocalStorage 中的數據覆蓋默認數據
+        // 保留默認數據中不在 stored 中的專案
+        const storedIds = new Set(stored.map(p => p.id));
+        const defaultOnly = projects.filter(p => !storedIds.has(p.id));
 
         // 清空 projects 並重新填充
         projects.length = 0;
 
-        // 先添加 Supabase 中的數據
-        supabaseData.forEach(p => projects.push(p));
+        // 先添加 stored 中的數據
+        stored.forEach(p => projects.push(p));
 
-        // 再添加默認資料中獨有的專案
+        // 再添加默認數據中獨有的專案
         defaultOnly.forEach(p => projects.push(p));
 
-        console.log('✅ 專案資料初始化完成（從 Supabase 載入）', projects.length, '個');
-
-        // 同步到 LocalStorage 作為快取
-        saveProjectsToLocalStorage();
-    } else {
-        // 從 LocalStorage 載入
-        const stored = loadProjectsFromLocalStorage();
-        if (stored && stored.length > 0) {
-            const storedIds = new Set(stored.map(p => p.id));
-            const defaultOnly = projects.filter(p => !storedIds.has(p.id));
-
-            projects.length = 0;
-            stored.forEach(p => projects.push(p));
-            defaultOnly.forEach(p => projects.push(p));
-
-            console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
-        }
+        console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
     }
 }
 // ==================== LocalStorage 結束 ====================
@@ -291,8 +210,74 @@ function showClientSuggestions(query) {
 function selectClient(clientName) {
     document.getElementById('new-project-client').value = clientName;
     document.getElementById('client-suggestions').classList.remove('active');
+    updateContactSelect(clientName);
 }
 
+// 更新聯絡人選擇器
+function updateContactSelect(clientName) {
+    const select = document.getElementById('new-project-contact');
+    const contacts = getClientContacts(clientName);
+
+    select.innerHTML = '<option value="">選擇聯絡人</option>';
+
+    if (contacts.length === 0) {
+        select.innerHTML += '<option value="new">+ 新增聯絡人</option>';
+        select.value = 'new';
+        toggleNewContactInput();
+    } else {
+        contacts.forEach(contact => {
+            select.innerHTML += `<option value="${contact}">${contact}</option>`;
+        });
+        select.innerHTML += '<option value="new">+ 新增聯絡人</option>';
+    }
+
+    select.disabled = false;
+}
+
+// 切換新增聯絡人輸入框
+function toggleNewContactInput() {
+    const select = document.getElementById('new-project-contact');
+    const input = document.getElementById('new-contact-input');
+    const btn = document.getElementById('btn-add-new-contact');
+
+    if (select.value === 'new' || input.classList.contains('hidden')) {
+        // 顯示輸入框
+        select.classList.add('hidden');
+        input.classList.remove('hidden');
+        input.focus();
+        btn.textContent = '✓';
+        btn.title = '確認';
+        btn.onclick = confirmNewContact;
+    } else {
+        // 返回選擇框
+        select.classList.remove('hidden');
+        input.classList.add('hidden');
+        input.value = '';
+        btn.textContent = '+';
+        btn.title = '新增聯絡人';
+        btn.onclick = toggleNewContactInput;
+    }
+}
+
+// 確認新聯絡人
+function confirmNewContact() {
+    const input = document.getElementById('new-contact-input');
+    const contactName = input.value.trim();
+
+    if (!contactName) {
+        alert('請輸入聯絡人姓名');
+        return;
+    }
+
+    // 返回選擇狀態但保留值
+    const select = document.getElementById('new-project-contact');
+    select.innerHTML += `<option value="${contactName}" selected>${contactName} (新)</option>`;
+    select.classList.remove('hidden');
+    input.classList.add('hidden');
+
+    const btn = document.getElementById('btn-add-new-contact');
+    btn.textContent = '+';
+    btn.title = '新增聯絡人';
     btn.onclick = toggleNewContactInput;
 }
 
@@ -348,7 +333,6 @@ let ASSIGNEE_LIST = ['KEVIN', '姿姿', 'MIA', 'BETTY'];
 
 // 待處理的負責人資料
 let pendingAssigneeData = null;
-let pendingAssigneeType = null; // 'assignee' 或 'contact'
 
 // 檢查負責人是否存在
 function assigneeExists(name) {
@@ -360,34 +344,13 @@ function showAssigneePrompt(name) {
     const modal = document.getElementById('assignee-prompt-modal');
     const title = document.getElementById('assignee-prompt-title');
     const message = document.getElementById('assignee-prompt-message');
-    const btnConfirm = document.getElementById('btn-confirm-add-db');
 
     pendingAssigneeData = { name };
-    pendingAssigneeType = 'assignee';
 
     title.textContent = '👤 新增負責人';
     message.innerHTML = `"<strong>${name}</strong>" 不在負責人資料庫中。<br>是否將此人員加入負責人資料庫？`;
-    btnConfirm.textContent = '加入負責人資料庫';
 
     modal.classList.add('active');
-}
-
-// 統一處理確認加入資料庫
-function handleConfirmAddToDB() {
-    if (pendingAssigneeType === 'assignee') {
-        confirmAddToAssigneeDB();
-    } else if (pendingAssigneeType === 'contact') {
-        confirmAddToContactDB();
-    }
-}
-
-// 統一處理取消加入
-function handleCancelAddToDB() {
-    if (pendingAssigneeType === 'assignee') {
-        cancelAddToAssigneeDB();
-    } else if (pendingAssigneeType === 'contact') {
-        cancelAddToContactDB();
-    }
 }
 
 // 確認加入負責人資料庫
@@ -424,136 +387,6 @@ function cancelAddToAssigneeDB() {
 function closeAssigneePrompt() {
     document.getElementById('assignee-prompt-modal').classList.remove('active');
     pendingAssigneeData = null;
-    pendingAssigneeType = null;
-}
-
-// ==================== 聯絡人資料庫功能 ====================
-
-// 聯絡人列表（可動態擴充，不依賴公司）
-let CONTACT_LIST = JSON.parse(localStorage.getItem('CONTACT_LIST')) || [];
-
-// 待處理的聯絡人資料
-let pendingContactData = null;
-
-// 儲存聯絡人資料庫
-function saveContactList() {
-    localStorage.setItem('CONTACT_LIST', JSON.stringify(CONTACT_LIST));
-}
-
-// 檢查聯絡人是否存在
-function contactExistsInList(name) {
-    return CONTACT_LIST.some(c => c.toLowerCase() === name.toLowerCase());
-}
-
-// 顯示聯絡人建議列表（不依賴公司）
-function showContactSuggestions(query) {
-    const dropdown = document.getElementById('contact-suggestions');
-    const contactInput = document.getElementById('new-project-contact');
-    
-    if (!dropdown || !contactInput) return;
-
-    if (!query || query.length < 1) {
-        // 顯示所有聯絡人
-        if (CONTACT_LIST.length === 0) {
-            dropdown.innerHTML = '<div class="contact-suggestion-item" style="color: #999;">無現有聯絡人，輸入新增</div>';
-        } else {
-            dropdown.innerHTML = CONTACT_LIST.map(contact => `
-                <div class="contact-suggestion-item" onclick="selectContact('${contact}')">${contact}</div>
-            `).join('');
-        }
-        dropdown.classList.add('active');
-        return;
-    }
-
-    const lowerQuery = query.toLowerCase();
-    const matches = CONTACT_LIST.filter(contact => 
-        contact.toLowerCase().includes(lowerQuery)
-    );
-
-    // 檢查是否完全匹配（不區分大小寫）
-    const exactMatch = CONTACT_LIST.some(contact => 
-        contact.toLowerCase() === lowerQuery
-    );
-
-    if (matches.length === 0) {
-        // 無符合，顯示新增選項
-        dropdown.innerHTML = `
-            <div class="contact-suggestion-item" style="color: #28a745; font-weight: 500;" 
-                 onclick="showContactPrompt('${query}')">
-                <i class="fas fa-plus-circle"></i> 新增「${query}」到聯絡人資料庫
-            </div>
-        `;
-    } else {
-        dropdown.innerHTML = matches.map(contact => `
-            <div class="contact-suggestion-item" onclick="selectContact('${contact}')">${contact}</div>
-        `).join('');
-        
-        // 如果沒有完全匹配，也顯示新增選項
-        if (!exactMatch) {
-            dropdown.innerHTML += `
-                <div class="contact-suggestion-item" style="color: #28a745; font-weight: 500; border-top: 1px solid #e5e7eb; margin-top: 4px; padding-top: 10px;" 
-                     onclick="showContactPrompt('${query}')">
-                    <i class="fas fa-plus-circle"></i> 新增「${query}」到聯絡人資料庫
-                </div>
-            `;
-        }
-    }
-
-    dropdown.classList.add('active');
-}
-
-// 選擇聯絡人
-function selectContact(name) {
-    document.getElementById('new-project-contact').value = name;
-    document.getElementById('contact-suggestions').classList.remove('active');
-}
-
-// 顯示新增聯絡人提示
-function showContactPrompt(name) {
-    const modal = document.getElementById('assignee-prompt-modal');
-    const title = document.getElementById('assignee-prompt-title');
-    const message = document.getElementById('assignee-prompt-message');
-    const btnConfirm = document.getElementById('btn-confirm-add-db');
-
-    pendingAssigneeData = { name };
-    pendingAssigneeType = 'contact';
-
-    title.textContent = '👤 新增聯絡人';
-    message.innerHTML = `"<strong>${name}</strong>" 不在聯絡人資料庫中。<br>是否將此人員加入聯絡人資料庫？`;
-    btnConfirm.textContent = '加入聯絡人資料庫';
-
-    modal.classList.add('active');
-}
-
-// 確認加入聯絡人資料庫
-function confirmAddToContactDB() {
-    if (!pendingAssigneeData) return;
-
-    const { name } = pendingAssigneeData;
-
-    // 添加新聯絡人到列表
-    if (!contactExistsInList(name)) {
-        CONTACT_LIST.push(name);
-        saveContactList();
-        console.log(`✅ 已添加新聯絡人: ${name}`);
-    }
-
-    // 填入輸入框
-    document.getElementById('new-project-contact').value = name;
-
-    closeAssigneePrompt();
-}
-
-// 取消加入（僅用於此專案）
-function cancelAddToContactDB() {
-    if (!pendingAssigneeData) return;
-
-    const { name } = pendingAssigneeData;
-
-    // 仍然填入輸入框，但不加入資料庫
-    document.getElementById('new-project-contact').value = name;
-
-    closeAssigneePrompt();
 }
 
 // 初始化新增專案表單
@@ -580,33 +413,16 @@ function initAddProjectForm() {
             if (clientName && !clientExists(clientName)) {
                 showClientPrompt('client', clientName);
             }
-            updateContactInput(clientName);
+            updateContactSelect(clientName);
         });
     }
 
-    // 聯絡人輸入框事件（模糊搜尋 - 獨立於公司）
-    const contactInput = document.getElementById('new-project-contact');
-    if (contactInput) {
-        contactInput.addEventListener('input', (e) => {
-            showContactSuggestions(e.target.value);
-        });
-
-        contactInput.addEventListener('blur', () => {
-            setTimeout(() => {
-                const dropdown = document.getElementById('contact-suggestions');
-                if (dropdown) dropdown.classList.remove('active');
-            }, 200);
-        });
-
-        contactInput.addEventListener('focus', (e) => {
-            showContactSuggestions(e.target.value);
-        });
-
-        // 當輸入完成時檢查是否需要顯示新增提示
-        contactInput.addEventListener('change', (e) => {
-            const contactName = e.target.value.trim();
-            if (contactName && !contactExistsInList(contactName)) {
-                showContactPrompt(contactName);
+    // 聯絡人選擇事件
+    const contactSelect = document.getElementById('new-project-contact');
+    if (contactSelect) {
+        contactSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'new') {
+                toggleNewContactInput();
             }
         });
     }
@@ -695,82 +511,9 @@ function selectAssignee(name) {
     document.getElementById('assignee-suggestions').classList.remove('active');
 }
 
-// 顯示聯絡人建議列表
-function showContactSuggestions(query, clientName) {
-    const dropdown = document.getElementById('contact-suggestions');
-    const contactInput = document.getElementById('new-project-contact');
-    
-    if (!dropdown || !contactInput) return;
+// ==================== 客戶資料庫功能結束 ====================
 
-    // 如果沒有選擇公司，顯示提示
-    if (!clientName) {
-        dropdown.innerHTML = '<div class="contact-suggestion-item" style="color: #999;">請先選擇公司</div>';
-        dropdown.classList.add('active');
-        contactInput.disabled = true;
-        return;
-    }
-
-    contactInput.disabled = false;
-
-    // 取得該公司的聯絡人列表
-    const contacts = getClientContacts(clientName);
-
-    if (!query || query.length < 1) {
-        // 顯示所有聯絡人
-        if (contacts.length === 0) {
-            dropdown.innerHTML = '<div class="contact-suggestion-item" style="color: #999;">無現有聯絡人，輸入新增</div>';
-        } else {
-            dropdown.innerHTML = contacts.map(contact => `
-                <div class="contact-suggestion-item" onclick="selectContact('${contact}')">${contact}</div>
-            `).join('');
-        }
-        dropdown.classList.add('active');
-        return;
-    }
-
-    const lowerQuery = query.toLowerCase();
-    const matches = contacts.filter(contact => 
-        contact.toLowerCase().includes(lowerQuery)
-    );
-
-    // 檢查是否完全匹配（不區分大小寫）
-    const exactMatch = contacts.some(contact => 
-        contact.toLowerCase() === lowerQuery
-    );
-
-    if (matches.length === 0) {
-        // 無符合，顯示新增選項
-        dropdown.innerHTML = `
-            <div class="contact-suggestion-item" style="color: #28a745; font-weight: 500;" 
-                 onclick="showClientPrompt('contact', '${query}', '${clientName}')">
-                <i class="fas fa-plus-circle"></i> 新增「${query}」到聯絡人資料庫
-            </div>
-        `;
-    } else {
-        dropdown.innerHTML = matches.map(contact => `
-            <div class="contact-suggestion-item" onclick="selectContact('${contact}')">${contact}</div>
-        `).join('');
-        
-        // 如果沒有完全匹配，也顯示新增選項
-        if (!exactMatch) {
-            dropdown.innerHTML += `
-                <div class="contact-suggestion-item" style="color: #28a745; font-weight: 500; border-top: 1px solid #e5e7eb; margin-top: 4px; padding-top: 10px;" 
-                     onclick="showClientPrompt('contact', '${query}', '${clientName}')">
-                    <i class="fas fa-plus-circle"></i> 新增「${query}」到聯絡人資料庫
-                </div>
-            `;
-        }
-    }
-
-    dropdown.classList.add('active');
-}
-
-// 選擇聯絡人
-function selectContact(name) {
-    document.getElementById('new-project-contact').value = name;
-    document.getElementById('contact-suggestions').classList.remove('active');
-}
-
+// 業務人員列表
 const SALES_REPS = ['姿姿', 'Betty', 'Mia', 'Kevin'];
 
 // 目前登入使用者（暫時固定，待登入系統完成後動態取得）
@@ -1110,9 +853,9 @@ const projects = [
 ];
 
 // 初始化
-async function init() {
-    // 載入專案資料（優先從 Supabase，失敗則從 LocalStorage）
-    await initProjects();
+function init() {
+    // 載入 LocalStorage 儲存的專案
+    initProjects();
 
     // 初始化客戶資料庫
     initClientsDB();
@@ -1125,7 +868,6 @@ async function init() {
     renderQuoteView();
     renderSampleView();
     renderProductionView();
-    renderShippingView();
     renderGantt();
     renderList();
     updateTime();
@@ -3416,17 +3158,6 @@ function openAddProjectModal() {
         requirementsList.innerHTML = '';
     }
 
-    // 初始化聯絡人輸入框（獨立於公司）
-    const contactInput = document.getElementById('new-project-contact');
-    const contactDropdown = document.getElementById('contact-suggestions');
-    if (contactInput) {
-        contactInput.value = '';
-        contactInput.placeholder = '輸入聯絡人姓名...';
-    }
-    if (contactDropdown) {
-        contactDropdown.classList.remove('active');
-    }
-
     // 顯示彈窗
     modal.classList.add('active');
 }
@@ -3436,15 +3167,17 @@ function closeAddProjectModal() {
     document.getElementById('add-project-modal').classList.remove('active');
     document.getElementById('add-project-form').reset();
 
-    // 重置聯絡人輸入框（獨立於公司）
-    const contactInput = document.getElementById('new-project-contact');
-    const contactDropdown = document.getElementById('contact-suggestions');
+    // 重置聯絡人選擇器
+    const contactSelect = document.getElementById('new-project-contact');
+    const contactInput = document.getElementById('new-contact-input');
+    if (contactSelect) {
+        contactSelect.innerHTML = '<option value="">先選擇公司</option>';
+        contactSelect.disabled = true;
+        contactSelect.classList.remove('hidden');
+    }
     if (contactInput) {
         contactInput.value = '';
-        contactInput.placeholder = '輸入聯絡人姓名...';
-    }
-    if (contactDropdown) {
-        contactDropdown.classList.remove('active');
+        contactInput.classList.add('hidden');
     }
 
     // 清空需求事項列表
@@ -3578,28 +3311,20 @@ async function submitNewProject(event) {
 
     try {
         // 寫入 Supabase
-        const client = getSupabaseClient();
-        if (client) {
-            const { data, error } = await client
-                .from('projects')
-                .insert([formData])
-                .select();
+        const { data, error } = await supabaseClient
+            .from('projects')
+            .insert([formData])
+            .select();
 
-            if (error) {
-                console.error('Supabase 寫入錯誤:', error);
-                // 離線模式：僅儲存到本地
-                projects.push(formData);
-                saveProjectsToLocalStorage();
-                console.log('💾 離線模式：專案已儲存到 LocalStorage');
-            } else {
-                // 添加到本地陣列（即時顯示）
-                projects.push(formData);
-            }
-        } else {
-            // Supabase 未初始化，僅儲存到本地
+        if (error) {
+            console.error('Supabase 寫入錯誤:', error);
+            // 離線模式：僅儲存到本地
             projects.push(formData);
             saveProjectsToLocalStorage();
-            console.log('💾 Supabase 未連接，專案已儲存到 LocalStorage');
+            console.log('💾 離線模式：專案已儲存到 LocalStorage');
+        } else {
+            // 添加到本地陣列（即時顯示）
+            projects.push(formData);
         }
 
         // 關閉彈窗並重新整理顯示
@@ -3702,10 +3427,9 @@ async function analyzeProgressWithAI() { alert("此功能已停用"); return; //
 
     try {
         let analysis;
-        const client = getSupabaseClient();
 
         // 嘗試使用 AI API
-        if (AI_CONFIG.useEdgeFunction && client) {
+        if (AI_CONFIG.useEdgeFunction && supabaseClient) {
             try {
                 analysis = await callAIWithEdgeFunction(description);
             } catch (apiError) {
@@ -3776,12 +3500,7 @@ function toggleAnalysisTask(index, isChecked) {
 
 // 呼叫 Supabase Edge Function 進行 AI 分析
 async function callAIWithEdgeFunction(description) {
-    const client = getSupabaseClient();
-    if (!client) {
-        throw new Error('Supabase client 未初始化');
-    }
-    
-    const { data, error } = await client.functions.invoke(
+    const { data, error } = await supabaseClient.functions.invoke(
         AI_CONFIG.edgeFunctionName,
         {
             body: {
@@ -3952,7 +3671,7 @@ function applyProgressUpdate() {
 }
 
 // 快速更新專案階段
-async function updateProjectPhase(projectId, newPhase) {
+function updateProjectPhase(projectId, newPhase) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
 
@@ -3981,10 +3700,6 @@ async function updateProjectPhase(projectId, newPhase) {
     if (newPhase === 'completed') {
         project.progress = 100;
     }
-
-    // 儲存到 LocalStorage 和 Supabase
-    saveProjectsToLocalStorage();
-    await saveProjectToSupabase(project);
 
     // 重新整理所有視圖
     renderAllViews();
@@ -5487,6 +5202,4 @@ window.onclick = function(event) {
 }
 
 // 頁面載入時初始化
-document.addEventListener('DOMContentLoaded', async () => {
-    await init();
-});
+document.addEventListener('DOMContentLoaded', init);
