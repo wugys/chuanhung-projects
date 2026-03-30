@@ -236,8 +236,14 @@
         <!-- 待辦事項彈窗 -->
         <div id="todo-modal" class="modal">
             <div class="modal-content">
-                <span class="close-btn" onclick="closeTodoModal()">×</span>
-                <h2 id="todo-modal-title">📝 待辦事項</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h2 id="todo-modal-title" style="margin: 0;">📝 待辦事項</h2>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" onclick="openEditProjectModalFromTodo()" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">✏️ 編輯專案</button>
+                        <button type="button" onclick="deleteCurrentProject()" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">🗑️ 刪除專案</button>
+                        <span class="close-btn" onclick="closeTodoModal()" style="position: static; margin-left: 8px;">×</span>
+                    </div>
+                </div>
                 
                 <!-- 固定控制區域（分頁式設計） -->
                 <div id="todo-controls-fixed" style="display: flex !important; gap: 12px; padding: 12px 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px; border: 2px solid #3b82f6; flex-wrap: wrap;">
@@ -431,6 +437,117 @@
             </div>
         </div>
         
+        <!-- 編輯專案彈窗 -->
+        <div id="edit-project-modal" class="modal">
+            <div class="modal-content add-project-modal-content">
+                <span class="close-btn" onclick="closeEditProjectModal()">×</span>
+                <h2>✏️ 編輯專案</h2>
+                <form id="edit-project-form" onsubmit="submitEditProject(event)">
+                    <input type="hidden" id="edit-project-original-id">
+                    <!-- 第1列：專案編號 + 新增日期 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>專案編號 <span class="required">*</span></label>
+                            <input type="text" id="edit-project-id" required readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>新增日期 <span class="required">*</span></label>
+                            <input type="date" id="edit-project-start-date" required>
+                        </div>
+                    </div>
+
+                    <!-- 第2列：負責人 + 公司名稱 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>負責人 <span class="required">*</span></label>
+                            <div class="assignee-search-container">
+                                <input type="text" id="edit-project-assignee" placeholder="輸入負責人姓名..." required autocomplete="off">
+                                <div id="edit-assignee-suggestions" class="assignee-suggestions-dropdown"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>公司名稱 <span class="required">*</span></label>
+                            <div class="client-search-container">
+                                <input type="text" id="edit-project-client" placeholder="輸入公司名稱搜尋..." required autocomplete="off">
+                                <div id="edit-client-suggestions" class="client-suggestions-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第3列：聯絡人 + 產品名稱 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>聯絡人 <span class="required">*</span></label>
+                            <input type="text" id="edit-project-contact" placeholder="輸入聯絡人姓名" required>
+                        </div>
+                        <div class="form-group">
+                            <label>產品名稱</label>
+                            <input type="text" id="edit-project-name" placeholder="選填">
+                        </div>
+                    </div>
+
+                    <!-- 第4列：數量 + 預算 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>數量</label>
+                            <input type="text" id="edit-project-quantity" placeholder="選填，例如：1000 pcs">
+                        </div>
+                        <div class="form-group">
+                            <label>預算</label>
+                            <input type="text" id="edit-project-budget" placeholder="選填，例如：50,000">
+                        </div>
+                    </div>
+
+                    <!-- 第5列：工期 + 客戶需求階段 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>工期</label>
+                            <input type="text" id="edit-project-duration" placeholder="選填，例如：30天">
+                        </div>
+                        <div class="form-group">
+                            <label>目前階段 <span class="required">*</span></label>
+                            <select id="edit-project-phase" required>
+                                <option value="proposing">💡 提案</option>
+                                <option value="quoting">📋 報價</option>
+                                <option value="sampling">🔨 打樣</option>
+                                <option value="production">🏭 大貨</option>
+                                <option value="shipping">🚚 出貨</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 第6列：客戶需求事項 -->
+                    <div class="form-row full-width">
+                        <div class="form-group">
+                            <label>客戶需求事項</label>
+                            <div id="edit-client-requirements-list" class="requirements-list">
+                                <!-- 動態添加需求項目 -->
+                            </div>
+                            <button type="button" class="btn-add-requirement" onclick="addEditRequirementItem()">
+                                <i class="fas fa-plus"></i> 添加需求事項
+                            </button>
+                            <div class="requirement-example" style="margin-top: 10px; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 12px; color: #666;">
+                                <strong>範例：</strong>3/30-一番賞禮品提案，2天
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第7列：備註 -->
+                    <div class="form-row full-width">
+                        <div class="form-group">
+                            <label>備註</label>
+                            <textarea id="edit-project-remarks" rows="3" placeholder="其他備註說明..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeEditProjectModal()">取消</button>
+                        <button type="submit" class="btn-primary">✅ 儲存變更</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
         <!-- 搜尋結果彈窗 -->
         <div id="search-results-modal" class="modal">
             <div class="modal-content search-results-modal-content">
@@ -614,7 +731,7 @@
     <script src="modules/supabase-auth.js?v=5"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=155"></script>
+    <script src="app.js?v=156"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>

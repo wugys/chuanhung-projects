@@ -2868,6 +2868,213 @@ function closeTodoModal() {
     hideCompleted = true;
 }
 
+// 從待辦事項彈窗開啟編輯專案彈窗
+function openEditProjectModalFromTodo() {
+    if (!currentTodoProject) {
+        alert('❌ 無法取得目前專案資訊');
+        return;
+    }
+
+    const project = currentTodoProject;
+
+    // 填入專案資料
+    document.getElementById('edit-project-original-id').value = project.id;
+    document.getElementById('edit-project-id').value = project.id;
+    document.getElementById('edit-project-name').value = project.name || '';
+    document.getElementById('edit-project-client').value = project.client || '';
+    document.getElementById('edit-project-contact').value = project.contact || '';
+    document.getElementById('edit-project-quantity').value = project.quantity || '';
+    document.getElementById('edit-project-budget').value = project.budget || '';
+    document.getElementById('edit-project-duration').value = project.duration || '';
+    document.getElementById('edit-project-assignee').value = project.assignee || project.sales_rep || 'KEVIN';
+    document.getElementById('edit-project-phase').value = project.phase || 'proposing';
+    document.getElementById('edit-project-remarks').value = project.notes || '';
+    document.getElementById('edit-project-start-date').value = project.start_date || '';
+
+    // 填入需求事項
+    const requirementsList = document.getElementById('edit-client-requirements-list');
+    requirementsList.innerHTML = '';
+    if (project.requirements && project.requirements.length > 0) {
+        project.requirements.forEach((req, idx) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'requirement-item';
+            itemDiv.innerHTML = `
+                <span style="color: #666; font-size: 14px; min-width: 24px;">${idx + 1}&gt;</span>
+                <input type="text" name="edit-requirement[]" value="${escapeHtml(req)}" placeholder="例如：3/30-一番賞禮品提案，2天" >
+                <button type="button" class="btn-remove-requirement" onclick="removeEditRequirementItem(this)">刪除</button>
+            `;
+            requirementsList.appendChild(itemDiv);
+        });
+    }
+
+    // 顯示彈窗
+    document.getElementById('edit-project-modal').classList.add('active');
+}
+
+// 關閉編輯專案彈窗
+function closeEditProjectModal() {
+    document.getElementById('edit-project-modal').classList.remove('active');
+    document.getElementById('edit-project-form').reset();
+    document.getElementById('edit-client-requirements-list').innerHTML = '';
+}
+
+// 添加編輯模式的需求事項
+function addEditRequirementItem() {
+    const requirementsList = document.getElementById('edit-client-requirements-list');
+    const itemCount = requirementsList.children.length + 1;
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'requirement-item';
+    itemDiv.innerHTML = `
+        <span style="color: #666; font-size: 14px; min-width: 24px;">${itemCount}&gt;</span>
+        <input type="text" name="edit-requirement[]" placeholder="例如：3/30-一番賞禮品提案，2天" >
+        <button type="button" class="btn-remove-requirement" onclick="removeEditRequirementItem(this)">刪除</button>
+    `;
+
+    requirementsList.appendChild(itemDiv);
+}
+
+// 刪除編輯模式的需求事項
+function removeEditRequirementItem(btn) {
+    btn.parentElement.remove();
+    // 重新編號
+    const items = document.querySelectorAll('#edit-client-requirements-list .requirement-item');
+    items.forEach((item, idx) => {
+        item.querySelector('span').textContent = `${idx + 1}>`;
+    });
+}
+
+// 提交編輯專案
+async function submitEditProject(event) {
+    event.preventDefault();
+
+    const originalId = document.getElementById('edit-project-original-id').value;
+    const projectIndex = projects.findIndex(p => p.id === originalId);
+
+    if (projectIndex === -1) {
+        alert('❌ 找不到要編輯的專案');
+        return;
+    }
+
+    // 收集需求事項
+    const requirements = [];
+    const requirementInputs = document.querySelectorAll('input[name="edit-requirement[]"]');
+    requirementInputs.forEach(input => {
+        if (input.value.trim()) {
+            requirements.push(input.value.trim());
+        }
+    });
+
+    // 構建備註
+    let notes = document.getElementById('edit-project-remarks').value || '';
+    if (requirements.length > 0) {
+        notes = '客戶需求：\n' + requirements.map((req, idx) => `${idx + 1}> ${req}`).join('\n') +
+                (notes ? '\n\n備註：\n' + notes : '');
+    }
+
+    // 更新專案資料
+    const updatedProject = {
+        ...projects[projectIndex],
+        id: document.getElementById('edit-project-id').value,
+        name: document.getElementById('edit-project-name').value,
+        client: document.getElementById('edit-project-client').value,
+        contact: document.getElementById('edit-project-contact').value,
+        quantity: document.getElementById('edit-project-quantity').value,
+        budget: document.getElementById('edit-project-budget').value,
+        duration: document.getElementById('edit-project-duration').value,
+        assignee: document.getElementById('edit-project-assignee').value,
+        sales_rep: document.getElementById('edit-project-assignee').value,
+        phase: document.getElementById('edit-project-phase').value,
+        statusText: getStatusText(document.getElementById('edit-project-phase').value),
+        notes: notes,
+        requirements: requirements,
+        start_date: document.getElementById('edit-project-start-date').value
+    };
+
+    // 如果專案編號有變更，需要更新任務中的專案ID
+    if (originalId !== updatedProject.id) {
+        // 更新所有相關任務的專案ID
+        if (updatedProject.tasks) {
+            updatedProject.tasks.forEach(task => {
+                task.projectId = updatedProject.id;
+            });
+        }
+    }
+
+    // 更新專案陣列
+    projects[projectIndex] = updatedProject;
+
+    // 儲存到 LocalStorage
+    saveProjectsToLocalStorage();
+
+    // 更新當前待辦事項專案（如果正在顯示）
+    if (currentTodoProject && currentTodoProject.id === originalId) {
+        currentTodoProject = updatedProject;
+    }
+
+    // 關閉彈窗並重新整理
+    closeEditProjectModal();
+    renderAllViews();
+
+    // 如果待辦事項彈窗還開著，更新標題和內容
+    const todoModal = document.getElementById('todo-modal');
+    if (todoModal && todoModal.classList.contains('active')) {
+        const filterText = currentTodoFilter === 'incomplete' ? '（待辦事項）' :
+                          currentTodoFilter === 'overdue' ? '（逾期事項）' : '（全部事項）';
+        document.getElementById('todo-modal-title').innerHTML = `📝 ${updatedProject.name} ${filterText}`;
+        document.getElementById('todo-project-id-display').textContent = updatedProject.id || 'N/A';
+        document.getElementById('todo-project-client-display').textContent =
+            `${updatedProject.client || 'N/A'} / ${updatedProject.contact || 'N/A'}`;
+        document.getElementById('todo-project-sales-display').textContent = updatedProject.sales_rep || '未分配';
+        showProjectTodos(updatedProject.id, currentTodoFilter);
+    }
+
+    alert('✅ 專案已更新！');
+}
+
+// 刪除目前專案
+function deleteCurrentProject() {
+    if (!currentTodoProject) {
+        alert('❌ 無法取得目前專案資訊');
+        return;
+    }
+
+    const project = currentTodoProject;
+    const confirmMsg = `⚠️ 確定要刪除專案「${project.name}」嗎？\n\n` +
+                       `專案編號：${project.id}\n` +
+                       `客戶：${project.client || 'N/A'}\n\n` +
+                       `⚠️ 此操作無法復原！`;
+
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+
+    // 再次確認
+    if (!confirm('❗ 最後確認：確定要永久刪除此專案嗎？')) {
+        return;
+    }
+
+    // 刪除專案
+    const projectIndex = projects.findIndex(p => p.id === project.id);
+    if (projectIndex === -1) {
+        alert('❌ 找不到要刪除的專案');
+        return;
+    }
+
+    projects.splice(projectIndex, 1);
+
+    // 儲存到 LocalStorage
+    saveProjectsToLocalStorage();
+
+    // 關閉待辦事項彈窗
+    closeTodoModal();
+
+    // 重新整理所有視圖
+    renderAllViews();
+
+    alert('✅ 專案已刪除');
+}
+
 // ==================== 截止日編輯與日期異常檢查 ====================
 
 // 更新截止日顯示和異常檢查
