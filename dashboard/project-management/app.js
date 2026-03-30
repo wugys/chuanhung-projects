@@ -417,16 +417,6 @@ function initAddProjectForm() {
         });
     }
 
-    // 聯絡人選擇事件
-    const contactSelect = document.getElementById('new-project-contact');
-    if (contactSelect) {
-        contactSelect.addEventListener('change', (e) => {
-            if (e.target.value === 'new') {
-                toggleNewContactInput();
-            }
-        });
-    }
-
     // 負責人輸入框事件（模糊搜尋）
     const assigneeInput = document.getElementById('new-project-assignee');
     if (assigneeInput) {
@@ -3167,19 +3157,6 @@ function closeAddProjectModal() {
     document.getElementById('add-project-modal').classList.remove('active');
     document.getElementById('add-project-form').reset();
 
-    // 重置聯絡人選擇器
-    const contactSelect = document.getElementById('new-project-contact');
-    const contactInput = document.getElementById('new-contact-input');
-    if (contactSelect) {
-        contactSelect.innerHTML = '<option value="">先選擇公司</option>';
-        contactSelect.disabled = true;
-        contactSelect.classList.remove('hidden');
-    }
-    if (contactInput) {
-        contactInput.value = '';
-        contactInput.classList.add('hidden');
-    }
-
     // 清空需求事項列表
     const requirementsList = document.getElementById('client-requirements-list');
     if (requirementsList) {
@@ -3248,27 +3225,11 @@ async function submitNewProject(event) {
     event.preventDefault();
 
     const clientName = document.getElementById('new-project-client').value.trim();
-    const contactSelect = document.getElementById('new-project-contact');
-    const contactInput = document.getElementById('new-contact-input');
-
-    // 取得聯絡人（從選擇框或輸入框）
-    let contactName = '';
-    if (!contactInput.classList.contains('hidden') && contactInput.value.trim()) {
-        contactName = contactInput.value.trim();
-    } else if (contactSelect.value && contactSelect.value !== 'new') {
-        contactName = contactSelect.value;
-    }
+    const contactName = document.getElementById('new-project-contact').value.trim();
 
     // 檢查新客戶
     if (clientName && !clientExists(clientName)) {
         showClientPrompt('client', clientName);
-        // 等待用戶選擇
-        return;
-    }
-
-    // 檢查新聯絡人
-    if (clientName && contactName && !contactExists(clientName, contactName)) {
-        showClientPrompt('contact', contactName, clientName);
         // 等待用戶選擇
         return;
     }
