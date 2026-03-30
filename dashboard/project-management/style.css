@@ -1236,91 +1236,109 @@ h2 {
     background: #38a169;
 }
 
-/* 完成結案按鈕樣式 */
-.btn-close-case-complete {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    outline: none;
-    box-shadow: none;
-    opacity: 1;
-    filter: none;
+/* 完成結案按鈕樣式 - 使用 !important 確保優先級 */
+.btn-close-case-complete,
+.project-table .btn-close-case-complete {
+    background: #10b981 !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    outline: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
 }
 
-.btn-close-case-complete:hover {
-    background: #059669;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+.btn-close-case-complete:hover,
+.project-table .btn-close-case-complete:hover {
+    background: #059669 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4) !important;
 }
 
-.btn-close-case-complete:disabled {
-    background: #10b981;
-    opacity: 1;
-    filter: none;
+.btn-close-case-complete:disabled,
+.project-table .btn-close-case-complete:disabled {
+    background: #10b981 !important;
+    opacity: 1 !important;
+    filter: none !important;
 }
 
-/* 未完成結案按鈕樣式 */
-.btn-close-case-incomplete {
-    background: #f59e0b;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    outline: none;
-    box-shadow: none;
-    opacity: 1;
-    filter: none;
+/* 未完成結案按鈕樣式 - 使用 !important 確保優先級 */
+.btn-close-case-incomplete,
+.project-table .btn-close-case-incomplete {
+    background: #f59e0b !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    outline: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
 }
 
-.btn-close-case-incomplete:hover {
-    background: #d97706;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+.btn-close-case-incomplete:hover,
+.project-table .btn-close-case-incomplete:hover {
+    background: #d97706 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4) !important;
 }
 
-.btn-close-case-incomplete:disabled {
-    background: #f59e0b;
-    opacity: 1;
-    filter: none;
+.btn-close-case-incomplete:disabled,
+.project-table .btn-close-case-incomplete:disabled {
+    background: #f59e0b !important;
+    opacity: 1 !important;
+    filter: none !important;
 }
 
-/* 撤回結案按鈕樣式 */
-.btn-reopen-case {
-    background: #3b82f6;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    outline: none;
-    box-shadow: none;
-    opacity: 1;
-    filter: none;
+/* 撤回結案按鈕樣式 - 使用 !important 確保優先級 */
+.btn-reopen-case,
+.project-table .btn-reopen-case {
+    background: #3b82f6 !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    outline: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
 }
 
-.btn-reopen-case:hover {
-    background: #2563eb;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+.btn-reopen-case:hover,
+.project-table .btn-reopen-case:hover {
+    background: #2563eb !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4) !important;
 }
 
-.btn-reopen-case:disabled {
-    background: #3b82f6;
-    opacity: 1;
-    filter: none;
+.btn-reopen-case:disabled,
+.project-table .btn-reopen-case:disabled {
+    background: #3b82f6 !important;
+    opacity: 1 !important;
+    filter: none !important;
 }
 
 .btn-next-step {
