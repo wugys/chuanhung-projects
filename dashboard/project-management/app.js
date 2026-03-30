@@ -46,25 +46,68 @@ function loadProjectsFromLocalStorage() {
     return null;
 }
 
+// 從 Supabase 載入專案資料
+async function loadProjectsFromSupabase() {
+    try {
+        if (!supabaseClient) {
+            console.log('⚠️ Supabase 未初始化，跳過雲端載入');
+            return null;
+        }
+
+        const { data, error } = await supabaseClient
+            .from('projects')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('❌ 從 Supabase 載入失敗:', error);
+            return null;
+        }
+
+        console.log('☁️ 從 Supabase 載入', data.length, '個專案');
+        return data;
+    } catch (e) {
+        console.error('❌ Supabase 載入錯誤:', e);
+        return null;
+    }
+}
+
 // 初始化時載入資料
-function initProjects() {
-    const stored = loadProjectsFromLocalStorage();
-    if (stored && stored.length > 0) {
-        // 使用 LocalStorage 中的數據覆蓋默認數據
-        // 保留默認數據中不在 stored 中的專案
-        const storedIds = new Set(stored.map(p => p.id));
-        const defaultOnly = projects.filter(p => !storedIds.has(p.id));
+async function initProjects() {
+    // 優先嘗試從 Supabase 載入
+    const supabaseData = await loadProjectsFromSupabase();
+
+    if (supabaseData && supabaseData.length > 0) {
+        // 使用 Supabase 資料覆蓋默認資料
+        const supabaseIds = new Set(supabaseData.map(p => p.id));
+        const defaultOnly = projects.filter(p => !supabaseIds.has(p.id));
 
         // 清空 projects 並重新填充
         projects.length = 0;
 
-        // 先添加 stored 中的數據
-        stored.forEach(p => projects.push(p));
+        // 先添加 Supabase 中的數據
+        supabaseData.forEach(p => projects.push(p));
 
-        // 再添加默認數據中獨有的專案
+        // 再添加默認資料中獨有的專案
         defaultOnly.forEach(p => projects.push(p));
 
-        console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
+        console.log('✅ 專案資料初始化完成（從 Supabase 載入）', projects.length, '個');
+
+        // 同步到 LocalStorage 作為快取
+        saveProjectsToLocalStorage();
+    } else {
+        // 從 LocalStorage 載入
+        const stored = loadProjectsFromLocalStorage();
+        if (stored && stored.length > 0) {
+            const storedIds = new Set(stored.map(p => p.id));
+            const defaultOnly = projects.filter(p => !storedIds.has(p.id));
+
+            projects.length = 0;
+            stored.forEach(p => projects.push(p));
+            defaultOnly.forEach(p => projects.push(p));
+
+            console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
+        }
     }
 }
 // ==================== LocalStorage 結束 ====================
@@ -1029,9 +1072,9 @@ const projects = [
 ];
 
 // 初始化
-function init() {
-    // 載入 LocalStorage 儲存的專案
-    initProjects();
+async function init() {
+    // 載入專案資料（優先從 Supabase，失敗則從 LocalStorage）
+    await initProjects();
 
     // 初始化客戶資料庫
     initClientsDB();
@@ -1044,6 +1087,7 @@ function init() {
     renderQuoteView();
     renderSampleView();
     renderProductionView();
+    renderShippingView();
     renderGantt();
     renderList();
     updateTime();
@@ -5387,4 +5431,6 @@ window.onclick = function(event) {
 }
 
 // 頁面載入時初始化
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', async () => {
+    await init();
+});
