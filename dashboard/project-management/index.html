@@ -311,6 +311,17 @@
                     </div>
                 </div>
                 
+                <!-- 客戶提供資料區域 -->
+                <div id="client-materials-section" style="margin-bottom: 20px; padding: 15px; background: #fef3c7; border-radius: 8px; border: 1px solid #f59e0b;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="margin: 0; font-size: 15px; color: #92400e;">📎 客戶提供資料</h3>
+                        <button onclick="openAddMaterialModal()" style="padding: 4px 12px; background: #f59e0b; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">+ 新增</button>
+                    </div>
+                    <div id="client-materials-list" style="font-size: 13px; color: #78350f;">
+                        <!-- 由 JS 渲染 -->
+                    </div>
+                </div>
+                
                 <!-- 任務清單（由 JS 渲染） -->
                 <h3 id="todo-task-count" style="margin-top: 0;">任務清單 (0 項)</h3>
                 <div id="todo-modal-body"></div>
@@ -720,7 +731,7 @@
     <script src="modules/supabase-auth.js?v=5"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=157"></script>
+    <script src="app.js?v=158"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>
