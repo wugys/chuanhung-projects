@@ -1321,6 +1321,7 @@ function getStatusText(phase) {
         'pending': '🔵 報價待確認',
         'sampling': '🔨 打樣中',
         'production': '🏭 生產中',
+        'shipping': '🚚 出貨中',
         'completed': '✅ 已完成'
     };
     return statusMap[phase] || '💡 提案中';
@@ -3251,7 +3252,7 @@ async function submitNewProject(event) {
         notes: document.getElementById('new-project-remarks')?.value || '',
         progress: 0,
         status: 'active',
-        status_text: getStatusText(document.getElementById('new-project-phase')?.value || 'proposing'),
+        statusText: getStatusText(document.getElementById('new-project-phase')?.value || 'proposing'),
         tasks: [],
         requirements: []
     };
