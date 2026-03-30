@@ -1240,13 +1240,34 @@ function showMigrationToast(projectCount) {
     document.body.appendChild(toast);
     
     // 綁定按鈕事件
-    document.getElementById('btn-start-migration').addEventListener('click', async () => {
-        toast.remove();
-        await performAutoMigration();
-    });
+    const startBtn = document.getElementById('btn-start-migration');
+    const cancelBtn = document.getElementById('btn-cancel-migration');
     
-    document.getElementById('btn-cancel-migration').addEventListener('click', () => {
-        toast.remove();
+    if (startBtn) {
+        startBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🖱️ 開始遷移按鈕被點擊');
+            toast.remove();
+            try {
+                await performAutoMigration();
+            } catch (err) {
+                console.error('❌ 遷移執行失敗:', err);
+                alert('遷移失敗: ' + err.message);
+            }
+        });
+        console.log('✅ 開始遷移按鈕事件已綁定');
+    } else {
+        console.error('❌ 找不到開始遷移按鈕');
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('🖱️ 稍後按鈕被點擊');
+            toast.remove();
+        });
+    }
         console.log('⏸️ 用戶選擇稍後遷移');
     });
 }
@@ -1254,9 +1275,14 @@ function showMigrationToast(projectCount) {
 // 執行自動遷移
 async function performAutoMigration() {
     console.log('%c🚀 開始自動遷移...', 'color: #3b82f6; font-size: 16px; font-weight: bold;');
+    console.log('🔍 檢查 Supabase 初始化狀態:', {
+        'window.supabase': typeof window.supabase,
+        'window.supabase?.createClient': typeof window.supabase?.createClient
+    });
     
     // 顯示進度提示
     const progressToast = document.createElement('div');
+    progressToast.id = 'migration-progress-toast';
     progressToast.style.cssText = `
         position: fixed;
         top: 50%;
@@ -1277,24 +1303,47 @@ async function performAutoMigration() {
         <div style="margin-top: 20px; height: 4px; background: #eee; border-radius: 2px; overflow: hidden;">
             <div id="migration-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); transition: width 0.3s;"></div>
         </div>
+        <div id="migration-error" style="color: #ef4444; font-size: 12px; margin-top: 15px; display: none;"></div>
     `;
     document.body.appendChild(progressToast);
     
     const updateProgress = (text, percent) => {
-        document.getElementById('migration-progress-text').textContent = text;
-        document.getElementById('migration-progress-bar').style.width = percent + '%';
+        const textEl = document.getElementById('migration-progress-text');
+        const barEl = document.getElementById('migration-progress-bar');
+        if (textEl) textEl.textContent = text;
+        if (barEl) barEl.style.width = percent + '%';
+    };
+    
+    const showError = (message) => {
+        const errorEl = document.getElementById('migration-error');
+        if (errorEl) {
+            errorEl.textContent = '錯誤: ' + message;
+            errorEl.style.display = 'block';
+        }
     };
     
     try {
         updateProgress('檢查 Supabase 連線...', 10);
         
-        // 檢查 Supabase
-        const supabase = getSupabaseClient();
+        // 檢查 Supabase - 等待庫載入
+        let supabase = getSupabaseClient();
         if (!supabase) {
-            throw new Error('Supabase 未初始化');
+            console.log('⏳ Supabase 尚未載入，等待 1 秒...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            supabase = getSupabaseClient();
         }
         
+        if (!supabase) {
+            console.error('❌ Supabase 初始化失敗:', {
+                'window.supabase': typeof window.supabase,
+                'createClient': typeof window.supabase?.createClient
+            });
+            throw new Error('Supabase 未初始化，請確認網頁已完全載入');
+        }
+        
+        console.log('✅ Supabase 連線成功');
         updateProgress('讀取本地資料...', 20);
+        
         const projectsData = localStorage.getItem('chuanhung_projects_v1');
         const clientsData = localStorage.getItem('chuanhung_clients_v1');
         
@@ -1302,8 +1351,15 @@ async function performAutoMigration() {
             throw new Error('沒有專案資料');
         }
         
-        const projects = JSON.parse(projectsData);
-        const clients = clientsData ? JSON.parse(clientsData) : [];
+        let projects, clients;
+        try {
+            projects = JSON.parse(projectsData);
+            clients = clientsData ? JSON.parse(clientsData) : [];
+        } catch (e) {
+            throw new Error('資料格式錯誤: ' + e.message);
+        }
+        
+        console.log(`📊 讀取到 ${projects.length} 個專案, ${clients.length} 個客戶`);
         
         updateProgress(`正在遷移 ${projects.length} 個專案...`, 30);
         
@@ -1315,7 +1371,7 @@ async function performAutoMigration() {
         for (let i = 0; i < projects.length; i++) {
             const project = projects[i];
             const percent = 30 + Math.floor((i / total) * 60);
-            updateProgress(`正在遷移: ${project.id} (${i + 1}/${total})`, percent);
+            updateProgress(`正在遷移: ${project.id || '未知ID'} (${i + 1}/${total})`, percent);
             
             try {
                 const record = {
@@ -1338,6 +1394,7 @@ async function performAutoMigration() {
                     notes: project.notes
                 };
                 
+                console.log(`🔄 遷移專案 ${project.id}...`);
                 const { error } = await supabase
                     .from('projects')
                     .upsert(record, { onConflict: 'id' });
@@ -1346,6 +1403,7 @@ async function performAutoMigration() {
                     console.error(`❌ 專案 ${project.id} 遷移失敗:`, error);
                     errorCount++;
                 } else {
+                    console.log(`✅ 專案 ${project.id} 遷移成功`);
                     successCount++;
                 }
             } catch (e) {
@@ -1381,6 +1439,8 @@ async function performAutoMigration() {
             projects: successCount,
             errors: errorCount
         }));
+        
+        console.log(`✅ 遷移完成: ${successCount} 成功, ${errorCount} 失敗`);
         
         setTimeout(() => {
             progressToast.remove();
@@ -1422,9 +1482,14 @@ async function performAutoMigration() {
         }, 500);
         
     } catch (error) {
-        progressToast.remove();
-        alert('遷移失敗: ' + error.message);
-        console.error('自動遷移失敗:', error);
+        console.error('❌ 自動遷移失敗:', error);
+        showError(error.message);
+        updateProgress('遷移失敗', 0);
+        
+        // 5秒後關閉
+        setTimeout(() => {
+            progressToast.remove();
+        }, 5000);
     }
 }
 
