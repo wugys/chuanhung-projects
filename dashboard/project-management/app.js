@@ -1937,8 +1937,8 @@ function showProjectTodo(projectId, filter = 'incomplete') {
         return;
     }
 
-    const filterText = filter === 'incomplete' ? '（待辦事項）' : filter === 'overdue' ? '（逾期事項）' : '（全部事項）';
-    title.innerHTML = `📝 ${project.name} ${filterText}`;
+    const filterText = ''; // 移除（待辦事項）、（逾期事項）、（全部事項）顯示
+    title.innerHTML = `📝 ${project.name}${filterText}`;
 
     // 計算並更新專案進度
     updateProjectProgress(project);
@@ -3019,9 +3019,8 @@ async function submitEditProject(event) {
     // 如果待辦事項彈窗還開著，更新標題和內容
     const todoModal = document.getElementById('todo-modal');
     if (todoModal && todoModal.classList.contains('active')) {
-        const filterText = currentTodoFilter === 'incomplete' ? '（待辦事項）' :
-                          currentTodoFilter === 'overdue' ? '（逾期事項）' : '（全部事項）';
-        document.getElementById('todo-modal-title').innerHTML = `📝 ${updatedProject.name} ${filterText}`;
+        const filterText = ''; // 移除（待辦事項）、（逾期事項）、（全部事項）顯示
+        document.getElementById('todo-modal-title').innerHTML = `📝 ${updatedProject.name}${filterText}`;
         document.getElementById('todo-project-id-display').textContent = updatedProject.id || 'N/A';
         document.getElementById('todo-project-client-display').textContent =
             `${updatedProject.client || 'N/A'} / ${updatedProject.contact || 'N/A'}`;
