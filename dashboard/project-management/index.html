@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>銓宏國際 - 專案管理系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=140">
+    <link rel="stylesheet" href="style.css?v=141">
 </head>
 <body>
     <div class="container">
@@ -361,12 +361,9 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>聯絡人 <span class="required">*</span></label>
-                            <div class="contact-select-container">
-                                <select id="new-project-contact" required disabled>
-                                    <option value="">先選擇公司</option>
-                                </select>
-                                <input type="text" id="new-contact-input" class="hidden" placeholder="輸入新聯絡人姓名">
-                                <button type="button" id="btn-add-new-contact" class="btn-icon" onclick="toggleNewContactInput()" title="新增聯絡人">+</button>
+                            <div class="contact-search-container">
+                                <input type="text" id="new-project-contact" placeholder="輸入聯絡人姓名搜尋..." required autocomplete="off" disabled>
+                                <div id="contact-suggestions" class="contact-suggestions-dropdown"></div>
                             </div>
                         </div>
                         <div class="form-group">
@@ -620,7 +617,7 @@
     <script src="modules/supabase-auth.js?v=5"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=140"></script>
+    <script src="app.js?v=141"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>

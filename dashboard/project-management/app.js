@@ -413,16 +413,36 @@ function initAddProjectForm() {
             if (clientName && !clientExists(clientName)) {
                 showClientPrompt('client', clientName);
             }
-            updateContactSelect(clientName);
+            updateContactInput(clientName);
         });
     }
 
-    // 聯絡人選擇事件
-    const contactSelect = document.getElementById('new-project-contact');
-    if (contactSelect) {
-        contactSelect.addEventListener('change', (e) => {
-            if (e.target.value === 'new') {
-                toggleNewContactInput();
+    // 聯絡人輸入框事件（模糊搜尋）
+    const contactInput = document.getElementById('new-project-contact');
+    if (contactInput) {
+        contactInput.addEventListener('input', (e) => {
+            const clientName = document.getElementById('new-project-client')?.value?.trim();
+            showContactSuggestions(e.target.value, clientName);
+        });
+
+        contactInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                const dropdown = document.getElementById('contact-suggestions');
+                if (dropdown) dropdown.classList.remove('active');
+            }, 200);
+        });
+
+        contactInput.addEventListener('focus', (e) => {
+            const clientName = document.getElementById('new-project-client')?.value?.trim();
+            showContactSuggestions(e.target.value, clientName);
+        });
+
+        // 當輸入完成時檢查是否需要顯示新增提示
+        contactInput.addEventListener('change', (e) => {
+            const contactName = e.target.value.trim();
+            const clientName = document.getElementById('new-project-client')?.value?.trim();
+            if (contactName && clientName && !contactExists(clientName, contactName)) {
+                showClientPrompt('contact', contactName, clientName);
             }
         });
     }
@@ -509,6 +529,106 @@ function showAssigneeSuggestions(query) {
 function selectAssignee(name) {
     document.getElementById('new-project-assignee').value = name;
     document.getElementById('assignee-suggestions').classList.remove('active');
+}
+
+// 顯示聯絡人建議列表
+function showContactSuggestions(query, clientName) {
+    const dropdown = document.getElementById('contact-suggestions');
+    const contactInput = document.getElementById('new-project-contact');
+    
+    if (!dropdown || !contactInput) return;
+
+    // 如果沒有選擇公司，顯示提示
+    if (!clientName) {
+        dropdown.innerHTML = '<div class="contact-suggestion-item" style="color: #999;">請先選擇公司</div>';
+        dropdown.classList.add('active');
+        contactInput.disabled = true;
+        return;
+    }
+
+    contactInput.disabled = false;
+
+    // 取得該公司的聯絡人列表
+    const contacts = getClientContacts(clientName);
+
+    if (!query || query.length < 1) {
+        // 顯示所有聯絡人
+        if (contacts.length === 0) {
+            dropdown.innerHTML = '<div class="contact-suggestion-item" style="color: #999;">無現有聯絡人，輸入新增</div>';
+        } else {
+            dropdown.innerHTML = contacts.map(contact => `
+                <div class="contact-suggestion-item" onclick="selectContact('${contact}')">${contact}</div>
+            `).join('');
+        }
+        dropdown.classList.add('active');
+        return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const matches = contacts.filter(contact => 
+        contact.toLowerCase().includes(lowerQuery)
+    );
+
+    // 檢查是否完全匹配（不區分大小寫）
+    const exactMatch = contacts.some(contact => 
+        contact.toLowerCase() === lowerQuery
+    );
+
+    if (matches.length === 0) {
+        // 無符合，顯示新增選項
+        dropdown.innerHTML = `
+            <div class="contact-suggestion-item" style="color: #28a745; font-weight: 500;" 
+                 onclick="showClientPrompt('contact', '${query}', '${clientName}')">
+                <i class="fas fa-plus-circle"></i> 新增「${query}」到聯絡人資料庫
+            </div>
+        `;
+    } else {
+        dropdown.innerHTML = matches.map(contact => `
+            <div class="contact-suggestion-item" onclick="selectContact('${contact}')">${contact}</div>
+        `).join('');
+        
+        // 如果沒有完全匹配，也顯示新增選項
+        if (!exactMatch) {
+            dropdown.innerHTML += `
+                <div class="contact-suggestion-item" style="color: #28a745; font-weight: 500; border-top: 1px solid #e5e7eb; margin-top: 4px; padding-top: 10px;" 
+                     onclick="showClientPrompt('contact', '${query}', '${clientName}')">
+                    <i class="fas fa-plus-circle"></i> 新增「${query}」到聯絡人資料庫
+                </div>
+            `;
+        }
+    }
+
+    dropdown.classList.add('active');
+}
+
+// 選擇聯絡人
+function selectContact(name) {
+    document.getElementById('new-project-contact').value = name;
+    document.getElementById('contact-suggestions').classList.remove('active');
+}
+
+// 更新聯絡人輸入框狀態（當公司改變時）
+function updateContactInput(clientName) {
+    const contactInput = document.getElementById('new-project-contact');
+    const dropdown = document.getElementById('contact-suggestions');
+    
+    if (!contactInput) return;
+
+    // 清空聯絡人輸入
+    contactInput.value = '';
+    
+    if (!clientName) {
+        contactInput.disabled = true;
+        contactInput.placeholder = '先選擇公司';
+    } else {
+        contactInput.disabled = false;
+        contactInput.placeholder = '輸入聯絡人姓名搜尋...';
+        
+        // 顯示該公司的聯絡人建議
+        showContactSuggestions('', clientName);
+    }
+    
+    if (dropdown) dropdown.classList.remove('active');
 }
 
 // ==================== 客戶資料庫功能結束 ====================
@@ -3167,17 +3287,16 @@ function closeAddProjectModal() {
     document.getElementById('add-project-modal').classList.remove('active');
     document.getElementById('add-project-form').reset();
 
-    // 重置聯絡人選擇器
-    const contactSelect = document.getElementById('new-project-contact');
-    const contactInput = document.getElementById('new-contact-input');
-    if (contactSelect) {
-        contactSelect.innerHTML = '<option value="">先選擇公司</option>';
-        contactSelect.disabled = true;
-        contactSelect.classList.remove('hidden');
-    }
+    // 重置聯絡人輸入框
+    const contactInput = document.getElementById('new-project-contact');
+    const contactDropdown = document.getElementById('contact-suggestions');
     if (contactInput) {
         contactInput.value = '';
-        contactInput.classList.add('hidden');
+        contactInput.disabled = true;
+        contactInput.placeholder = '先選擇公司';
+    }
+    if (contactDropdown) {
+        contactDropdown.classList.remove('active');
     }
 
     // 清空需求事項列表
