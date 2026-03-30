@@ -210,7 +210,7 @@ function showClientSuggestions(query) {
 function selectClient(clientName) {
     document.getElementById('new-project-client').value = clientName;
     document.getElementById('client-suggestions').classList.remove('active');
-    updateContactSelect(clientName);
+    updateContactInput(clientName);
 }
 
 // 更新聯絡人選擇器
