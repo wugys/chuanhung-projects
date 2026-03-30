@@ -210,10 +210,81 @@ function showClientSuggestions(query) {
 function selectClient(clientName) {
     document.getElementById('new-project-client').value = clientName;
     document.getElementById('client-suggestions').classList.remove('active');
-    updateContactInput(clientName);
+    updateContactSelect(clientName);
 }
 
 // 更新聯絡人選擇器
+function updateContactSelect(clientName) {
+    const select = document.getElementById('new-project-contact');
+    const contacts = getClientContacts(clientName);
+
+    select.innerHTML = '<option value="">選擇聯絡人</option>';
+
+    if (contacts.length === 0) {
+        select.innerHTML += '<option value="new">+ 新增聯絡人</option>';
+        select.value = 'new';
+        toggleNewContactInput();
+    } else {
+        contacts.forEach(contact => {
+            select.innerHTML += `<option value="${contact}">${contact}</option>`;
+        });
+        select.innerHTML += '<option value="new">+ 新增聯絡人</option>';
+    }
+
+    select.disabled = false;
+}
+
+// 切換新增聯絡人輸入框
+function toggleNewContactInput() {
+    const select = document.getElementById('new-project-contact');
+    const input = document.getElementById('new-contact-input');
+    const btn = document.getElementById('btn-add-new-contact');
+
+    if (select.value === 'new' || input.classList.contains('hidden')) {
+        // 顯示輸入框
+        select.classList.add('hidden');
+        input.classList.remove('hidden');
+        input.focus();
+        btn.textContent = '✓';
+        btn.title = '確認';
+        btn.onclick = confirmNewContact;
+    } else {
+        // 返回選擇框
+        select.classList.remove('hidden');
+        input.classList.add('hidden');
+        input.value = '';
+        btn.textContent = '+';
+        btn.title = '新增聯絡人';
+        btn.onclick = toggleNewContactInput;
+    }
+}
+
+// 確認新聯絡人
+function confirmNewContact() {
+    const input = document.getElementById('new-contact-input');
+    const contactName = input.value.trim();
+
+    if (!contactName) {
+        alert('請輸入聯絡人姓名');
+        return;
+    }
+
+    // 返回選擇狀態但保留值
+    const select = document.getElementById('new-project-contact');
+    select.innerHTML += `<option value="${contactName}" selected>${contactName} (新)</option>`;
+    select.classList.remove('hidden');
+    input.classList.add('hidden');
+
+    const btn = document.getElementById('btn-add-new-contact');
+    btn.textContent = '+';
+    btn.title = '新增聯絡人';
+    btn.onclick = toggleNewContactInput;
+}
+
+// 顯示新增客戶/聯絡人提示
+function showClientPrompt(type, name, clientName = null) {
+    const modal = document.getElementById('client-prompt-modal');
+    const title = document.getElementById('client-prompt-title');
     const message = document.getElementById('client-prompt-message');
 
     pendingClientData = { type, name, clientName };
@@ -3205,18 +3276,6 @@ function openAddProjectModal() {
     const requirementsList = document.getElementById('client-requirements-list');
     if (requirementsList) {
         requirementsList.innerHTML = '';
-    }
-
-    // 初始化聯絡人輸入框（禁用狀態）
-    const contactInput = document.getElementById('new-project-contact');
-    const contactDropdown = document.getElementById('contact-suggestions');
-    if (contactInput) {
-        contactInput.value = '';
-        contactInput.disabled = true;
-        contactInput.placeholder = '先選擇公司';
-    }
-    if (contactDropdown) {
-        contactDropdown.classList.remove('active');
     }
 
     // 顯示彈窗
