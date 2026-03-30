@@ -18,6 +18,16 @@ function escapeHtml(text) {
 // 格式化日期為簡短格式 (2026-03-17 → 3/17)function formatDateShort(dateStr) {    if (!dateStr) return '';    const date = new Date(dateStr);    return `${date.getMonth() + 1}/${date.getDate()}`;}
 function saveProjectsToLocalStorage() {
     try {
+        // 【資料保護機制】儲存前先建立備份
+        const existing = localStorage.getItem(STORAGE_KEY);
+        if (existing) {
+            const backupKey = `${STORAGE_KEY}_backup_${Date.now()}`;
+            localStorage.setItem(backupKey, existing);
+            // 只保留最近 10 個備份
+            cleanupOldBackups();
+            console.log('📦 已建立資料備份:', backupKey);
+        }
+        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
         console.log('💾 已儲存', projects.length, '個專案到 LocalStorage');
         // 驗證儲存成功
@@ -29,6 +39,58 @@ function saveProjectsToLocalStorage() {
         console.error('LocalStorage 儲存失敗:', e);
         alert('⚠️ 儲存失敗：' + e.message);
     }
+}
+
+// 清理舊備份（只保留最近 10 個）
+function cleanupOldBackups() {
+    const backups = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(`${STORAGE_KEY}_backup_`)) {
+            backups.push(key);
+        }
+    }
+    // 按時間排序並刪除舊的
+    backups.sort();
+    while (backups.length > 10) {
+        const oldKey = backups.shift();
+        localStorage.removeItem(oldKey);
+        console.log('🗑️ 已清理舊備份:', oldKey);
+    }
+}
+
+// 資料還原功能（緊急情況使用）
+function restoreFromBackup(backupKey) {
+    try {
+        const backup = localStorage.getItem(backupKey);
+        if (backup) {
+            localStorage.setItem(STORAGE_KEY, backup);
+            console.log('✅ 已從備份還原資料:', backupKey);
+            alert('資料已還原，請重新整理頁面');
+            return true;
+        }
+    } catch (e) {
+        console.error('還原失敗:', e);
+    }
+    return false;
+}
+
+// 列出所有可用備份
+function listBackups() {
+    const backups = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(`${STORAGE_KEY}_backup_`)) {
+            const timestamp = parseInt(key.replace(`${STORAGE_KEY}_backup_`, ''));
+            const date = new Date(timestamp);
+            backups.push({
+                key: key,
+                time: date.toLocaleString('zh-TW'),
+                timestamp: timestamp
+            });
+        }
+    }
+    return backups.sort((a, b) => b.timestamp - a.timestamp);
 }
 
 // 從 LocalStorage 載入專案資料
@@ -46,26 +108,35 @@ function loadProjectsFromLocalStorage() {
     return null;
 }
 
-// 初始化時載入資料
+// 初始化時載入資料 - 資料庫優先原則：LocalStorage 永遠優先於程式碼預設資料
 function initProjects() {
     const stored = loadProjectsFromLocalStorage();
     if (stored && stored.length > 0) {
-        // 使用 LocalStorage 中的數據覆蓋默認數據
-        // 保留默認數據中不在 stored 中的專案
-        const storedIds = new Set(stored.map(p => p.id));
-        const defaultOnly = projects.filter(p => !storedIds.has(p.id));
-
-        // 清空 projects 並重新填充
+        // 【核心原則】LocalStorage 中的資料優先，完全取代程式碼中的預設資料
+        // 這確保版本回退時不會覆蓋用戶已更新的專案進度
         projects.length = 0;
-
-        // 先添加 stored 中的數據
         stored.forEach(p => projects.push(p));
-
-        // 再添加默認數據中獨有的專案
-        defaultOnly.forEach(p => projects.push(p));
-
-        console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
+        console.log('✅ 專案資料初始化完成（從 LocalStorage 載入，優先於預設資料）', projects.length, '個');
+        
+        // 標記這是真实用户資料（非預設資料）
+        localStorage.setItem('chuanhung_data_source', 'user');
+    } else {
+        // 只有 LocalStorage 完全為空時，才使用程式碼中的預設資料
+        console.log('⚠️ LocalStorage 無資料，使用程式碼預設資料', projects.length, '個');
+        console.log('💡 首次載入後，資料將儲存到 LocalStorage，後續版本回退不會影響');
+        
+        // 立即將預設資料儲存到 LocalStorage
+        saveProjectsToLocalStorage();
+        localStorage.setItem('chuanhung_data_source', 'default');
     }
+    
+    // 【開發者工具】顯示資料保護機制提示
+    console.log('%c🔒 資料保護機制已啟用', 'color: #10b981; font-size: 14px; font-weight: bold;');
+    console.log('%c• LocalStorage 資料永遠優先於程式碼預設資料', 'color: #6b7280;');
+    console.log('%c• 每次修改前自動建立備份', 'color: #6b7280;');
+    console.log('%c• 可用指令:', 'color: #6b7280;');
+    console.log('%c  - listBackups() %c查看所有備份', 'color: #3b82f6;', 'color: #6b7280;');
+    console.log('%c  - restoreFromBackup(key) %c從備份還原', 'color: #3b82f6;', 'color: #6b7280;');
 }
 // ==================== LocalStorage 結束 ====================
 
