@@ -927,8 +927,15 @@ function createProjectCard(project) {
         <button class="btn-reopen-case" onclick="event.stopPropagation(); reopenProjectCase('${project.id}')">↩️ 撤回結案</button>
     `;
 
+    // 下一步按鈕（僅對提案中、報價中、打樣中顯示）
+    const showNextStep = ['proposing', 'quoting', 'sampling'].includes(project.phase);
+    const nextStepBtn = showNextStep ? `
+        <button class="btn-next-step" onclick="event.stopPropagation(); showNextStepOptions('${project.id}')">➡️ 下一步</button>
+    ` : '';
+
     const buttonsHtml = `
         <div class="card-buttons">
+            ${nextStepBtn}
             ${closeCaseBtns}
         </div>
     `;
@@ -1076,6 +1083,94 @@ function reopenProjectCase(projectId) {
     renderAllViews();
 
     showTodoToast('↩️ 專案已撤回結案');
+}
+
+// 顯示下一步選項
+function showNextStepOptions(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    let options = [];
+    
+    // 根據當前階段顯示不同選項
+    switch (project.phase) {
+        case 'proposing':
+            options = [
+                { value: 'quoting', label: '📋 報價中' },
+                { value: 'pending', label: '🔵 報價待確認' }
+            ];
+            break;
+        case 'quoting':
+            options = [
+                { value: 'pending', label: '🔵 報價待確認' },
+                { value: 'sampling', label: '🔨 打樣中' }
+            ];
+            break;
+        case 'sampling':
+            options = [
+                { value: 'production', label: '🏭 生產中' }
+            ];
+            break;
+        default:
+            alert('當前階段無法進行下一步');
+            return;
+    }
+
+    // 建立選項 HTML
+    const optionsHtml = options.map(opt => 
+        `<button onclick="selectNextStep('${projectId}', '${opt.value}')" style="display: block; width: 100%; padding: 12px; margin: 8px 0; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;"
+        onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">${opt.label}</button>`
+    ).join('');
+
+    // 顯示彈窗
+    const modal = document.createElement('div');
+    modal.id = 'next-step-modal';
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 350px; text-align: center;">
+            <span class="close-btn" onclick="closeNextStepModal()">×</span>
+            <h3 style="margin-bottom: 20px;">➡️ 選擇下一步</h3>
+            <p style="margin-bottom: 20px; color: #6b7280; font-size: 14px;">目前階段：${project.statusText}</p>
+            <div style="text-align: left;">
+                ${optionsHtml}
+            </div>
+            <button onclick="closeNextStepModal()" style="margin-top: 15px; padding: 10px 20px; background: #9ca3af; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">取消</button>
+        </div>
+    `;
+    
+    // 移除舊的彈窗（如果存在）
+    const oldModal = document.getElementById('next-step-modal');
+    if (oldModal) oldModal.remove();
+    
+    document.body.appendChild(modal);
+}
+
+// 關閉下一步彈窗
+function closeNextStepModal() {
+    const modal = document.getElementById('next-step-modal');
+    if (modal) modal.remove();
+}
+
+// 選擇下一步
+function selectNextStep(projectId, nextPhase) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+
+    // 更新階段
+    project.phase = nextPhase;
+    project.statusText = getStatusText(nextPhase);
+
+    // 儲存
+    saveProjectsToLocalStorage();
+
+    // 重新渲染
+    renderAllViews();
+
+    // 關閉彈窗
+    closeNextStepModal();
+
+    showTodoToast(`➡️ 專案已移至${project.statusText}`);
 }
 
 // 根據階段取得狀態文字
