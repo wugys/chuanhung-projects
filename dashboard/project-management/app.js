@@ -326,6 +326,69 @@ function closeClientPrompt() {
     pendingClientData = null;
 }
 
+// ==================== 負責人資料庫功能 ====================
+
+// 負責人列表（可動態擴充）
+let ASSIGNEE_LIST = ['KEVIN', '姿姿', 'MIA', 'BETTY'];
+
+// 待處理的負責人資料
+let pendingAssigneeData = null;
+
+// 檢查負責人是否存在
+function assigneeExists(name) {
+    return ASSIGNEE_LIST.some(a => a.toLowerCase() === name.toLowerCase());
+}
+
+// 顯示新增負責人提示
+function showAssigneePrompt(name) {
+    const modal = document.getElementById('assignee-prompt-modal');
+    const title = document.getElementById('assignee-prompt-title');
+    const message = document.getElementById('assignee-prompt-message');
+
+    pendingAssigneeData = { name };
+
+    title.textContent = '👤 新增負責人';
+    message.innerHTML = `"<strong>${name}</strong>" 不在負責人資料庫中。<br>是否將此人員加入負責人資料庫？`;
+
+    modal.classList.add('active');
+}
+
+// 確認加入負責人資料庫
+function confirmAddToAssigneeDB() {
+    if (!pendingAssigneeData) return;
+
+    const { name } = pendingAssigneeData;
+
+    // 添加新負責人到列表
+    if (!assigneeExists(name)) {
+        ASSIGNEE_LIST.push(name);
+        console.log(`✅ 已添加新負責人: ${name}`);
+    }
+
+    // 填入輸入框
+    document.getElementById('new-project-assignee').value = name;
+
+    closeAssigneePrompt();
+}
+
+// 取消加入（僅用於此專案）
+function cancelAddToAssigneeDB() {
+    if (!pendingAssigneeData) return;
+
+    const { name } = pendingAssigneeData;
+
+    // 仍然填入輸入框，但不加入資料庫
+    document.getElementById('new-project-assignee').value = name;
+
+    closeAssigneePrompt();
+}
+
+// 關閉負責人提示彈窗
+function closeAssigneePrompt() {
+    document.getElementById('assignee-prompt-modal').classList.remove('active');
+    pendingAssigneeData = null;
+}
+
 // 初始化新增專案表單
 function initAddProjectForm() {
     // 客戶輸入框事件
@@ -381,6 +444,14 @@ function initAddProjectForm() {
         assigneeInput.addEventListener('focus', (e) => {
             showAssigneeSuggestions(e.target.value);
         });
+
+        // 當輸入完成時檢查是否需要顯示新增提示
+        assigneeInput.addEventListener('change', (e) => {
+            const assigneeName = e.target.value.trim();
+            if (assigneeName && !assigneeExists(assigneeName)) {
+                showAssigneePrompt(assigneeName);
+            }
+        });
     }
 }
 
@@ -402,12 +473,33 @@ function showAssigneeSuggestions(query) {
         name.toLowerCase().includes(lowerQuery)
     );
 
+    // 檢查是否完全匹配（不區分大小寫）
+    const exactMatch = assignees.some(name => 
+        name.toLowerCase() === lowerQuery
+    );
+
     if (matches.length === 0) {
-        dropdown.innerHTML = '<div class="assignee-suggestion-item" style="color: #999;">無符合的負責人</div>';
+        // 無符合，顯示新增選項
+        dropdown.innerHTML = `
+            <div class="assignee-suggestion-item" style="color: #28a745; font-weight: 500;" 
+                 onclick="showAssigneePrompt('${query}')">
+                <i class="fas fa-plus-circle"></i> 新增「${query}」到負責人資料庫
+            </div>
+        `;
     } else {
         dropdown.innerHTML = matches.map(name => `
             <div class="assignee-suggestion-item" onclick="selectAssignee('${name}')">${name}</div>
         `).join('');
+        
+        // 如果沒有完全匹配，也顯示新增選項
+        if (!exactMatch) {
+            dropdown.innerHTML += `
+                <div class="assignee-suggestion-item" style="color: #28a745; font-weight: 500; border-top: 1px solid #e5e7eb; margin-top: 4px; padding-top: 10px;" 
+                     onclick="showAssigneePrompt('${query}')">
+                    <i class="fas fa-plus-circle"></i> 新增「${query}」到負責人資料庫
+                </div>
+            `;
+        }
     }
 
     dropdown.classList.add('active');

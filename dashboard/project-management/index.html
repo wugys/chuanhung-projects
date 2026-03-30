@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>銓宏國際 - 專案管理系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=139">
+    <link rel="stylesheet" href="style.css?v=140">
 </head>
 <body>
     <div class="container">
@@ -555,6 +555,18 @@
             </div>
         </div>
 
+        <!-- 新增負責人提示彈窗 -->
+        <div id="assignee-prompt-modal" class="modal client-prompt-modal">
+            <div class="modal-content">
+                <h3 id="assignee-prompt-title">👤 新增負責人</h3>
+                <p id="assignee-prompt-message"></p>
+                <div class="prompt-buttons">
+                    <button class="btn-prompt btn-prompt-primary" onclick="confirmAddToAssigneeDB()">加入負責人資料庫</button>
+                    <button class="btn-prompt btn-prompt-secondary" onclick="cancelAddToAssigneeDB()">僅用於此專案</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 登入彈窗 -->
         <div id="login-modal" class="modal" style="display: none; z-index: 9999;">
             <div class="modal-content" style="max-width: 400px; padding: 30px;">
@@ -608,7 +620,7 @@
     <script src="modules/supabase-auth.js?v=5"></script>
     
     <!-- 5. 主系統原有功能（v102 穩定版本） -->
-    <script src="app.js?v=139"></script>
+    <script src="app.js?v=140"></script>
     
     <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
     <script src="modules/permission-integration.js?v=1"></script>
