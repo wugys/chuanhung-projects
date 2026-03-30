@@ -72,6 +72,32 @@ async function loadProjectsFromSupabase() {
     }
 }
 
+// 儲存專案資料到 Supabase（更新或插入）
+async function saveProjectToSupabase(project) {
+    try {
+        if (!supabaseClient) {
+            console.log('⚠️ Supabase 未初始化，僅儲存到 LocalStorage');
+            return false;
+        }
+
+        const { data, error } = await supabaseClient
+            .from('projects')
+            .upsert([project], { onConflict: 'id' })
+            .select();
+
+        if (error) {
+            console.error('❌ 儲存到 Supabase 失敗:', error);
+            return false;
+        }
+
+        console.log('☁️ 已同步專案到 Supabase:', project.id);
+        return true;
+    } catch (e) {
+        console.error('❌ Supabase 儲存錯誤:', e);
+        return false;
+    }
+}
+
 // 初始化時載入資料
 async function initProjects() {
     // 優先嘗試從 Supabase 載入
@@ -3900,7 +3926,7 @@ function applyProgressUpdate() {
 }
 
 // 快速更新專案階段
-function updateProjectPhase(projectId, newPhase) {
+async function updateProjectPhase(projectId, newPhase) {
     const project = projects.find(p => p.id === projectId);
     if (!project) return;
 
@@ -3929,6 +3955,10 @@ function updateProjectPhase(projectId, newPhase) {
     if (newPhase === 'completed') {
         project.progress = 100;
     }
+
+    // 儲存到 LocalStorage 和 Supabase
+    saveProjectsToLocalStorage();
+    await saveProjectToSupabase(project);
 
     // 重新整理所有視圖
     renderAllViews();
