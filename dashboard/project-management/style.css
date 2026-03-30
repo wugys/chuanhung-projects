@@ -348,22 +348,6 @@ body {
     margin-left: auto;
 }
 
-.nav-management .tab-btn {
-    background: #f8f9fa;
-    color: #666;
-    border: 1px solid #e0e0e0;
-}
-
-.nav-management .tab-btn:hover {
-    background: #e9ecef;
-}
-
-.nav-management .tab-btn.active {
-    background: #6c757d;
-    color: white;
-    border-color: #6c757d;
-}
-
 /* 人員查詢按鈕樣式 */
 .search-person-btn {
     padding: 10px 20px;
