@@ -156,8 +156,16 @@ function integratePermissions() {
 
 /**
  * 檢查權限輔助函數
+ * @param {string} permission - 需要的權限
+ * @param {string} actionName - 操作名稱
+ * @param {boolean} allowGuest - 是否允許訪客（遷移等特殊操作）
  */
-function checkPermission(permission, actionName) {
+function checkPermission(permission, actionName, allowGuest = false) {
+    // 如果允許訪客，直接通過
+    if (allowGuest) {
+        return true;
+    }
+    
     // 如果 Auth 模組未載入，允許操作（相容模式）
     if (typeof Auth === 'undefined') {
         console.warn(`⚠️ Auth 模組未載入，允許${actionName}`);
