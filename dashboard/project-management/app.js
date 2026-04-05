@@ -1266,10 +1266,9 @@ function showMigrationToast(projectCount) {
             e.preventDefault();
             console.log('🖱️ 稍後按鈕被點擊');
             toast.remove();
+            console.log('⏸️ 用戶選擇稍後遷移');
         });
     }
-        console.log('⏸️ 用戶選擇稍後遷移');
-    });
 }
 
 // 執行自動遷移
