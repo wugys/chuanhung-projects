@@ -1719,6 +1719,21 @@ function createProjectCard(project) {
         <button class="btn-reopen-case" style="background: #3b82f6 !important; color: white !important; border: none !important; padding: 6px 12px !important; border-radius: 6px !important; font-size: 13px !important; font-weight: 500 !important; cursor: pointer !important; opacity: 1 !important; filter: none !important; outline: none !important; box-shadow: none !important; flex: 1 !important;" onclick="event.stopPropagation(); reopenProjectCase('${project.id}')">↩️ 撤回結案</button>
     `;
 
+    // 專案階段選項（未結案專案顯示）
+    const phaseSelectorHtml = !isCompleted ? `
+        <div class="card-phase-selector" style="margin-bottom: 8px;" onclick="event.stopPropagation();">
+            <select onchange="quickChangePhase('${project.id}', this.value)" style="width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: white; cursor: pointer;">
+                <option value="proposing" ${project.phase === 'proposing' ? 'selected' : ''}>💡 提案</option>
+                <option value="proposal_pending" ${project.phase === 'proposal_pending' ? 'selected' : ''}>📤 提案待確認</option>
+                <option value="quoting" ${project.phase === 'quoting' ? 'selected' : ''}>📋 報價</option>
+                <option value="pending" ${project.phase === 'pending' ? 'selected' : ''}>🔵 報價待確認</option>
+                <option value="sampling" ${project.phase === 'sampling' ? 'selected' : ''}>🔨 打樣</option>
+                <option value="production" ${project.phase === 'production' ? 'selected' : ''}>🏭 生產</option>
+                <option value="shipping" ${project.phase === 'shipping' ? 'selected' : ''}>🚚 出貨</option>
+            </select>
+        </div>
+    ` : '';
+
     const buttonsHtml = `
         <div class="card-buttons">
             ${closeCaseBtns}
@@ -1741,6 +1756,7 @@ function createProjectCard(project) {
             <div class="progress-fill" style="width: ${project.progress}%"></div>
         </div>
         <div class="progress-text">${project.progress}% 完成</div>
+        ${phaseSelectorHtml}
         ${buttonsHtml}
     `;
 
@@ -1967,6 +1983,26 @@ function selectNextStep(projectId, nextPhase) {
 
     // 關閉彈窗
     closeNextStepModal();
+
+    showTodoToast(`✅ 專案階段已更改為${project.statusText}`);
+}
+
+// 快速更改專案階段（透過下拉選單）
+function quickChangePhase(projectId, newPhase) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    if (project.phase === newPhase) return;
+
+    // 更新階段
+    project.phase = newPhase;
+    project.statusText = getStatusText(newPhase);
+
+    // 儲存
+    saveProjectsToLocalStorage();
+
+    // 重新渲染
+    renderAllViews();
 
     showTodoToast(`✅ 專案階段已更改為${project.statusText}`);
 }
