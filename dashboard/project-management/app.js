@@ -41,8 +41,8 @@ function saveProjectsToLocalStorage() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
         console.log('💾 已儲存', projects.length, '個專案到 LocalStorage');
         
-        // 【Supabase 同步】如果已啟用，同時儲存到 Supabase
-        if (USE_SUPABASE && isMigratedToSupabase()) {
+        // 【Supabase 同步】同步到 Supabase（強制啟用）
+        if (USE_SUPABASE) {
             saveProjectsToSupabase().then(success => {
                 if (success) {
                     console.log('☁️ 已同步到 Supabase');
@@ -274,8 +274,8 @@ async function initProjectsAsync() {
         console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
         localStorage.setItem('chuanhung_data_source', 'user');
         
-        // 如果已遷移到 Supabase，在背景同步到雲端（不阻塞）
-        if (USE_SUPABASE && isMigratedToSupabase()) {
+        // 強制同步到 Supabase（背景執行）
+        if (USE_SUPABASE) {
             console.log('☁️ 背景同步到 Supabase...');
             saveProjectsToSupabase();
         }
