@@ -4739,6 +4739,9 @@ function toggleTaskComplete(projectId, taskIndex, isChecked) {
 
     // 自動計算專案整體進度
     updateProjectProgress(project);
+    
+    // 【重要】儲存到 LocalStorage
+    saveProjectsToLocalStorage();
 
     // 重新渲染列表
     const body = document.getElementById('todo-modal-body');
