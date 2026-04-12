@@ -130,6 +130,61 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+/* 客戶需求事項樣式 */
+.requirements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.requirement-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.requirement-item input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.requirement-item .btn-remove-requirement {
+    padding: 8px 12px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.requirement-item .btn-remove-requirement:hover {
+    background: #dc2626;
+}
+
+.btn-add-requirement {
+    padding: 8px 16px;
+    background: #f3f4f6;
+    border: 1px dashed #9ca3af;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btn-add-requirement:hover {
+    background: #e5e7eb;
+    border-color: #6b7280;
+}
+
 /* 響應式設計 */
 @media (max-width: 640px) {
     .form-row {
@@ -328,7 +383,65 @@ body {
     background: #218838;
 }
 
-/* 視圖區域 */
+/* 導航分組樣式 */
+.nav-main-stages {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 1px;
+    background: #e0e0e0;
+    margin: 0 10px;
+    align-self: stretch;
+}
+
+.nav-management {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* 人員查詢按鈕樣式 */
+.search-person-btn {
+    padding: 10px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.search-person-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .nav-tabs {
+        flex-direction: column;
+    }
+    
+    .nav-divider {
+        width: 100%;
+        height: 1px;
+        margin: 10px 0;
+    }
+    
+    .nav-management {
+        margin-left: 0;
+        justify-content: flex-start;
+    }
+}
 .view {
     display: none;
 }
@@ -776,6 +889,17 @@ h2 {
     z-index: 1000;
 }
 
+/* 搜尋結果彈窗 - 基礎層級 */
+#search-results-modal {
+    z-index: 1000;
+}
+
+/* 甘特圖和待辦事項彈窗 - 更高層級，確保顯示在搜尋結果之上 */
+#gantt-modal,
+#todo-modal {
+    z-index: 1100;
+}
+
 .modal.active {
     display: flex;
     align-items: center;
@@ -1149,6 +1273,129 @@ h2 {
 
 .btn-todo:hover {
     background: #38a169;
+}
+
+/* 完成結案按鈕樣式 - 使用 !important 確保優先級 */
+.btn-close-case-complete,
+.project-table .btn-close-case-complete {
+    background: #10b981 !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    outline: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+}
+
+.btn-close-case-complete:hover,
+.project-table .btn-close-case-complete:hover {
+    background: #059669 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4) !important;
+}
+
+.btn-close-case-complete:disabled,
+.project-table .btn-close-case-complete:disabled {
+    background: #10b981 !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* 未完成結案按鈕樣式 - 使用 !important 確保優先級 */
+.btn-close-case-incomplete,
+.project-table .btn-close-case-incomplete {
+    background: #f59e0b !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    outline: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+}
+
+.btn-close-case-incomplete:hover,
+.project-table .btn-close-case-incomplete:hover {
+    background: #d97706 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4) !important;
+}
+
+.btn-close-case-incomplete:disabled,
+.project-table .btn-close-case-incomplete:disabled {
+    background: #f59e0b !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+/* 撤回結案按鈕樣式 - 使用 !important 確保優先級 */
+.btn-reopen-case,
+.project-table .btn-reopen-case {
+    background: #3b82f6 !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    outline: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+}
+
+.btn-reopen-case:hover,
+.project-table .btn-reopen-case:hover {
+    background: #2563eb !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4) !important;
+}
+
+.btn-reopen-case:disabled,
+.project-table .btn-reopen-case:disabled {
+    background: #3b82f6 !important;
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+.btn-next-step {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-next-step:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 }
 
 .btn-all {
@@ -2129,6 +2376,10 @@ h2 {
     .todo-name {
         width: 100%;
         margin-top: 8px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-all;
+        line-height: 1.4;
     }
 }
 
@@ -2455,8 +2706,9 @@ h2 {
 .search-input-wrapper .search-icon {
     position: absolute;
     left: 12px;
-    color: rgba(255, 255, 255, 0.7);
+    color: #6b7280;
     font-size: 14px;
+    z-index: 1;
 }
 
 #global-search {
@@ -2506,18 +2758,401 @@ h2 {
     font-weight: 500;
 }
 
+.search-inputs-wrapper {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+}
+
+.search-input-box {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-box .search-icon {
+    position: absolute;
+    left: 12px;
+    color: #6b7280;
+    font-size: 14px;
+    z-index: 1;
+}
+
+#search-box-1,
+#search-box-2 {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+#search-box-1:focus,
+#search-box-2:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+#search-box-1::placeholder,
+#search-box-2::placeholder {
+    color: #9ca3af;
+}
+
+.clear-search-btn {
+    padding: 10px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.clear-search-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* 搜尋確認按鈕 */
+.search-confirm-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-confirm-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* 搜尋結果彈窗 */
+.search-results-modal-content {
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow-y: auto;
+    width: 90%;
+}
+
+.search-results-info {
+    background: #f3f4f6;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.search-results-info .search-term {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin: 0 4px;
+    font-weight: 500;
+}
+
+.search-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    padding: 10px 0;
+}
+
+.search-results-grid .project-card {
+    cursor: pointer;
+}
+
+/* 緊湊搜尋列樣式 */
+.global-search-bar.compact {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    flex-wrap: nowrap;
+}
+
+.global-search-bar.compact .search-input-box {
+    position: relative;
+    flex: 1;
+    max-width: 300px;
+    min-width: 200px;
+}
+
+.global-search-bar.compact .search-input-box input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+}
+
+.global-search-bar.compact .search-input-box .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.global-search-bar.compact .person-select-wrapper {
+    position: relative;
+}
+
+.global-search-bar.compact .person-select {
+    padding: 8px 28px 8px 12px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+}
+
+.global-search-bar.compact .search-confirm-btn,
+.global-search-bar.compact .clear-search-btn {
+    padding: 8px 14px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* 響應式設計 */
 @media (max-width: 768px) {
-    .global-search-bar {
-        flex-direction: column;
-        gap: 12px;
+    .global-search-bar.compact {
+        flex-wrap: wrap;
     }
     
-    .quick-filters {
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
+    .global-search-bar.compact .search-input-box {
+        max-width: 100%;
+        min-width: 200px;
+        flex: 1 1 100%;
     }
 }
 
 /* ==================== 全局搜尋列樣式結束 ==================== */
+
+/* ==================== 客戶搜尋自動完成樣式 ==================== */
+
+.client-search-container {
+    position: relative;
+}
+
+.client-suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-top: 4px;
+}
+
+.client-suggestions-dropdown.active {
+    display: block;
+}
+
+/* 負責人搜尋樣式 */
+.assignee-search-container {
+    position: relative;
+}
+
+.assignee-suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-top: 4px;
+}
+
+.assignee-suggestions-dropdown.active {
+    display: block;
+}
+
+.assignee-suggestion-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+}
+
+.assignee-suggestion-item:hover {
+    background: #f8f9fa;
+}
+
+.assignee-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.client-suggestion-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+}
+
+.client-suggestion-item:hover {
+    background: #f9fafb;
+}
+
+.client-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.client-suggestion-item .client-name {
+    font-weight: 500;
+    color: #111827;
+}
+
+.client-suggestion-item .contact-hint {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* 聯絡人選擇容器 */
+.contact-select-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.contact-select-container select {
+    flex: 1;
+}
+
+.contact-select-container input {
+    flex: 1;
+}
+
+.contact-select-container .btn-icon {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    color: #667eea;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-select-container .btn-icon:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.contact-select-container input.hidden {
+    display: none;
+}
+
+/* 提示彈窗 */
+.client-prompt-modal .modal-content {
+    max-width: 400px;
+    text-align: center;
+}
+
+.client-prompt-modal h3 {
+    margin-bottom: 16px;
+    color: #111827;
+}
+
+.client-prompt-modal p {
+    color: #6b7280;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.client-prompt-modal .prompt-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.client-prompt-modal .btn-prompt {
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.client-prompt-modal .btn-prompt-primary {
+    background: #667eea;
+    color: white;
+    border: none;
+}
+
+.client-prompt-modal .btn-prompt-primary:hover {
+    background: #5a67d8;
+}
+
+.client-prompt-modal .btn-prompt-secondary {
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.client-prompt-modal .btn-prompt-secondary:hover {
+    background: #f9fafb;
+}
+
+/* 響應式 */
+@media (max-width: 768px) {
+    .client-suggestions-dropdown {
+        max-height: 150px;
+    }
+    
+    .contact-select-container {
+        flex-wrap: wrap;
+    }
+    
+    .contact-select-container .btn-icon {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* ==================== 客戶搜尋自動完成樣式結束 ==================== */
