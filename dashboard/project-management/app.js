@@ -2911,9 +2911,9 @@ function renderTaskListOnly(container, project, filter) {
                 <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
                     <label class="todo-checkbox-label" style="margin: 0; flex-shrink: 0; display: flex; align-items: center; padding-top: 3px;">
                         <input type="checkbox" class="todo-checkbox"
-                            id="task-checkbox-${project.id}-${task.originalIndex}"
+                            id="task-checkbox-${project.id}-${task.id || task.originalIndex}"
                             ${isCompleted ? 'checked' : ''}
-                            onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)"
+                            onchange="toggleTaskComplete('${project.id}', '${task.id || `${project.id}-task-${task.originalIndex}`}', this.checked)"
                             style="width: 18px; height: 18px; cursor: pointer; margin: 0;">
                         <span class="todo-checkbox-custom" style="margin: 0;"></span>
                     </label>
@@ -3541,24 +3541,27 @@ function closeTodoModal() {
 }
 
 // 切換任務完成狀態（v176 修正版 - 先寫 Supabase 再更新畫面）
-// 切換任務完成狀態（v178 修正版 - 同步 currentTodoProject，使用 task.id）
-async function toggleTaskComplete(projectId, taskIndex, isChecked) {
-    console.log('🔄 [toggleTaskComplete] 開始:', { projectId, taskIndex, isChecked });
+// 切換任務完成狀態（v179 修正版 - 完全使用 taskId，不再依賴 taskIndex）
+async function toggleTaskComplete(projectId, taskId, isChecked) {
+    console.log('🔄 [toggleTaskComplete] 開始:', { projectId, taskId, isChecked });
     
     const project = projects.find(p => p.id === projectId);
-    if (!project || !project.tasks[taskIndex]) {
-        console.error('❌ 找不到專案或任務');
+    if (!project || !project.tasks) {
+        console.error('❌ 找不到專案或任務列表');
         return;
     }
     
-    // 取得當前 task 資訊（用於稍後顯示）
-    const targetTask = project.tasks[taskIndex];
-    const taskId = targetTask.id || `${projectId}-task-${taskIndex}`;
+    // 【尋找目標任務】使用 taskId 匹配（修正點 #3）
+    const targetTask = project.tasks.find((t, idx) => (t.id || `${projectId}-task-${idx}`) === taskId);
+    if (!targetTask) {
+        console.error('❌ 找不到目標任務:', taskId);
+        return;
+    }
+    
     console.log('📋 目標任務:', { taskId, taskName: targetTask.name, currentProgress: targetTask.progress });
     
-    // 【不可變更新】建立新的 tasks 陣列（使用 task.id 匹配）
+    // 【不可變更新】使用 taskId 比對，不再依賴 taskIndex（修正點 #4）
     const updatedTasks = project.tasks.map((t, idx) => {
-        // 優先使用 task.id 匹配，若無 id 則使用 index
         const matchId = t.id || `${projectId}-task-${idx}`;
         if (matchId === taskId) {
             return { ...t, progress: isChecked ? 100 : 0 };
@@ -3570,8 +3573,8 @@ async function toggleTaskComplete(projectId, taskIndex, isChecked) {
     const totalProgress = updatedTasks.reduce((sum, t) => sum + (t.progress || 0), 0);
     const newProjectProgress = Math.round(totalProgress / updatedTasks.length);
     
-    // 禁用 checkbox
-    const checkboxId = `task-checkbox-${projectId}-${taskIndex}`;
+    // 【禁用 checkbox】使用 taskId 生成 DOM id（修正點 #6）
+    const checkboxId = `task-checkbox-${projectId}-${taskId}`;
     const checkbox = document.getElementById(checkboxId);
     if (checkbox) checkbox.disabled = true;
     
@@ -3602,7 +3605,7 @@ async function toggleTaskComplete(projectId, taskIndex, isChecked) {
         project.tasks = updatedTasks;
         project.progress = newProjectProgress;
         
-        // 【步驟 3】同步更新 currentTodoProject（修正點 #1）
+        // 【步驟 3】同步更新 currentTodoProject
         if (currentTodoProject && currentTodoProject.id === projectId) {
             currentTodoProject.tasks = updatedTasks;
             currentTodoProject.progress = newProjectProgress;
@@ -3617,16 +3620,15 @@ async function toggleTaskComplete(projectId, taskIndex, isChecked) {
         const progressDisplay = document.getElementById('todo-progress-display');
         if (progressDisplay) progressDisplay.textContent = `${project.progress}%`;
         
-        // 【步驟 6】重新渲染任務清單（使用最新的 currentTodoProject，修正點 #2）
+        // 【步驟 6】重新渲染任務清單
         const body = document.getElementById('todo-modal-body');
         if (body && currentTodoProject && currentTodoProject.id === projectId) {
-            // 傳入已同步的 currentTodoProject
             renderTaskListOnly(body, currentTodoProject, currentTodoFilter);
-            console.log('🎨 任務清單已重新渲染（使用同步後的 currentTodoProject）');
+            console.log('🎨 任務清單已重新渲染');
         }
         
-        // 【步驟 7】顯示成功提示（從 updatedTasks 讀取，修正點 #3）
-        const updatedTask = updatedTasks[taskIndex];
+        // 【步驟 7】顯示成功提示（從 updatedTasks 使用 taskId 查找，修正點 #5）
+        const updatedTask = updatedTasks.find((t, idx) => (t.id || `${projectId}-task-${idx}`) === taskId) || targetTask;
         const message = isChecked 
             ? `✅ 「${updatedTask.name}」已完成` 
             : `⏳ 「${updatedTask.name}」已標記為未完成`;
@@ -3642,6 +3644,8 @@ async function toggleTaskComplete(projectId, taskIndex, isChecked) {
         if (checkbox) checkbox.disabled = false;
     }
 }
+
+
 
 
 
@@ -4754,9 +4758,9 @@ function renderTodoList(container, project, filter) {
                 <div class="todo-main">
                     <label class="todo-checkbox-label">
                         <input type="checkbox" class="todo-checkbox"
-                            id="task-checkbox-${project.id}-${task.originalIndex}"
+                            id="task-checkbox-${project.id}-${task.id || task.originalIndex}"
                             ${isCompleted ? 'checked' : ''}
-                            onchange="toggleTaskComplete('${project.id}', ${task.originalIndex}, this.checked)">
+                            onchange="toggleTaskComplete('${project.id}', '${task.id || `${project.id}-task-${task.originalIndex}`}', this.checked)">
                         <span class="todo-checkbox-custom"></span>
                     </label>
                     <div class="todo-content">
@@ -4848,24 +4852,27 @@ function closeTodoModal() {
 }
 
 // 切換任務完成狀態（列表視圖用 - v176 修正版）
-// 切換任務完成狀態（v178 修正版 - 同步 currentTodoProject，使用 task.id）
-async function toggleTaskComplete(projectId, taskIndex, isChecked) {
-    console.log('🔄 [toggleTaskComplete] 開始:', { projectId, taskIndex, isChecked });
+// 切換任務完成狀態（v179 修正版 - 完全使用 taskId，不再依賴 taskIndex）
+async function toggleTaskComplete(projectId, taskId, isChecked) {
+    console.log('🔄 [toggleTaskComplete] 開始:', { projectId, taskId, isChecked });
     
     const project = projects.find(p => p.id === projectId);
-    if (!project || !project.tasks[taskIndex]) {
-        console.error('❌ 找不到專案或任務');
+    if (!project || !project.tasks) {
+        console.error('❌ 找不到專案或任務列表');
         return;
     }
     
-    // 取得當前 task 資訊（用於稍後顯示）
-    const targetTask = project.tasks[taskIndex];
-    const taskId = targetTask.id || `${projectId}-task-${taskIndex}`;
+    // 【尋找目標任務】使用 taskId 匹配（修正點 #3）
+    const targetTask = project.tasks.find((t, idx) => (t.id || `${projectId}-task-${idx}`) === taskId);
+    if (!targetTask) {
+        console.error('❌ 找不到目標任務:', taskId);
+        return;
+    }
+    
     console.log('📋 目標任務:', { taskId, taskName: targetTask.name, currentProgress: targetTask.progress });
     
-    // 【不可變更新】建立新的 tasks 陣列（使用 task.id 匹配）
+    // 【不可變更新】使用 taskId 比對，不再依賴 taskIndex（修正點 #4）
     const updatedTasks = project.tasks.map((t, idx) => {
-        // 優先使用 task.id 匹配，若無 id 則使用 index
         const matchId = t.id || `${projectId}-task-${idx}`;
         if (matchId === taskId) {
             return { ...t, progress: isChecked ? 100 : 0 };
@@ -4877,8 +4884,8 @@ async function toggleTaskComplete(projectId, taskIndex, isChecked) {
     const totalProgress = updatedTasks.reduce((sum, t) => sum + (t.progress || 0), 0);
     const newProjectProgress = Math.round(totalProgress / updatedTasks.length);
     
-    // 禁用 checkbox
-    const checkboxId = `task-checkbox-${projectId}-${taskIndex}`;
+    // 【禁用 checkbox】使用 taskId 生成 DOM id（修正點 #6）
+    const checkboxId = `task-checkbox-${projectId}-${taskId}`;
     const checkbox = document.getElementById(checkboxId);
     if (checkbox) checkbox.disabled = true;
     
@@ -4909,7 +4916,7 @@ async function toggleTaskComplete(projectId, taskIndex, isChecked) {
         project.tasks = updatedTasks;
         project.progress = newProjectProgress;
         
-        // 【步驟 3】同步更新 currentTodoProject（修正點 #1）
+        // 【步驟 3】同步更新 currentTodoProject
         if (currentTodoProject && currentTodoProject.id === projectId) {
             currentTodoProject.tasks = updatedTasks;
             currentTodoProject.progress = newProjectProgress;
@@ -4924,16 +4931,15 @@ async function toggleTaskComplete(projectId, taskIndex, isChecked) {
         const progressDisplay = document.getElementById('todo-progress-display');
         if (progressDisplay) progressDisplay.textContent = `${project.progress}%`;
         
-        // 【步驟 6】重新渲染任務清單（使用最新的 currentTodoProject，修正點 #2）
+        // 【步驟 6】重新渲染任務清單
         const body = document.getElementById('todo-modal-body');
         if (body && currentTodoProject && currentTodoProject.id === projectId) {
-            // 傳入已同步的 currentTodoProject
             renderTaskListOnly(body, currentTodoProject, currentTodoFilter);
-            console.log('🎨 任務清單已重新渲染（使用同步後的 currentTodoProject）');
+            console.log('🎨 任務清單已重新渲染');
         }
         
-        // 【步驟 7】顯示成功提示（從 updatedTasks 讀取，修正點 #3）
-        const updatedTask = updatedTasks[taskIndex];
+        // 【步驟 7】顯示成功提示（從 updatedTasks 使用 taskId 查找，修正點 #5）
+        const updatedTask = updatedTasks.find((t, idx) => (t.id || `${projectId}-task-${idx}`) === taskId) || targetTask;
         const message = isChecked 
             ? `✅ 「${updatedTask.name}」已完成` 
             : `⏳ 「${updatedTask.name}」已標記為未完成`;
@@ -4949,6 +4955,8 @@ async function toggleTaskComplete(projectId, taskIndex, isChecked) {
         if (checkbox) checkbox.disabled = false;
     }
 }
+
+
 
 
 
