@@ -3541,8 +3541,88 @@ function closeTodoModal() {
 }
 
 // 切換任務完成狀態（v176 修正版 - 先寫 Supabase 再更新畫面）
+// 切換任務完成狀態（v177 修正版 - 不可變更新）
 async function toggleTaskComplete(projectId, taskIndex, isChecked) {
-    console.log('🔄 [toggleTaskComplete] 開始執行:', { projectId, taskIndex, isChecked });
+    console.log('🔄 [toggleTaskComplete] 開始:', { projectId, taskIndex, isChecked });
+    
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) {
+        console.error('❌ 找不到專案或任務');
+        return;
+    }
+    
+    // 【不可變更新】建立新的 tasks 陣列
+    const updatedTasks = project.tasks.map((t, idx) => {
+        if (idx === taskIndex) {
+            return { ...t, progress: isChecked ? 100 : 0 };
+        }
+        return t;
+    });
+    
+    // 計算新的專案進度
+    const totalProgress = updatedTasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+    const newProjectProgress = Math.round(totalProgress / updatedTasks.length);
+    
+    // 禁用 checkbox
+    const checkboxId = `task-checkbox-${projectId}-${taskIndex}`;
+    const checkbox = document.getElementById(checkboxId);
+    if (checkbox) checkbox.disabled = true;
+    
+    try {
+        // 【步驟 1】先更新 Supabase
+        if (USE_SUPABASE) {
+            console.log('☁️ 更新 Supabase...');
+            const supabase = getSupabaseClient();
+            if (!supabase) throw new Error('Supabase 未初始化');
+            
+            const { error } = await supabase
+                .from('projects')
+                .update({ 
+                    tasks: updatedTasks,
+                    progress: newProjectProgress,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', projectId);
+            
+            if (error) {
+                console.error('❌ Supabase 更新失敗:', error);
+                throw error;
+            }
+            console.log('☁️ ✅ Supabase 更新成功');
+        }
+        
+        // 【步驟 2】Supabase 成功後，更新前端 state
+        project.tasks = updatedTasks;
+        project.progress = newProjectProgress;
+        
+        // 【步驟 3】儲存到 LocalStorage
+        saveProjectsToLocalStorage();
+        
+        // 【步驟 4】更新畫面
+        updateTodoStats(project);
+        const progressDisplay = document.getElementById('todo-progress-display');
+        if (progressDisplay) progressDisplay.textContent = `${project.progress}%`;
+        
+        const body = document.getElementById('todo-modal-body');
+        if (body && currentTodoProject) {
+            renderTaskListOnly(body, currentTodoProject, currentTodoFilter);
+        }
+        
+        const message = isChecked 
+            ? `✅ 「${project.tasks[taskIndex].name}」已完成` 
+            : `⏳ 「${project.tasks[taskIndex].name}」已標記為未完成`;
+        showTodoToast(message);
+        console.log('✅ [toggleTaskComplete] 完成');
+        
+    } catch (err) {
+        console.error('❌ 更新失敗:', err);
+        showTodoToast(`❌ 更新失敗: ${err.message || '未知錯誤'}`);
+        if (checkbox) checkbox.checked = !isChecked;
+    } finally {
+        if (checkbox) checkbox.disabled = false;
+    }
+}
+
     
     const project = projects.find(p => p.id === projectId);
     if (!project || !project.tasks[taskIndex]) {
@@ -4850,8 +4930,88 @@ function closeTodoModal() {
 }
 
 // 切換任務完成狀態（列表視圖用 - v176 修正版）
+// 切換任務完成狀態（v177 修正版 - 不可變更新）
 async function toggleTaskComplete(projectId, taskIndex, isChecked) {
-    console.log('🔄 [toggleTaskComplete-列表視圖] 開始:', { projectId, taskIndex, isChecked });
+    console.log('🔄 [toggleTaskComplete] 開始:', { projectId, taskIndex, isChecked });
+    
+    const project = projects.find(p => p.id === projectId);
+    if (!project || !project.tasks[taskIndex]) {
+        console.error('❌ 找不到專案或任務');
+        return;
+    }
+    
+    // 【不可變更新】建立新的 tasks 陣列
+    const updatedTasks = project.tasks.map((t, idx) => {
+        if (idx === taskIndex) {
+            return { ...t, progress: isChecked ? 100 : 0 };
+        }
+        return t;
+    });
+    
+    // 計算新的專案進度
+    const totalProgress = updatedTasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+    const newProjectProgress = Math.round(totalProgress / updatedTasks.length);
+    
+    // 禁用 checkbox
+    const checkboxId = `task-checkbox-${projectId}-${taskIndex}`;
+    const checkbox = document.getElementById(checkboxId);
+    if (checkbox) checkbox.disabled = true;
+    
+    try {
+        // 【步驟 1】先更新 Supabase
+        if (USE_SUPABASE) {
+            console.log('☁️ 更新 Supabase...');
+            const supabase = getSupabaseClient();
+            if (!supabase) throw new Error('Supabase 未初始化');
+            
+            const { error } = await supabase
+                .from('projects')
+                .update({ 
+                    tasks: updatedTasks,
+                    progress: newProjectProgress,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', projectId);
+            
+            if (error) {
+                console.error('❌ Supabase 更新失敗:', error);
+                throw error;
+            }
+            console.log('☁️ ✅ Supabase 更新成功');
+        }
+        
+        // 【步驟 2】Supabase 成功後，更新前端 state
+        project.tasks = updatedTasks;
+        project.progress = newProjectProgress;
+        
+        // 【步驟 3】儲存到 LocalStorage
+        saveProjectsToLocalStorage();
+        
+        // 【步驟 4】更新畫面
+        updateTodoStats(project);
+        const progressDisplay = document.getElementById('todo-progress-display');
+        if (progressDisplay) progressDisplay.textContent = `${project.progress}%`;
+        
+        const body = document.getElementById('todo-modal-body');
+        if (body && currentTodoProject) {
+            renderTaskListOnly(body, currentTodoProject, currentTodoFilter);
+        }
+        
+        const message = isChecked 
+            ? `✅ 「${project.tasks[taskIndex].name}」已完成` 
+            : `⏳ 「${project.tasks[taskIndex].name}」已標記為未完成`;
+        showTodoToast(message);
+        console.log('✅ [toggleTaskComplete] 完成');
+        
+    } catch (err) {
+        console.error('❌ 更新失敗:', err);
+        showTodoToast(`❌ 更新失敗: ${err.message || '未知錯誤'}`);
+        if (checkbox) checkbox.checked = !isChecked;
+    } finally {
+        if (checkbox) checkbox.disabled = false;
+    }
+}
+
     
     const project = projects.find(p => p.id === projectId);
     if (!project || !project.tasks[taskIndex]) {
