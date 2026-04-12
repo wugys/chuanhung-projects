@@ -266,7 +266,23 @@ function loadProjectsFromLocalStorage() {
 async function initProjectsAsync() {
     console.log('🔄 初始化專案資料...');
     
-    // 優先嘗試從 Supabase 載入（如果已遷移或啟用）
+    // 【資料保護機制】優先從 LocalStorage 載入（用戶本地資料優先）
+    const stored = loadProjectsFromLocalStorage();
+    if (stored && stored.length > 0) {
+        projects.length = 0;
+        stored.forEach(p => projects.push(p));
+        console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
+        localStorage.setItem('chuanhung_data_source', 'user');
+        
+        // 如果已遷移到 Supabase，在背景同步到雲端（不阻塞）
+        if (USE_SUPABASE && isMigratedToSupabase()) {
+            console.log('☁️ 背景同步到 Supabase...');
+            saveProjectsToSupabase();
+        }
+        return;
+    }
+    
+    // LocalStorage 無資料時，嘗試從 Supabase 載入
     if (USE_SUPABASE && isMigratedToSupabase()) {
         const supabaseData = await loadProjectsFromSupabase();
         if (supabaseData && supabaseData.length > 0) {
@@ -274,23 +290,16 @@ async function initProjectsAsync() {
             supabaseData.forEach(p => projects.push(p));
             console.log('✅ 專案資料初始化完成（從 Supabase 載入）', projects.length, '個');
             localStorage.setItem('chuanhung_data_source', 'supabase');
+            // 同步到 LocalStorage
+            saveProjectsToLocalStorage();
             return;
         }
     }
     
-    // 其次從 LocalStorage 載入
-    const stored = loadProjectsFromLocalStorage();
-    if (stored && stored.length > 0) {
-        projects.length = 0;
-        stored.forEach(p => projects.push(p));
-        console.log('✅ 專案資料初始化完成（從 LocalStorage 載入）', projects.length, '個');
-        localStorage.setItem('chuanhung_data_source', 'user');
-    } else {
-        // 只有 LocalStorage 完全為空時，才使用程式碼中的預設資料
-        console.log('⚠️ 無既有資料，使用程式碼預設資料', projects.length, '個');
-        saveProjectsToLocalStorage();
-        localStorage.setItem('chuanhung_data_source', 'default');
-    }
+    // 無既有資料時，使用程式碼中的預設資料
+    console.log('⚠️ 無既有資料，使用程式碼中的預設資料', projects.length, '個');
+    saveProjectsToLocalStorage();
+    localStorage.setItem('chuanhung_data_source', 'default');
 }
 
 // 舊版同步 initProjects（保留向後相容）
