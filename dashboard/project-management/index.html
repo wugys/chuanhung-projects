@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>銓宏國際 - 專案管理系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=140">
 </head>
 <body>
     <div class="container">
@@ -19,18 +19,21 @@
                     <h1>📊 銓宏國際專案管理系統</h1>
                 </div>
                 <div class="header-actions">
-                    <div class="user-info" id="user-info">
-                        <span class="user-role" id="user-role"></span>
-                        <span class="user-name" id="user-name"></span>
+                    <div class="user-info" id="user-info" style="display: flex; align-items: center; gap: 12px;">
+                        <span id="current-user-name" class="guest" style="font-size: 14px; color: #374151;">訪客</span>
+                        <button id="btn-logout" style="display: none; padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                            🚪 登出
+                        </button>
+                        <button id="btn-show-login" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                            🔐 登入
+                        </button>
                     </div>
-                    <button onclick="logout()" class="btn-logout">
-                        <i class="fas fa-sign-out-alt"></i> 登出
-                    </button>
                 </div>
             </div>
             
             <div class="header-middle">
                 <div class="status-bar-badges">
+                    <span class="badge" style="background: #e0e7ff; color: #4338ca;">💡 提案中: <span id="proposal-count">0</span></span>
                     <span class="badge urgent">🔴 緊急: <span id="urgent-count">0</span></span>
                     <span class="badge active">🟡 報價中: <span id="quote-count">0</span></span>
                     <span class="badge pending">🔵 報價待確認: <span id="pending-count">0</span></span>
@@ -50,28 +53,43 @@
             
             <!-- 全局搜尋列 -->
             <div class="global-search-bar">
-                <div class="search-input-wrapper">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="global-search" placeholder="🔍 搜尋客戶或產品..." oninput="filterGlobalProjects()">
+                <div class="search-inputs-wrapper">
+                    <div class="search-input-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="search-box-1" placeholder="🔍 搜尋客戶、產品或聯絡人...">
+                    </div>
+                    <div class="search-input-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="search-box-2" placeholder="🔍 進一步篩選（可留空）...">
+                    </div>
                 </div>
-                <div class="quick-filters">
-                    <button class="quick-filter-btn active" onclick="clearGlobalFilter()">全部</button>
-                    <button class="quick-filter-btn" onclick="filterByRep('姿姿')">姿姿</button>
-                    <button class="quick-filter-btn" onclick="filterByRep('Betty')">Betty</button>
-                    <button class="quick-filter-btn" onclick="filterByRep('Kevin')">Kevin</button>
-                </div>
+                <button class="search-confirm-btn" onclick="openSearchResultsModal()">
+                    <i class="fas fa-search"></i> 搜尋
+                </button>
+                <button class="clear-search-btn" onclick="clearGlobalFilter()">
+                    <i class="fas fa-times"></i> 清除
+                </button>
+                <button class="search-person-btn" onclick="openPersonQueryModal()">
+                    <i class="fas fa-user"></i> 人員查詢
+                </button>
             </div>
         </header>
 
         <!-- 視圖切換 -->
         <nav class="nav-tabs">
-            <button class="tab-btn active" onclick="showView('proposal')">💡 提案階段</button>
-            <button class="tab-btn" onclick="showView('quote')">📋 報價階段</button>
-            <button class="tab-btn" onclick="showView('sample')">🔨 打樣階段</button>
-            <button class="tab-btn" onclick="showView('production')">🏭 生產階段</button>
-            <button class="tab-btn" onclick="showView('list')">📑 全部</button>
-            <button class="tab-btn" onclick="showView('pending-confirm')">⏳ 待確認專案</button>
-            <button class="tab-btn export-btn" onclick="exportToExcel()">📥 匯出 Excel</button>
+            <div class="nav-main-stages">
+                <button class="tab-btn active" onclick="showView('proposal')">💡 提案階段</button>
+                <button class="tab-btn" onclick="showView('quote')">📋 報價階段</button>
+                <button class="tab-btn" onclick="showView('sample')">🔨 打樣階段</button>
+                <button class="tab-btn" onclick="showView('production')">🏭 生產階段</button>
+                <button class="tab-btn" onclick="showView('shipping')">🚚 出貨階段</button>
+                <button class="tab-btn" onclick="showView('list')">🔄 進行中清單</button>
+            </div>
+            <div class="nav-divider"></div>
+            <div class="nav-management">
+                <button class="tab-btn" onclick="showView('closed')">✅ 已結案</button>
+                <button class="tab-btn" onclick="showView('pending-confirm')">⏳ 待確認專案</button>
+            </div>
         </nav>
 
         <!-- 提案階段視圖 -->
@@ -79,13 +97,6 @@
             <div class="proposal-section">
                 <h2>💡 提案中（需求確認/概念發想）</h2>
                 <div id="proposing-projects" class="project-grid"></div>
-            </div>
-            
-            <div class="proposal-section">
-                <div class="section-header">
-                    <h2>📤 提案待確認（已提案，等客戶回覆）</h2>
-                </div>
-                <div id="proposal-pending-projects" class="project-grid"></div>
             </div>
         </div>
         
@@ -95,14 +106,6 @@
             <div class="quote-section">
                 <h2>🟡 報價中（準備報價）</h2>
                 <div id="quoting-projects" class="project-grid"></div>
-            </div>
-            
-            <!-- 報價待確認 -->
-            <div class="quote-section">
-                <div class="section-header">
-                    <h2>🔵 報價待確認（已報價，等回覆）</h2>
-                </div>
-                <div id="pending-projects" class="project-grid"></div>
             </div>
         </div>
 
@@ -125,11 +128,13 @@
                     <h3>🟢 生產中 / 已確認</h3>
                     <div id="production-only-projects" class="project-grid"></div>
                 </div>
-                <div class="production-section">
-                    <h3>📦 即將出貨</h3>
-                    <div id="shipping-projects" class="project-grid"></div>
-                </div>
             </div>
+        </div>
+
+        <!-- 出貨階段視圖 -->
+        <div id="shipping-view" class="view">
+            <h2>🚚 出貨階段</h2>
+            <div id="shipping-only-projects" class="project-grid"></div>
         </div>
 
         <!-- 全部視圖 -->
@@ -144,10 +149,10 @@
                     <option value="pending">🔵 報價待確認</option>
                     <option value="sampling">🔨 打樣中</option>
                     <option value="production">🟢 生產中</option>
-                    <option value="completed">✅ 已完成</option>
+                    <option value="shipping">🚚 出貨中</option>
                 </select>
             </div>
-            <h2>📑 全部</h2>
+            <h2>🔄 進行中</h2>
             <table class="project-table">
                 <thead>
                     <tr>
@@ -158,9 +163,42 @@
                         <th>截止日</th>
                         <th>進度</th>
                         <th>階段</th>
+                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody id="project-list-body"></tbody>
+            </table>
+        </div>
+        
+        <!-- 已結案視圖 -->
+        <div id="closed-view" class="view">
+            <div class="list-filter">
+                <label>篩選結案類型：</label>
+                <select id="closed-filter" onchange="renderClosedView()">
+                    <option value="all">全部</option>
+                    <option value="complete">✅ 已完成結案</option>
+                    <option value="incomplete">⏸️ 未完成結案</option>
+                </select>
+            </div>
+            <div class="list-filter" style="margin-top: 10px;">
+                <label>搜尋：</label>
+                <input type="text" id="closed-search" placeholder="輸入客戶或產品名稱..." oninput="renderClosedView()" style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px; width: 250px;">
+            </div>
+            <h2>✅ 已結案</h2>
+            <table class="project-table">
+                <thead>
+                    <tr>
+                        <th>編號</th>
+                        <th>客戶</th>
+                        <th>產品</th>
+                        <th>數量</th>
+                        <th>截止日</th>
+                        <th>進度</th>
+                        <th>結案類型</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="closed-projects-list"></tbody>
             </table>
         </div>
 
@@ -199,8 +237,94 @@
         <!-- 待辦事項彈窗 -->
         <div id="todo-modal" class="modal">
             <div class="modal-content">
-                <span class="close-btn" onclick="closeTodoModal()">×</span>
-                <h2 id="todo-modal-title">📝 待辦事項</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h2 id="todo-modal-title" style="margin: 0;">📝 待辦事項</h2>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" onclick="openEditProjectModalFromTodo()" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">✏️ 編輯專案</button>
+                        <button type="button" onclick="deleteCurrentProject()" style="padding: 6px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">🗑️ 刪除專案</button>
+                        <span class="close-btn" onclick="closeTodoModal()" style="position: static; margin-left: 8px;">×</span>
+                    </div>
+                </div>
+                
+                <!-- 固定控制區域（分頁式設計） -->
+                <div id="todo-controls-fixed" style="display: flex !important; gap: 12px; padding: 12px 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px; border: 2px solid #3b82f6; flex-wrap: wrap;">
+                    <button type="button" id="btn-show-all" onclick="switchTodoFilter('all')" style="flex: 1; min-width: 70px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">📋 全部</button>
+                    <button type="button" id="btn-show-incomplete" onclick="switchTodoFilter('incomplete')" style="flex: 1; min-width: 70px; padding: 8px 12px; border: none; border-radius: 6px; background: #3b82f6; color: white; font-size: 14px; cursor: pointer;">⏳ 待辦</button>
+                    <button type="button" id="btn-show-overdue" onclick="switchTodoFilter('overdue')" style="flex: 1; min-width: 70px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">🔴 逾期</button>
+                    <button type="button" id="btn-add-task" onclick="toggleAddTaskForm()" style="flex: 1; min-width: 90px; padding: 8px 12px; border: 1px solid #10b981; border-radius: 6px; background: white; color: #10b981; font-size: 14px; cursor: pointer; font-weight: 500;">➕ 新增任務</button>
+                </div>
+                
+                <!-- 新增任務表單（預設隱藏） -->
+                <div id="add-task-form-container" style="display: none; margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 2px dashed #d1d5db;">
+                    <h4 style="margin: 0 0 12px 0; color: #374151; font-weight: 600; font-size: 14px;">➕ 新增任務</h4>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                        <input type="text" id="new-task-name" placeholder="任務名稱..." style="flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <input type="text" id="new-task-assignee" list="assignee-list" placeholder="負責人" style="padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; min-width: 100px;" autocomplete="off">
+                        <datalist id="assignee-list">
+                            <option value="姿姿">
+                            <option value="Betty">
+                            <option value="Mia">
+                            <option value="Kevin">
+                        </datalist>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="date" id="new-task-start" placeholder="年 /月/日" style="flex: 1; min-width: 120px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <span style="color: #9ca3af;">-</span>
+                        <input type="date" id="new-task-end" placeholder="年 /月/日" style="flex: 1; min-width: 120px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <button type="button" onclick="submitNewTaskFromTodo()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; white-space: nowrap;">新增</button>
+                    </div>
+                </div>
+                
+                <!-- 專案資訊區域 -->
+                <div id="todo-project-info-fixed" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <div>
+                        <span style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">專案編號</span>
+                        <span id="todo-project-id-display" style="font-size: 14px; color: #111827; font-weight: 500;">-</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">客戶</span>
+                        <span id="todo-project-client-display" style="font-size: 14px; color: #111827; font-weight: 500;">-</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                            截止日
+                            <button onclick="toggleEditDeadline()" style="margin-left: 8px; padding: 2px 8px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">編輯</button>
+                        </span>
+                        <div id="deadline-display-container">
+                            <span id="todo-project-deadline-display" style="font-size: 14px; color: #111827; font-weight: 500;">-</span>
+                            <span id="deadline-warning" style="display: none; margin-left: 8px; padding: 2px 8px; background: #ef4444; color: white; font-size: 12px; border-radius: 4px;">日期異常須注意</span>
+                        </div>
+                        <div id="deadline-edit-container" style="display: none; margin-top: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <input type="date" id="edit-deadline-date" style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px;">
+                                <span style="color: #6b7280; font-size: 13px;">或</span>
+                                <input type="text" id="edit-deadline-text" placeholder="文字說明（如：預計這兩天下單）" style="padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; width: 200px;">
+                            </div>
+                            <div style="margin-top: 8px;">
+                                <button onclick="saveDeadline()" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">儲存</button>
+                                <button onclick="cancelEditDeadline()" style="margin-left: 4px; padding: 6px 12px; background: #6b7280; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">負責人</span>
+                        <span id="todo-project-sales-display" style="font-size: 14px; color: #111827; font-weight: 500;">-</span>
+                    </div>
+                </div>
+                
+                <!-- 客戶提供資料區域 -->
+                <div id="client-materials-section" style="margin-bottom: 20px; padding: 15px; background: #fef3c7; border-radius: 8px; border: 1px solid #f59e0b;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="margin: 0; font-size: 15px; color: #92400e;">📎 客戶提供資料</h3>
+                        <button onclick="openAddMaterialModal()" style="padding: 4px 12px; background: #f59e0b; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">+ 新增</button>
+                    </div>
+                    <div id="client-materials-list" style="font-size: 13px; color: #78350f;">
+                        <!-- 由 JS 渲染 -->
+                    </div>
+                </div>
+                
+                <!-- 任務清單（由 JS 渲染） -->
+                <h3 id="todo-task-count" style="margin-top: 0;">任務清單 (0 項)</h3>
                 <div id="todo-modal-body"></div>
             </div>
         </div>
@@ -210,81 +334,102 @@
                 <span class="close-btn" onclick="closeAddProjectModal()">×</span>
                 <h2>📋 新增專案</h2>
                 <form id="add-project-form" onsubmit="submitNewProject(event)">
+                    <!-- 第1列：專案編號 + 新增日期 -->
                     <div class="form-row">
                         <div class="form-group">
                             <label>專案編號 <span class="required">*</span></label>
                             <input type="text" id="new-project-id" required readonly>
                         </div>
                         <div class="form-group">
-                            <label>客戶名稱 <span class="required">*</span></label>
-                            <select id="new-project-client" required>
-                                <option value="">選擇客戶</option>
-                                <option value="客主創意">客主創意</option>
-                                <option value="易集">易集</option>
-                                <option value="葉林傳">葉林傳</option>
-                                <option value="new">+ 新增客戶</option>
-                            </select>
+                            <label>新增日期 <span class="required">*</span></label>
+                            <input type="date" id="new-project-start-date" required>
                         </div>
                     </div>
+
+                    <!-- 第2列：負責人 + 公司名稱 -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label>產品名稱 <span class="required">*</span></label>
-                            <input type="text" id="new-project-name" placeholder="例如：NFC 鑰匙圈" required>
+                            <label>負責人 <span class="required">*</span></label>
+                            <div class="assignee-search-container">
+                                <input type="text" id="new-project-assignee" placeholder="輸入負責人姓名..." required autocomplete="off">
+                                <div id="assignee-suggestions" class="assignee-suggestions-dropdown"></div>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>產品類型 <span class="required">*</span></label>
-                            <select id="new-project-type" required>
-                                <option value="">選擇類型</option>
-                                <option value="印刷類">印刷類</option>
-                                <option value="紙盒包裝">紙盒包裝</option>
-                                <option value="紙置物架">紙置物架</option>
-                                <option value="高周波">高周波</option>
-                                <option value="微量射出">微量射出</option>
-                                <option value="矽膠">矽膠</option>
-                                <option value="五金飾品">五金飾品</option>
-                                <option value="絨毛玩具">絨毛玩具</option>
-                                <option value="皮革">皮革</option>
-                                <option value="包袋">包袋</option>
-                                <option value="紡織">紡織</option>
-                                <option value="3D列印">3D列印</option>
-                            </select>
+                            <label>公司名稱 <span class="required">*</span></label>
+                            <div class="client-search-container">
+                                <input type="text" id="new-project-client" placeholder="輸入公司名稱搜尋..." required autocomplete="off">
+                                <div id="client-suggestions" class="client-suggestions-dropdown"></div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- 第3列：聯絡人 + 產品名稱 -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label>數量 <span class="required">*</span></label>
-                            <input type="number" id="new-project-quantity" placeholder="1000" min="1" required>
+                            <label>聯絡人 <span class="required">*</span></label>
+                            <input type="text" id="new-project-contact" placeholder="輸入聯絡人姓名" required>
                         </div>
                         <div class="form-group">
-                            <label>預計交期 <span class="required">*</span></label>
-                            <input type="date" id="new-project-deadline" required>
+                            <label>產品名稱</label>
+                            <input type="text" id="new-project-name" placeholder="選填">
                         </div>
                     </div>
+
+                    <!-- 第4列：數量 + 預算 -->
                     <div class="form-row">
+                        <div class="form-group">
+                            <label>數量</label>
+                            <input type="text" id="new-project-quantity" placeholder="選填，例如：1000 pcs">
+                        </div>
+                        <div class="form-group">
+                            <label>預算</label>
+                            <input type="text" id="new-project-budget" placeholder="選填，例如：50,000">
+                        </div>
+                    </div>
+
+                    <!-- 第5列：工期 + 客戶需求階段 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>工期</label>
+                            <input type="text" id="new-project-duration" placeholder="選填，例如：30天">
+                        </div>
                         <div class="form-group">
                             <label>目前階段 <span class="required">*</span></label>
                             <select id="new-project-phase" required>
-                                <option value="">選擇階段</option>
                                 <option value="proposing">💡 提案</option>
                                 <option value="quoting">📋 報價</option>
                                 <option value="sampling">🔨 打樣</option>
-                                <option value="production">🏭 生產</option>
+                                <option value="production">🏭 大貨</option>
+                                <option value="shipping">🚚 出貨</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- 第6列：客戶需求事項 -->
+                    <div class="form-row full-width">
                         <div class="form-group">
-                            <label>負責業務 <span class="required">*</span></label>
-                            <select id="new-project-sales" required>
-                                <option value="">選擇業務</option>
-                                <option value="姿姿">姿姿</option>
-                                <option value="Betty">Betty</option>
-                                <option value="Kevin">Kevin</option>
-                            </select>
+                            <label>客戶需求事項</label>
+                            <div id="client-requirements-list" class="requirements-list">
+                                <!-- 動態添加需求項目 -->
+                            </div>
+                            <button type="button" class="btn-add-requirement" onclick="addRequirementItem()">
+                                <i class="fas fa-plus"></i> 添加需求事項
+                            </button>
+                            <div class="requirement-example" style="margin-top: 10px; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 12px; color: #666;">
+                                <strong>範例：</strong>3/30-一番賞禮品提案，2天
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group full-width">
-                        <label>備註</label>
-                        <textarea id="new-project-notes" rows="3" placeholder="其他說明..."></textarea>
+
+                    <!-- 第7列：備註 -->
+                    <div class="form-row full-width">
+                        <div class="form-group">
+                            <label>備註</label>
+                            <textarea id="new-project-remarks" rows="3" placeholder="其他備註說明..."></textarea>
+                        </div>
                     </div>
+
                     <div class="form-actions">
                         <button type="button" class="btn-secondary" onclick="closeAddProjectModal()">取消</button>
                         <button type="submit" class="btn-primary">✅ 建立專案</button>
@@ -293,32 +438,458 @@
             </div>
         </div>
         
-        <!-- 新增進度彈窗 -->
-        <div id="add-progress-modal" class="modal">
-            <div class="modal-content add-progress-modal-content">
-                <span class="close-btn" onclick="closeAddProgressModal()">×</span>
-                <h2>📈 新增進度</h2>
-                <div class="progress-form">
-                    <div class="form-group full-width">
-                        <label>進度描述 <span class="hint">（用自然語言描述，如：「客戶已確認設計，預計週五出貨」）</span></label>
-                        <textarea id="progress-description" rows="4" placeholder="請描述目前進度..."></textarea>
+        <!-- 編輯專案彈窗 -->
+        <div id="edit-project-modal" class="modal">
+            <div class="modal-content add-project-modal-content">
+                <span class="close-btn" onclick="closeEditProjectModal()">×</span>
+                <h2>✏️ 編輯專案</h2>
+                <form id="edit-project-form" onsubmit="submitEditProject(event)">
+                    <input type="hidden" id="edit-project-original-id">
+                    <!-- 第1列：專案編號 + 新增日期 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>專案編號 <span class="required">*</span></label>
+                            <input type="text" id="edit-project-id" required readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>新增日期 <span class="required">*</span></label>
+                            <input type="date" id="edit-project-start-date" required>
+                        </div>
                     </div>
+
+                    <!-- 第2列：負責人 + 公司名稱 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>負責人 <span class="required">*</span></label>
+                            <div class="assignee-search-container">
+                                <input type="text" id="edit-project-assignee" placeholder="輸入負責人姓名..." required autocomplete="off">
+                                <div id="edit-assignee-suggestions" class="assignee-suggestions-dropdown"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>公司名稱 <span class="required">*</span></label>
+                            <div class="client-search-container">
+                                <input type="text" id="edit-project-client" placeholder="輸入公司名稱搜尋..." required autocomplete="off">
+                                <div id="edit-client-suggestions" class="client-suggestions-dropdown"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第3列：聯絡人 + 產品名稱 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>聯絡人 <span class="required">*</span></label>
+                            <input type="text" id="edit-project-contact" placeholder="輸入聯絡人姓名" required>
+                        </div>
+                        <div class="form-group">
+                            <label>產品名稱</label>
+                            <input type="text" id="edit-project-name" placeholder="選填">
+                        </div>
+                    </div>
+
+                    <!-- 第4列：數量 + 預算 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>數量</label>
+                            <input type="text" id="edit-project-quantity" placeholder="選填，例如：1000 pcs">
+                        </div>
+                        <div class="form-group">
+                            <label>預算</label>
+                            <input type="text" id="edit-project-budget" placeholder="選填，例如：50,000">
+                        </div>
+                    </div>
+
+                    <!-- 第5列：工期 + 客戶需求階段 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>工期</label>
+                            <input type="text" id="edit-project-duration" placeholder="選填，例如：30天">
+                        </div>
+                        <div class="form-group">
+                            <label>目前階段 <span class="required">*</span></label>
+                            <select id="edit-project-phase" required>
+                                <option value="proposing">💡 提案</option>
+                                <option value="quoting">📋 報價</option>
+                                <option value="sampling">🔨 打樣</option>
+                                <option value="production">🏭 大貨</option>
+                                <option value="shipping">🚚 出貨</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 第6列：客戶需求事項 -->
+                    <div class="form-row full-width">
+                        <div class="form-group">
+                            <label>客戶需求事項</label>
+                            <div id="edit-client-requirements-list" class="requirements-list">
+                                <!-- 動態添加需求項目 -->
+                            </div>
+                            <button type="button" class="btn-add-requirement" onclick="addEditRequirementItem()">
+                                <i class="fas fa-plus"></i> 添加需求事項
+                            </button>
+                            <div class="requirement-example" style="margin-top: 10px; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 12px; color: #666;">
+                                <strong>範例：</strong>3/30-一番賞禮品提案，2天
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第7列：備註 -->
+                    <div class="form-row full-width">
+                        <div class="form-group">
+                            <label>備註</label>
+                            <textarea id="edit-project-remarks" rows="3" placeholder="其他備註說明..."></textarea>
+                        </div>
+                    </div>
+
                     <div class="form-actions">
-                        <button type="button" class="btn-secondary" onclick="closeAddProgressModal()">取消</button>
-                        <button type="button" id="analyze-btn" class="btn-primary ai-btn" onclick="analyzeProgressWithAI()">🤖 AI分析</button>
+                        <button type="button" class="btn-secondary" onclick="closeEditProjectModal()">取消</button>
+                        <button type="submit" class="btn-primary">✅ 儲存變更</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 搜尋結果彈窗 -->
+        <div id="search-results-modal" class="modal">
+            <div class="modal-content search-results-modal-content">
+                <span class="close-btn" onclick="closeSearchResultsModal()">×</span>
+                <h2 id="search-results-title">🔍 搜尋結果</h2>
+                <div id="search-results-info" class="search-results-info"></div>
+                <div id="search-results-body" class="search-results-grid"></div>
+            </div>
+        </div>
+        
+        <!-- 新增客戶資料彈窗 -->
+        <div id="add-material-modal" class="modal">
+            <div class="modal-content" style="max-width: 450px;">
+                <span class="close-btn" onclick="closeAddMaterialModal()">×</span>
+                <h3>📎 新增客戶提供資料</h3>
+                <form id="add-material-form" onsubmit="submitNewMaterial(event)">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">日期 <span style="color: #ef4444;">*</span></label>
+                        <input type="date" id="new-material-date" required style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">資料說明 <span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="new-material-desc" placeholder="例如：客戶提供報價資料、參考照片..." required style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151;">備註（選填）</label>
+                        <textarea id="new-material-notes" rows="2" placeholder="檔案名稱、連結或其他備註..." style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+                    <div class="form-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" onclick="closeAddMaterialModal()" style="padding: 8px 16px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; cursor: pointer;">取消</button>
+                        <button type="submit" style="padding: 8px 16px; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer;">✅ 新增</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 人員查詢彈窗 -->
+        <div id="person-query-modal" class="modal">
+            <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
+                <span class="close-btn" onclick="closePersonQueryModal()">×</span>
+                <h3>👤 人員查詢</h3>
+                
+                <!-- 查詢條件 -->
+                <div style="margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 8px;">
+                    <!-- 公司選擇 -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">公司名稱</label>
+                        <input type="text" 
+                               id="query-company-input" 
+                               placeholder="輸入公司名稱..." 
+                               oninput="searchCompaniesForQuery(this.value)"
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                        >
+                        <div id="query-company-suggestions" style="margin-top: 4px; border: 1px solid #e5e7eb; border-radius: 6px; max-height: 150px; overflow-y: auto; display: none; background: white;"></div>
                     </div>
                     
-                    <div id="progress-analysis-result" style="display: none;"></div>
+                    <!-- 人員選擇 -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: #374151;">人員名稱</label>
+                        <input type="text" 
+                               id="query-person-input" 
+                               placeholder="輸入或選擇人員..." 
+                               oninput="searchPersonsForQuery(this.value)"
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;"
+                        >
+                        <div id="query-person-suggestions" style="margin-top: 4px; border: 1px solid #e5e7eb; border-radius: 6px; max-height: 150px; overflow-y: auto; display: none; background: white;"></div>
+                        <p style="margin: 6px 0 0 0; font-size: 12px; color: #6b7280;">💡 提示：輸入新公司/人員可直接查詢，系統會自動記錄</p>
+                    </div>
+                    
+                    <!-- 查詢按鈕 -->
+                    <button onclick="executePersonQuery()" 
+                            style="width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500;"
+                    >
+                        🔍 查詢該人員事項
+                    </button>
+                </div>
+                
+                <!-- 篩選按鈕 -->
+                <div id="query-filter-buttons" style="display: none; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 10px; background: #f3f4f6; padding: 8px; border-radius: 8px;">
+                        <button id="btn-query-all" onclick="switchQueryFilter('all')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">📋 全部</button>
+                        
+                        <button id="btn-query-incomplete" onclick="switchQueryFilter('incomplete')" style="flex: 1; padding: 8px 16px; border: none; border-radius: 6px; background: #3b82f6; color: white; font-size: 14px; cursor: pointer;">⏳ 待辦</button>
+                        
+                        <button id="btn-query-overdue" onclick="switchQueryFilter('overdue')" style="flex: 1; padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #374151; font-size: 14px; cursor: pointer;">🔴 逾期</button>
+                    </div>
+                </div>
+                
+                <!-- 查詢結果 -->
+                <div id="query-results-container" style="display: none;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 15px; color: #111827;">
+                        <span id="query-result-title"></span>
+                        <span id="query-result-count" style="font-size: 13px; color: #6b7280; font-weight: normal;"></span>
+                    </h4>
+                    
+                    <div id="query-results-list"></div>
+                </div>
+                
+                <!-- 無結果提示 -->
+                <div id="query-no-results" style="display: none; text-align: center; padding: 40px; color: #9ca3af;">
+                    <p style="font-size: 16px; margin: 0 0 8px 0;">🔍 請輸入公司和人員名稱進行查詢</p>
+                    <p style="font-size: 13px; margin: 0;">可查詢各專案中該人員負責的所有事項</p>
                 </div>
             </div>
         </div>
-    </div>
+        
+        <!-- 新增客戶/聯絡人提示彈窗 -->
+        <div id="client-prompt-modal" class="modal client-prompt-modal">
+            <div class="modal-content">
+                <h3 id="client-prompt-title">📝 提示</h3>
+                <p id="client-prompt-message"></p>
+                <div class="prompt-buttons">
+                    <button class="btn-prompt btn-prompt-primary" onclick="confirmAddToClientDB()">加入資料庫</button>
+                    <button class="btn-prompt btn-prompt-secondary" onclick="cancelAddToClientDB()">僅用於此專案</button>
+                </div>
+            </div>
+        </div>
 
+        <!-- 新增負責人提示彈窗 -->
+        <div id="assignee-prompt-modal" class="modal client-prompt-modal">
+            <div class="modal-content">
+                <h3 id="assignee-prompt-title">👤 新增負責人</h3>
+                <p id="assignee-prompt-message"></p>
+                <div class="prompt-buttons">
+                    <button class="btn-prompt btn-prompt-primary" onclick="confirmAddToAssigneeDB()">加入負責人資料庫</button>
+                    <button class="btn-prompt btn-prompt-secondary" onclick="cancelAddToAssigneeDB()">僅用於此專案</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 登入彈窗 -->
+        <div id="login-modal" class="modal" style="display: none; z-index: 9999;">
+            <div class="modal-content" style="max-width: 400px; padding: 30px;">
+                <span class="close-btn" onclick="closeLoginModal()">&times;</span>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <h2 style="margin: 0 0 8px 0; color: #374151;">🔐 系統登入</h2>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">請輸入帳號密碼以繼續</p>
+                </div>
+                
+                <div id="login-error" style="display: none; background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;"></div>
+                
+                <form id="login-form-inline" onsubmit="handleInlineLogin(event)">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151; font-weight: 500;">帳號</label>
+                        <input type="text" id="login-username-inline" placeholder="請輸入帳號 (如: wugys)" required
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #374151; font-weight: 500;">密碼</label>
+                        <input type="password" id="login-password-inline" placeholder="請輸入密碼" required
+                               style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+                    
+                    <button type="submit" id="login-submit-btn" 
+                            style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer;">
+                        登入
+                    </button>
+                </form>
+                
+                <div style="margin-top: 16px; text-align: center; font-size: 13px; color: #9ca3af;">
+                    <p>忘記密碼？請聯繫 Kevin</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <!-- 認證模組 -->
-    <script src="../auth.js?v=4"></script>
-    <script src="app.js?v=30"></script>
+    
+    <!-- 新模組化架構 v2.0 -->
+    <!-- 1. 工具函數 -->
+    <script src="modules/utils.js?v=1"></script>
+    <!-- 2. 資料驗證 -->
+    <script src="modules/data-validator.js?v=1"></script>
+    <!-- 3. 儲存操作 -->
+    <script src="modules/storage.js?v=1"></script>
+    <!-- 4. 登入權限（Supabase Auth）-->
+    <script src="modules/supabase-auth.js?v=5"></script>
+    <script src="modules/supabase-migration.js?v=1"></script>
+    
+    <!-- 5. 主系統原有功能（v102 穩定版本） -->
+    <script src="app.js?v=166"></script>
+    
+    <!-- 6. 權限整合（為主系統功能添加權限檢查） -->
+    <script src="modules/permission-integration.js?v=1"></script>
+    
+    <script>
+        window.onload = function() {
+            console.log('✅ 銓宏專案管理系統 v2.0 載入成功');
+            console.log('📦 使用模組化架構');
+            
+            // 初始化系統資料
+            init();
+            
+            // 初始化登入狀態
+            initAuthUI();
+        };
+        
+        // ==================== 登入相關功能 ====================
+        
+        // 初始化登入 UI
+        function initAuthUI() {
+            updateAuthUI();
+            
+            // 綁定登入/登出按鈕
+            const loginBtn = document.getElementById('btn-show-login');
+            const logoutBtn = document.getElementById('btn-logout');
+            
+            if (loginBtn) {
+                loginBtn.onclick = showLoginModal;
+            }
+            if (logoutBtn) {
+                logoutBtn.onclick = handleLogout;
+            }
+        }
+        
+        // 更新登入 UI 狀態
+        function updateAuthUI() {
+            const isLoggedIn = window.Auth && window.Auth.isLoggedIn();
+            const user = isLoggedIn ? window.Auth.getCurrentUser() : null;
+            
+            const userNameEl = document.getElementById('current-user-name');
+            const loginBtn = document.getElementById('btn-show-login');
+            const logoutBtn = document.getElementById('btn-logout');
+            
+            if (userNameEl) {
+                userNameEl.textContent = isLoggedIn ? (user?.name || user?.username) : '訪客';
+                userNameEl.className = isLoggedIn ? 'logged-in' : 'guest';
+            }
+            if (loginBtn) {
+                loginBtn.style.display = isLoggedIn ? 'none' : 'inline-block';
+            }
+            if (logoutBtn) {
+                logoutBtn.style.display = isLoggedIn ? 'inline-block' : 'none';
+            }
+        }
+        
+        // 顯示登入彈窗
+        function showLoginModal() {
+            const modal = document.getElementById('login-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.getElementById('login-username-inline')?.focus();
+            }
+        }
+        
+        // 關閉登入彈窗
+        function closeLoginModal() {
+            console.log('🔄 嘗試關閉登入彈窗...');
+            const modal = document.getElementById('login-modal');
+            console.log('🔍 login-modal 元素:', modal);
+            if (modal) {
+                modal.style.display = 'none';
+                console.log('✅ 登入彈窗已關閉');
+            } else {
+                console.error('❌ 找不到 login-modal 元素');
+            }
+            hideLoginError();
+        }
+        
+        // 顯示登入錯誤
+        function showLoginError(message) {
+            const errorEl = document.getElementById('login-error');
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // 隱藏登入錯誤
+        function hideLoginError() {
+            const errorEl = document.getElementById('login-error');
+            if (errorEl) {
+                errorEl.style.display = 'none';
+            }
+        }
+        
+        // 處理內嵌登入
+        async function handleInlineLogin(event) {
+            event.preventDefault();
+            hideLoginError();
+            
+            const username = document.getElementById('login-username-inline').value.trim();
+            const password = document.getElementById('login-password-inline').value;
+            const submitBtn = document.getElementById('login-submit-btn');
+            
+            console.log('🔄 嘗試登入:', username);
+            console.log('🔍 window.Auth:', window.Auth);
+            console.log('🔍 window.SupabaseAuth:', window.SupabaseAuth);
+            console.log('🔍 SupabaseAuthInstance 初始化狀態:', window.SupabaseAuth?.initialized);
+            console.log('🔍 SupabaseAuthInstance client:', window.SupabaseAuth?.client);
+            
+            // 檢查 Auth 是否就緒
+            if (!window.Auth) {
+                showLoginError('系統初始化中，請稍後再試');
+                console.error('❌ window.Auth 未定義');
+                return;
+            }
+            
+            // 顯示載入狀態
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '登入中...';
+            
+            try {
+                console.log('📤 呼叫 Auth.login...');
+                const result = await window.Auth.login(username, password);
+                console.log('📥 登入結果:', result);
+                
+                if (result && result.success) {
+                    console.log('✅ 登入成功，準備關閉彈窗...');
+                    closeLoginModal();
+                    console.log('✅ 彈窗關閉完成，更新 UI...');
+                    updateAuthUI();
+                    console.log('✅ UI 更新完成');
+                    // 清空表單
+                    document.getElementById('login-form-inline').reset();
+                    alert(`✅ 歡迎回來，${result.user.name}！`);
+                } else {
+                    console.log('❌ 登入失敗:', result);
+                    showLoginError(result?.error || '登入失敗');
+                }
+            } catch (error) {
+                console.error('❌ 登入錯誤:', error);
+                showLoginError('登入過程發生錯誤：' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+        
+        // 處理登出
+        async function handleLogout() {
+            if (confirm('確定要登出嗎？')) {
+                await window.Auth.logout();
+                updateAuthUI();
+            }
+        }
+    </script>
 </body>
 </html>
