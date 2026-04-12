@@ -4850,7 +4850,6 @@ function closeTodoModal() {
 }
 
 // 切換任務完成狀態（列表視圖用 - v176 修正版）
-// 切換任務完成狀態（列表視圖用 - v176 修正版）
 async function toggleTaskComplete(projectId, taskIndex, isChecked) {
     console.log('🔄 [toggleTaskComplete-列表視圖] 開始:', { projectId, taskIndex, isChecked });
     
