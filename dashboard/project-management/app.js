@@ -3520,6 +3520,9 @@ function toggleTaskComplete(projectId, taskIndex, isChecked) {
     project.tasks[taskIndex].progress = isChecked ? 100 : 0;
     updateProjectProgress(project);
 
+    // 【重要】儲存到 LocalStorage
+    saveProjectsToLocalStorage();
+
     // 更新固定區域的統計數字
     updateTodoStats(project);
     const progressDisplay = document.getElementById('todo-progress-display');
