@@ -43,13 +43,18 @@ function saveProjectsToLocalStorage() {
         
         // 【Supabase 同步】同步到 Supabase（強制啟用）
         if (USE_SUPABASE) {
+            console.log('🔄 開始同步到 Supabase...');
             saveProjectsToSupabase().then(success => {
                 if (success) {
-                    console.log('☁️ 已同步到 Supabase');
+                    console.log('☁️ ✅ 已同步到 Supabase');
                 } else {
                     console.warn('⚠️ Supabase 同步失敗，但 LocalStorage 儲存成功');
                 }
+            }).catch(err => {
+                console.error('❌ Supabase 同步異常:', err);
             });
+        } else {
+            console.log('⏭️ Supabase 同步已禁用 (USE_SUPABASE=false)');
         }
         
         // 驗證儲存成功
@@ -185,7 +190,10 @@ async function loadProjectsFromSupabase() {
 
 // 儲存專案資料到 Supabase
 async function saveProjectsToSupabase() {
-    if (!USE_SUPABASE) return false;
+    if (!USE_SUPABASE) {
+        console.log('⏭️ Supabase 已禁用');
+        return false;
+    }
     
     const supabase = getSupabaseClient();
     if (!supabase) {
@@ -195,6 +203,12 @@ async function saveProjectsToSupabase() {
     
     try {
         console.log('🔄 正在儲存資料到 Supabase...');
+        console.log('📊 專案數量:', projects.length);
+        
+        // 檢查第一個專案的任務數量（用於調試）
+        if (projects.length > 0) {
+            console.log('📋 第一個專案任務數:', projects[0].tasks?.length || 0);
+        }
         
         // 轉換資料格式
         const records = projects.map(project => ({
@@ -217,13 +231,16 @@ async function saveProjectsToSupabase() {
             notes: project.notes
         }));
         
+        console.log('📝 準備儲存記錄數:', records.length);
+        
         // 使用 upsert 批量儲存
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('projects')
             .upsert(records, { onConflict: 'id' });
         
         if (error) {
             console.error('❌ Supabase 儲存失敗:', error);
+            console.error('錯誤詳情:', JSON.stringify(error));
             return false;
         }
         
@@ -231,6 +248,7 @@ async function saveProjectsToSupabase() {
         return true;
     } catch (e) {
         console.error('❌ Supabase 儲存異常:', e);
+        console.error('異常詳情:', e.message, e.stack);
         return false;
     }
 }
