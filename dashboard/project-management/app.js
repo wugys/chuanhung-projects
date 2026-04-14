@@ -1183,17 +1183,8 @@ async function checkAndAutoMigrate() {
     console.log('%c🚀 檢測到需要遷移到 Supabase', 'color: #3b82f6; font-size: 14px; font-weight: bold;');
     console.log(`📊 發現 ${projects.length} 個專案需要遷移`);
     
-    // 【自動遷移】直接執行遷移，無需等待用戶點擊
-    console.log('%c🤖 5秒後自動開始遷移...', 'color: #10b981; font-size: 14px; font-weight: bold;');
-    setTimeout(async () => {
-        try {
-            await performAutoMigration();
-        } catch (err) {
-            console.error('❌ 自動遷移失敗:', err);
-            // 如果自動遷移失敗，才顯示手動遷移提示
-            showMigrationToast(projects.length);
-        }
-    }, 5000);
+    // 顯示自動遷移 UI 提示
+    showMigrationToast(projects.length);
 }
 
 // 顯示遷移提示
@@ -4313,7 +4304,7 @@ function renderAllViews() {
     renderList();
     renderPendingConfirmView();
     renderClosedView();
-    updateStatusBar();
+    updateStats();
 }
 
 // ==================== 新增專案功能結束 ====================
@@ -5344,7 +5335,7 @@ renderAllViews = function() {
     renderProductionView();
     renderList();
     renderPendingConfirmView();
-    updateStatusBar();
+    updateStats();
     updateOverdueAlerts();
 };
 
